@@ -412,21 +412,23 @@ export function MonthlyProgramView() {
             <tbody className="divide-y divide-[#D2B48C]/25 dark:divide-slate-800 text-xs">
               {filteredCategories.map((cat) => (
                 <React.Fragment key={cat.id}>
-                  {/* Category Section Banner */}
+                  {/* Category Section Banner: Icon in NO column replacing Roman numeral */}
                   <tr className="bg-[#FAF3E8] dark:bg-[#001e42] font-black text-[#002147] dark:text-[#D2B48C] border-y border-[#D2B48C]/40">
-                    <td className="py-2.5 px-3 text-center font-bold font-mono border-r border-[#D2B48C]/30 bg-[#F2E5D0] dark:bg-[#002754]">
-                      {cat.roman}
+                    <td className="py-2.5 px-3 w-14 text-center border-r border-[#D2B48C]/30 bg-[#F2E5D0] dark:bg-[#002754] align-middle">
+                      <div
+                        title={`Bidang ${cat.roman}: ${cat.title}`}
+                        className="mx-auto w-7 h-7 rounded-xl bg-[#002147] text-[#D2B48C] border border-[#D2B48C]/40 flex items-center justify-center shadow-xs"
+                      >
+                        {getCategoryIcon(cat.id, 'w-3.5 h-3.5')}
+                      </div>
                     </td>
                     <td
                       colSpan={1 + activeMonths.length * 4}
-                      className="py-2.5 px-4"
+                      className="py-2.5 px-4 align-middle"
                     >
-                      <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 rounded-md bg-[#002147] text-[#D2B48C] flex items-center justify-center text-xs">
-                          {getCategoryIcon(cat.id, 'w-3 h-3')}
-                        </div>
-                        <span className="text-[12px] tracking-tight">{cat.title}</span>
-                      </div>
+                      <span className="text-[12.5px] font-extrabold tracking-tight text-[#002147] dark:text-[#D2B48C]">
+                        {cat.title}
+                      </span>
                     </td>
                   </tr>
 
@@ -436,8 +438,8 @@ export function MonthlyProgramView() {
                       key={item.id}
                       className="hover:bg-[#FAF6F0]/80 dark:hover:bg-[#002147]/50 transition-colors group"
                     >
-                      {/* Sub-number */}
-                      <td className="py-2.5 px-3 text-center font-semibold text-slate-500 dark:text-slate-400 border-r border-[#D2B48C]/20 bg-slate-50/50 dark:bg-slate-900/30 font-mono">
+                      {/* Sub-number directly below Category Icon */}
+                      <td className="py-2.5 px-3 w-14 text-center font-bold text-[#002147]/75 dark:text-slate-300 border-r border-[#D2B48C]/20 bg-slate-50/50 dark:bg-slate-900/30 font-mono align-middle">
                         {item.subNo}
                       </td>
 

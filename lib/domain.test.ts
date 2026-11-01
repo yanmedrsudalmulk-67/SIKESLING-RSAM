@@ -19,10 +19,11 @@ import {
   generateDeterministicWaterAnalysis,
 } from './water-quality';
 
-test('navigation structure includes all 10 main menus and required routes', () => {
-  assert.equal(MAIN_NAVIGATION.length, 10);
+test('navigation structure includes all 11 main menus and required routes', () => {
+  assert.equal(MAIN_NAVIGATION.length, 11);
   const allRoutes = getAllRoutes();
   assert.ok(allRoutes.includes('/dashboard'));
+  assert.ok(allRoutes.includes('/program-kerja/tahunan'));
   assert.ok(allRoutes.includes('/operasional/kegiatan-harian'));
   assert.ok(allRoutes.includes('/monitoring/kualitas-air'));
   assert.ok(allRoutes.includes('/monitoring/ipal'));

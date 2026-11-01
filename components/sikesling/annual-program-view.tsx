@@ -254,30 +254,41 @@ export function AnnualProgramView() {
       {/* Main Gantt / Matrix Table Card */}
       <div className="rounded-[28px] bg-white/95 dark:bg-[#001835]/95 backdrop-blur-md border-[1.5px] border-[#D2B48C]/45 dark:border-[#D2B48C]/20 shadow-[0_16px_36px_rgba(0,33,71,0.08),inset_0_1px_2px_rgba(255,255,255,0.95)] overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[920px]">
-            {/* Table Header (No Column Edit) */}
+          <table className="w-full text-left border-collapse min-w-[980px]">
+            {/* Table Header */}
             <thead>
               <tr className="bg-[#EFE4D2] dark:bg-[#002147] text-[#002147] dark:text-[#D2B48C] border-b border-[#D2B48C]/40 text-xs font-black tracking-wider uppercase">
-                <th className="py-3 px-3 w-14 text-center border-r border-[#D2B48C]/30">NO</th>
-                <th className="py-3 px-4 min-w-[300px] border-r border-[#D2B48C]/30">
+                <th
+                  rowSpan={2}
+                  className="py-3 px-3 w-14 text-center border-r border-[#D2B48C]/30 align-middle"
+                >
+                  NO
+                </th>
+                <th
+                  rowSpan={2}
+                  className="py-3 px-4 min-w-[300px] border-r border-[#D2B48C]/30 align-middle"
+                >
                   PROGRAM KERJA / KEGIATAN KESEHATAN LINGKUNGAN
                 </th>
                 <th
                   colSpan={12}
-                  className="py-2 px-1 text-center bg-[#E8DAC2] dark:bg-[#001b3a]"
+                  className="py-2 px-2 text-center bg-[#E8DAC2] dark:bg-[#001b3a] border-b border-[#D2B48C]/35"
                 >
                   <div className="flex items-center justify-center gap-1.5">
                     <CalendarRange className="w-3.5 h-3.5" />
                     <span>BULAN PELAKSANAAN (TAHUN {selectedYear})</span>
                   </div>
-                  <div className="grid grid-cols-12 gap-0 text-[10px] font-bold mt-1 pt-1 border-t border-[#D2B48C]/30">
-                    {MONTH_SHORTS_ID.map((m) => (
-                      <span key={m} className="text-center py-0.5">
-                        {m}
-                      </span>
-                    ))}
-                  </div>
                 </th>
+              </tr>
+              <tr className="bg-[#E8DAC2]/85 dark:bg-[#001b3a] text-[#002147] dark:text-[#D2B48C] border-b border-[#D2B48C]/40 text-[10.5px] font-extrabold tracking-wide uppercase">
+                {MONTH_SHORTS_ID.map((m) => (
+                  <th
+                    key={m}
+                    className="py-2 px-1.5 w-[44px] xl:w-[48px] min-w-[42px] text-center border-r border-[#D2B48C]/25 last:border-r-0"
+                  >
+                    {m}
+                  </th>
+                ))}
               </tr>
             </thead>
 
@@ -285,18 +296,20 @@ export function AnnualProgramView() {
             <tbody className="divide-y divide-[#D2B48C]/25 dark:divide-slate-800 text-xs">
               {filteredCategories.map((cat) => (
                 <React.Fragment key={cat.id}>
-                  {/* Category Banner Row (Clean Title without duplicate Add buttons) */}
+                  {/* Category Banner Row: Icon in NO column (replacing Roman numeral), Clean Title in Program column */}
                   <tr className="bg-[#FAF3E8] dark:bg-[#001e42] font-black text-[#002147] dark:text-[#D2B48C] border-y border-[#D2B48C]/40">
-                    <td className="py-2.5 px-3 text-center font-bold font-mono border-r border-[#D2B48C]/30 bg-[#F2E5D0] dark:bg-[#002754]">
-                      {cat.roman}
-                    </td>
-                    <td colSpan={13} className="py-2.5 px-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-lg bg-[#002147] text-[#D2B48C] flex items-center justify-center text-xs">
-                          {getCategoryIcon(cat.id, 'w-3.5 h-3.5')}
-                        </div>
-                        <span className="text-[13px] tracking-tight">{cat.title}</span>
+                    <td className="py-2.5 px-3 text-center border-r border-[#D2B48C]/30 bg-[#F2E5D0] dark:bg-[#002754] align-middle">
+                      <div
+                        title={`Bidang ${cat.roman}: ${cat.title}`}
+                        className="mx-auto w-7 h-7 rounded-xl bg-[#002147] text-[#D2B48C] border border-[#D2B48C]/40 flex items-center justify-center shadow-xs"
+                      >
+                        {getCategoryIcon(cat.id, 'w-3.5 h-3.5')}
                       </div>
+                    </td>
+                    <td colSpan={13} className="py-2.5 px-4 align-middle">
+                      <span className="text-[13px] font-extrabold tracking-tight text-[#002147] dark:text-[#D2B48C]">
+                        {cat.title}
+                      </span>
                     </td>
                   </tr>
 
@@ -307,8 +320,8 @@ export function AnnualProgramView() {
                       onClick={() => openEditModal(cat.id, item)}
                       className="hover:bg-[#FAF6F0]/80 dark:hover:bg-[#002147]/50 transition-colors cursor-pointer group"
                     >
-                      {/* Sub-number */}
-                      <td className="py-3 px-3 text-center font-semibold text-slate-500 dark:text-slate-400 border-r border-[#D2B48C]/20 bg-slate-50/50 dark:bg-slate-900/30 font-mono">
+                      {/* Sub-number directly below Category Icon */}
+                      <td className="py-3 px-3 w-14 text-center font-bold text-[#002147]/75 dark:text-slate-300 border-r border-[#D2B48C]/20 bg-slate-50/50 dark:bg-slate-900/30 font-mono align-middle">
                         {item.subNo}
                       </td>
 
@@ -334,7 +347,7 @@ export function AnnualProgramView() {
                       {item.annualSchedule.map((isActive, mIdx) => (
                         <td
                           key={mIdx}
-                          className="p-1 text-center border-r border-[#D2B48C]/15 last:border-r-0 align-middle"
+                          className="py-2 px-1.5 w-[44px] xl:w-[48px] min-w-[42px] text-center border-r border-[#D2B48C]/15 last:border-r-0 align-middle"
                         >
                           {isActive ? (
                             <div

@@ -314,7 +314,7 @@ export function DashboardView() {
   };
 
   return (
-    <div className="w-full flex-1 min-h-0 px-3 sm:px-4 lg:px-5 pb-3 pt-0.5 flex flex-col justify-between gap-3.5 lg:overflow-hidden">
+    <div className="w-full flex-1 min-h-0 px-3 sm:px-4 lg:px-5 pb-3 pt-2.5 sm:pt-3.5 lg:pt-4 flex flex-col justify-between gap-3.5 lg:overflow-hidden">
       {/* =====================================================================
           SECTION 1: HERO HEADER & PERIOD FILTER CONTROLS
          ===================================================================== */}
@@ -640,10 +640,10 @@ export function DashboardView() {
               {/* Officer Name & Frosted Pill Badge */}
               <div className="relative z-30 flex items-end justify-between gap-2">
                 <div>
-                  <div className="text-base font-bold text-white tracking-tight leading-snug drop-shadow-xs">
+                  <div className="text-[14px] font-bold text-white tracking-tight leading-snug drop-shadow-xs">
                     Fitria Wulandari, A.M.KL
                   </div>
-                  <div className="text-[11px] font-semibold text-[#D2B48C]">
+                  <div className="text-[12px] font-semibold text-[#D2B48C]">
                     Sanitarian RSAM
                   </div>
                 </div>
@@ -658,9 +658,9 @@ export function DashboardView() {
           </div>
 
           {/* Card 1B: Expandable Quick Menu Card covering all modules */}
-          <div className="rounded-[26px] bg-gradient-to-br from-white/95 via-white/90 to-[#FAF6F0]/90 dark:from-[#001835]/95 dark:via-[#00152E]/90 dark:to-[#001835]/95 backdrop-blur-sm border-[1.5px] border-[#D2B48C]/45 dark:border-[#D2B48C]/20 shadow-[0_12px_32px_rgba(0,33,71,0.07),inset_0_1px_2px_rgba(255,255,255,0.95)] px-4 py-3.5 flex-1 min-h-0 flex flex-col justify-between divide-y divide-[#D2B48C]/35 dark:divide-slate-800 overflow-hidden">
+          <div className="rounded-[26px] bg-gradient-to-br from-white/95 via-white/90 to-[#FAF6F0]/90 dark:from-[#001835]/95 dark:via-[#00152E]/90 dark:to-[#001835]/95 backdrop-blur-sm border-[1.5px] border-[#D2B48C]/45 dark:border-[#D2B48C]/20 shadow-[0_12px_32px_rgba(0,33,71,0.07),inset_0_1px_2px_rgba(255,255,255,0.95)] px-4 py-2.5 flex-1 min-h-0 flex flex-col justify-between divide-y divide-[#D2B48C]/35 dark:divide-slate-800 overflow-hidden">
             {/* Row 1: Monitoring Lingkungan */}
-            <div className="py-1.5 first:pt-0">
+            <div className="py-1 first:pt-0">
               <button
                 type="button"
                 onClick={() =>
@@ -676,7 +676,7 @@ export function DashboardView() {
                 />
               </button>
               {openAccordion === 'monitoring' && (
-                <div className="pt-1.5 pb-0.5 grid grid-cols-3 gap-1">
+                <div className="pt-1 pb-0.5 grid grid-cols-3 gap-1">
                   <Link
                     href="/monitoring/kualitas-air"
                     className="px-2 py-1 rounded-lg bg-[#F5EDE0] dark:bg-[#002147] text-[10px] font-semibold text-[#002147] dark:text-[#D2B48C] hover:bg-[#EADBC8] truncate text-center"
@@ -717,44 +717,8 @@ export function DashboardView() {
               )}
             </div>
 
-            {/* Row 2: Program Kerja Kesling (Tahunan & Bulanan) */}
-            <div className="py-1.5">
-              <button
-                type="button"
-                onClick={() =>
-                  setOpenAccordion(openAccordion === 'program' ? '' : 'program')
-                }
-                className="w-full flex items-center justify-between text-left text-xs font-semibold text-[#002147] dark:text-slate-200 hover:text-[#002147] dark:hover:text-[#D2B48C] py-0.5 cursor-pointer"
-              >
-                <span>Program Kerja Kesling (2)</span>
-                <ChevronDown
-                  className={`w-3.5 h-3.5 text-slate-400 transition-transform ${
-                    openAccordion === 'program' ? 'rotate-180' : ''
-                  }`}
-                />
-              </button>
-              {openAccordion === 'program' && (
-                <div className="pt-1.5 pb-0.5 grid grid-cols-2 gap-1.5">
-                  <Link
-                    href="/program-kerja/tahunan"
-                    className="px-2.5 py-1.5 rounded-lg bg-[#F5EDE0] dark:bg-[#002147] text-[10px] font-bold text-[#002147] dark:text-[#D2B48C] hover:bg-[#EADBC8] truncate text-center flex items-center justify-center gap-1"
-                  >
-                    <CalendarRange className="w-3 h-3 shrink-0" />
-                    <span>Program Tahunan</span>
-                  </Link>
-                  <Link
-                    href="/program-kerja/bulanan"
-                    className="px-2.5 py-1.5 rounded-lg bg-[#F5EDE0] dark:bg-[#002147] text-[10px] font-bold text-[#002147] dark:text-[#D2B48C] hover:bg-[#EADBC8] truncate text-center flex items-center justify-center gap-1"
-                  >
-                    <CalendarDays className="w-3 h-3 shrink-0" />
-                    <span>Program Bulanan</span>
-                  </Link>
-                </div>
-              )}
-            </div>
-
-            {/* Row 3: Instrumen Supervisi */}
-            <div className="py-1.5">
+            {/* Row 2: Instrumen Supervisi */}
+            <div className="py-1">
               <button
                 type="button"
                 onClick={() =>
@@ -762,7 +726,7 @@ export function DashboardView() {
                 }
                 className="w-full flex items-center justify-between text-left text-xs font-semibold text-[#002147] dark:text-slate-200 hover:text-[#002147] py-0.5 cursor-pointer"
               >
-                <span>Instrumen Supervisi</span>
+                <span>Instrumen Supervisi (5)</span>
                 <ChevronDown
                   className={`w-3.5 h-3.5 text-slate-400 transition-transform ${
                     openAccordion === 'instrumen' ? 'rotate-180' : ''
@@ -770,33 +734,49 @@ export function DashboardView() {
                 />
               </button>
               {openAccordion === 'instrumen' && (
-                <div className="pt-1.5 pb-0.5 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-9 h-7 rounded-lg bg-[#002147] flex items-center justify-center text-[#D2B48C] shrink-0 border border-[#D2B48C]/40">
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-[11px] font-semibold text-[#002147] dark:text-white truncate">
-                        Inspeksi Ruangan & Unit
-                      </div>
-                      <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
-                        20 Unit Instalasi RSUD Al-Mulk
-                      </div>
-                    </div>
-                  </div>
+                <div className="pt-1 pb-0.5 grid grid-cols-3 gap-1">
                   <Link
                     href="/supervisi/baru"
-                    aria-label="Buka Formulir Supervisi"
-                    className="p-1 rounded-full text-slate-400 hover:text-[#002147] hover:bg-[#F5EDE0]"
+                    className="px-2 py-1 rounded-lg bg-[#F5EDE0] dark:bg-[#002147] text-[10px] font-semibold text-[#002147] dark:text-[#D2B48C] hover:bg-[#EADBC8] truncate text-center"
                   >
-                    <MoreVertical className="w-3.5 h-3.5" />
+                    Rawat Jalan
+                  </Link>
+                  <Link
+                    href="/supervisi/igd"
+                    className="px-2 py-1 rounded-lg bg-[#F5EDE0] dark:bg-[#002147] text-[10px] font-semibold text-[#002147] dark:text-[#D2B48C] hover:bg-[#EADBC8] truncate text-center"
+                  >
+                    Ruang IGD
+                  </Link>
+                  <Link
+                    href="/supervisi/ranap"
+                    className="px-2 py-1 rounded-lg bg-[#F5EDE0] dark:bg-[#002147] text-[10px] font-semibold text-[#002147] dark:text-[#D2B48C] hover:bg-[#EADBC8] truncate text-center"
+                  >
+                    Ruang Ranap
+                  </Link>
+                  <Link
+                    href="/supervisi/icu-ibs"
+                    className="px-2 py-1 rounded-lg bg-[#F5EDE0] dark:bg-[#002147] text-[10px] font-semibold text-[#002147] dark:text-[#D2B48C] hover:bg-[#EADBC8] truncate text-center"
+                  >
+                    ICU & IBS
+                  </Link>
+                  <Link
+                    href="/supervisi/evaluasi"
+                    className="px-2 py-1 rounded-lg bg-[#F5EDE0] dark:bg-[#002147] text-[10px] font-semibold text-[#002147] dark:text-[#D2B48C] hover:bg-[#EADBC8] truncate text-center"
+                  >
+                    Supervisi
+                  </Link>
+                  <Link
+                    href="/supervisi/riwayat"
+                    className="px-2 py-1 rounded-lg bg-[#002147] text-[10px] font-semibold text-[#D2B48C] hover:bg-[#003166] truncate text-center"
+                  >
+                    Tabel Rekap
                   </Link>
                 </div>
               )}
             </div>
 
             {/* Row 3: Grafik & Analisis */}
-            <div className="py-1.5">
+            <div className="py-1">
               <button
                 type="button"
                 onClick={() => setOpenAccordion(openAccordion === 'analisis' ? '' : 'analisis')}
@@ -810,7 +790,7 @@ export function DashboardView() {
                 />
               </button>
               {openAccordion === 'analisis' && (
-                <div className="pt-1.5 pb-0.5 flex flex-wrap gap-1">
+                <div className="pt-1 pb-0.5 flex flex-wrap gap-1">
                   <Link
                     href="/analisis/kegiatan"
                     className="px-2.5 py-1 rounded-lg bg-[#F5EDE0] dark:bg-[#002147] text-[10px] font-semibold text-[#002147] dark:text-[#D2B48C]"
@@ -834,7 +814,7 @@ export function DashboardView() {
             </div>
 
             {/* Row 4: Rekapitulasi Laporan */}
-            <div className="py-1.5 last:pb-0">
+            <div className="py-1 last:pb-0">
               <button
                 type="button"
                 onClick={() => setOpenAccordion(openAccordion === 'laporan' ? '' : 'laporan')}
@@ -848,7 +828,7 @@ export function DashboardView() {
                 />
               </button>
               {openAccordion === 'laporan' && (
-                <div className="pt-1.5 pb-0.5 flex flex-wrap gap-1">
+                <div className="pt-1 pb-0.5 flex flex-wrap gap-1">
                   <Link
                     href="/laporan/bulanan"
                     className="px-2.5 py-1 rounded-full bg-[#F5EDE0] dark:bg-[#002147] text-[10px] font-semibold text-[#002147] dark:text-[#D2B48C]"
@@ -885,7 +865,7 @@ export function DashboardView() {
             <div className="h-[230px] xl:h-[245px] rounded-[26px] bg-gradient-to-br from-white/95 via-white/90 to-[#FAF6F0]/90 dark:from-[#001835]/95 dark:via-[#00152E]/90 dark:to-[#001835]/95 backdrop-blur-sm border-[1.5px] border-[#D2B48C]/45 dark:border-[#D2B48C]/20 shadow-[0_12px_32px_rgba(0,33,71,0.07),inset_0_1px_2px_rgba(255,255,255,0.95)] p-5 flex flex-col justify-between">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <h2 className="text-base font-semibold text-[#002147] dark:text-white tracking-tight">
+                  <h2 className="text-base font-normal text-[#002147] dark:text-white tracking-tight">
                     Capaian Monitoring
                   </h2>
                   <div className="mt-1 flex items-center gap-2 min-w-0">
@@ -1021,7 +1001,7 @@ export function DashboardView() {
           </div>
 
           {/* Bottom Wide Card: Interactive Realtime Monitoring Trend Chart + Module Selector */}
-          <div className="rounded-[26px] bg-gradient-to-br from-white/95 via-white/90 to-[#FAF6F0]/90 dark:from-[#001835]/95 dark:via-[#00152E]/90 dark:to-[#001835]/95 backdrop-blur-sm border-[1.5px] border-[#D2B48C]/45 dark:border-[#D2B48C]/20 shadow-[0_12px_32px_rgba(0,33,71,0.07),inset_0_1px_2px_rgba(255,255,255,0.95)] p-4 xl:p-5 flex-1 min-h-0 flex flex-col justify-between gap-2.5">
+          <div className="rounded-[26px] bg-gradient-to-br from-white/95 via-white/90 to-[#FAF6F0]/90 dark:from-[#001835]/95 dark:via-[#00152E]/90 dark:to-[#001835]/95 backdrop-blur-sm border-[1.5px] border-[#D2B48C]/45 dark:border-[#D2B48C]/20 shadow-[0_12px_32px_rgba(0,33,71,0.07),inset_0_1px_2px_rgba(255,255,255,0.95)] p-3.5 xl:p-4 flex-1 min-h-0 flex flex-col justify-between gap-2">
             {/* Top Header: Only Title & Subtitle (Center Aligned) */}
             <div className="min-w-0 shrink-0 text-center">
               <h2 className="text-xs sm:text-sm font-bold text-[#002147] dark:text-white truncate">
@@ -1043,11 +1023,11 @@ export function DashboardView() {
               const range = Math.max(1, maxVal - minVal);
 
               const svgW = 640;
-              const svgH = 116;
+              const svgH = 104;
               const padL = 28;
               const padR = 24;
-              const padT = 20;
-              const padB = 22;
+              const padT = 18;
+              const padB = 20;
               const plotW = svgW - padL - padR;
               const plotH = svgH - padT - padB;
 
@@ -1083,10 +1063,10 @@ export function DashboardView() {
               const targetY = toY(activeModuleSummary.targetValue);
 
               return (
-                <div className="relative flex-1 min-h-[112px] flex flex-col justify-center bg-[#FAF6F0]/60 dark:bg-[#001226]/60 rounded-2xl border border-[#D2B48C]/35 dark:border-slate-800/80 px-3 py-2 overflow-hidden">
+                <div className="relative flex-1 min-h-[96px] flex flex-col justify-center bg-[#FAF6F0]/60 dark:bg-[#001226]/60 rounded-2xl border border-[#D2B48C]/35 dark:border-slate-800/80 px-3 py-1.5 overflow-hidden">
                   <svg
                     viewBox={`0 0 ${svgW} ${svgH}`}
-                    className="w-full h-[104px] xl:h-[118px] overflow-visible select-none"
+                    className="w-full h-[92px] xl:h-[104px] overflow-visible select-none"
                     role="img"
                     aria-label={`Grafik ${activeModuleSummary.title} periode ${activePeriodLabel}`}
                   >
@@ -1138,10 +1118,10 @@ export function DashboardView() {
                         transition={{ duration: 0.45, ease: 'easeOut' }}
                         d={linePath}
                         fill="none"
-                        stroke="#002147"
                         strokeWidth="2.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
+                        className="stroke-[#002147] dark:stroke-[#F5EDE0]"
                       />
                     )}
 
@@ -1173,9 +1153,12 @@ export function DashboardView() {
                             cx={c.x}
                             cy={c.y}
                             r={isHovered ? 5 : 3.6}
-                            fill={isHovered ? '#D2B48C' : '#002147'}
-                            stroke="#FAF6F0"
                             strokeWidth="1.8"
+                            className={
+                              isHovered
+                                ? 'fill-[#D2B48C] stroke-[#FAF6F0] dark:fill-[#FAF6F0] dark:stroke-[#002147]'
+                                : 'fill-[#002147] stroke-[#FAF6F0] dark:fill-[#001835] dark:stroke-[#F5EDE0]'
+                            }
                           />
 
                           {/* Numeric Value Above Point */}
@@ -1274,7 +1257,7 @@ export function DashboardView() {
                       setSelectedModule(m.key);
                       setHoveredPointIdx(null);
                     }}
-                    className={`group rounded-xl py-1.5 px-2 border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                    className={`group rounded-xl py-1 px-2 border text-left transition-all cursor-pointer flex flex-col justify-between ${
                       isSelected
                         ? 'bg-[#002147] text-white border-[#002147] dark:border-[#D2B48C] shadow-xs'
                         : 'bg-[#FAF6F0]/90 dark:bg-[#002147]/40 text-[#002147] dark:text-slate-200 border-[#D2B48C]/45 dark:border-slate-700 hover:bg-[#F5EDE0] dark:hover:bg-[#002147]/80'
@@ -1363,7 +1346,7 @@ export function DashboardView() {
           </div>
 
           {/* Card 4B: Deep Oxford Blue (#002147) Checklist Card with Tan (#D2B48C) Accents */}
-          <div className="rounded-[26px] bg-gradient-to-br from-[#002147] via-[#001B3B] to-[#00132B] backdrop-blur-2xl border-[1.5px] border-[#D2B48C]/45 text-white p-4 xl:p-5 shadow-[0_18px_42px_rgba(0,33,71,0.28),inset_0_1px_2px_rgba(255,255,255,0.25)] flex-1 min-h-0 flex flex-col justify-between space-y-3">
+          <div className="rounded-[26px] bg-gradient-to-br from-[#002147] via-[#001B3B] to-[#00132B] backdrop-blur-2xl border-[1.5px] border-[#D2B48C]/45 text-white p-3.5 xl:p-4 shadow-[0_18px_42px_rgba(0,33,71,0.28),inset_0_1px_2px_rgba(255,255,255,0.25)] flex-1 min-h-0 flex flex-col justify-between space-y-2">
             <div className="flex items-baseline justify-between shrink-0">
               <div>
                 <h2 className="text-base font-bold text-[#D2B48C] tracking-tight">
@@ -1378,7 +1361,7 @@ export function DashboardView() {
               </span>
             </div>
 
-            <div className="space-y-2 flex-1 flex flex-col justify-around min-h-0">
+            <div className="space-y-1.5 flex-1 flex flex-col justify-around min-h-0">
               {checklist.map((item) => (
                 <div
                   key={item.id}
@@ -1389,7 +1372,7 @@ export function DashboardView() {
                     className="flex items-center gap-2.5 min-w-0 flex-1"
                   >
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                      className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-colors ${
                         item.completed
                           ? 'bg-white/10 text-[#D2B48C]'
                           : 'bg-white/15 text-[#D2B48C] group-hover:bg-[#D2B48C] group-hover:text-[#002147]'
@@ -1399,7 +1382,7 @@ export function DashboardView() {
                     </div>
                     <div className="min-w-0">
                       <div
-                        className={`text-[11px] font-medium truncate transition-colors ${
+                        className={`text-[11px] font-medium truncate transition-colors leading-tight ${
                           item.completed
                             ? 'line-through text-white/55'
                             : 'text-white group-hover:text-[#D2B48C]'
@@ -1407,7 +1390,7 @@ export function DashboardView() {
                       >
                         {item.title}
                       </div>
-                      <div className="text-[10px] text-[#D2B48C]/75 truncate">
+                      <div className="text-[10px] text-[#D2B48C]/75 truncate leading-tight">
                         {item.subtitle}
                       </div>
                     </div>

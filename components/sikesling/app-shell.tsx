@@ -19,6 +19,7 @@ import {
   FileSpreadsheet,
   FolderArchive,
   LayoutDashboard,
+  LogOut,
   Menu,
   Moon,
   Search,
@@ -32,6 +33,12 @@ import { MAIN_NAVIGATION, MainMenuItem } from '@/lib/navigation';
 import { UserRole } from '@/lib/domain';
 import { useApp } from '@/components/sikesling/app-provider';
 import { PWAInstallButton, OfflineIndicator } from '@/components/sikesling/pwa-elements';
+import { WelcomeLoginGate } from '@/components/sikesling/welcome-login-gate';
+import {
+  AuthFlowStage,
+  readAuthStageFromStorage,
+  writeAuthStageToStorage,
+} from '@/lib/auth-gate';
 
 function getMenuIcon(iconName: string, className = 'w-4 h-4') {
   switch (iconName) {
@@ -92,6 +99,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [showRoleMenu, setShowRoleMenu] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileBounceTick, setMobileBounceTick] = useState(0);
+  const [authStage, setAuthStage] = useState<AuthFlowStage>('welcome');
+
+  useEffect(() => {
+    const stored = readAuthStageFromStorage();
+    if (stored !== 'welcome') {
+      setAuthStage(stored);
+    }
+  }, []);
+
+  const handleSetAuthStage = (nextStage: AuthFlowStage) => {
+    setAuthStage(nextStage);
+    writeAuthStageToStorage(nextStage);
+  };
 
   const navContainerRef = useRef<HTMLDivElement>(null);
 
@@ -144,13 +164,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const isMenuActive = (menu: MainMenuItem) => {
     if (pathname === menu.href) return true;
+    if (pathname === '/' && menu.href === '/dashboard') return true;
     if (menu.subItems?.some((s) => pathname.startsWith(s.href))) return true;
     if (pathname.startsWith(menu.href) && menu.href !== '/dashboard') return true;
     return false;
   };
 
-  // Filter out Operasional, Arsip (dokumentasi), and Master Data per user request
-  const hiddenMenuIds = new Set(['operasional', 'dokumentasi', 'master-data']);
+  // Filter out Program Kerja, Operasional, Arsip (dokumentasi), and Master Data per user request
+  const hiddenMenuIds = new Set(['program-kerja', 'operasional', 'dokumentasi', 'master-data']);
   const visibleNavigation = MAIN_NAVIGATION.filter((m) => !hiddenMenuIds.has(m.id));
 
   // Separate primary capsule menus and Settings pill
@@ -270,6 +291,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     );
   };
 
+  if (authStage !== 'authenticated') {
+    return (
+      <WelcomeLoginGate
+        stage={authStage}
+        onEnterLogin={() => handleSetAuthStage('login')}
+        onBackToWelcome={() => handleSetAuthStage('welcome')}
+        onLoginSuccess={() => handleSetAuthStage('authenticated')}
+      />
+    );
+  }
+
   return (
     <div className="relative min-h-screen flex flex-col bg-gradient-to-br from-[#DFC5A2] via-[#F2E8D9] to-[#D2B48C] dark:from-[#001024] dark:via-[#001835] dark:to-[#001228] text-[#002147] dark:text-slate-100 selection:bg-[#002147] selection:text-[#D2B48C]">
       {/* Ambient Light Refraction Orbs Behind Glass Frame (Oxford & Tan Palette) */}
@@ -285,7 +317,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* Outer Framed Container with High-Performance Luminous White & Cream Glass Surface */}
       <div
         className={`relative z-10 flex-1 flex flex-col w-full max-w-[1920px] mx-auto px-2 sm:px-2.5 lg:px-3 pt-2 sm:pt-2.5 lg:pt-2.5 pb-24 lg:pb-2.5 ${
-          pathname === '/dashboard' ? 'lg:h-screen lg:max-h-screen lg:overflow-hidden' : ''
+          pathname === '/dashboard' || pathname === '/' ? 'lg:h-screen lg:max-h-screen lg:overflow-hidden' : ''
         }`}
       >
         <div className="relative flex-1 min-h-0 flex flex-col rounded-[28px] sm:rounded-[34px] bg-gradient-to-br from-white/85 via-[#FAF6F0]/75 to-white/85 dark:from-[#001E42]/80 dark:via-[#001630]/75 dark:to-[#001B3B]/80 border-[1.5px] border-white/95 dark:border-[#D2B48C]/20 shadow-[0_20px_60px_rgba(0,33,71,0.14),inset_0_1px_2px_rgba(255,255,255,0.95)]">
@@ -508,6 +540,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         </Link>
                       </div>
                       <PWAInstallButton compact />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowRoleMenu(false);
+                          handleSetAuthStage('welcome');
+                        }}
+                        className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 text-xs font-bold transition-colors cursor-pointer"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>Keluar ke Welcome Screen</span>
+                      </button>
                     </div>
                   </div>
                 )}

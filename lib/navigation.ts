@@ -269,83 +269,45 @@ export const MAIN_NAVIGATION: MainMenuItem[] = [
     iconName: 'ShieldCheck',
     group: 'Operasional & Lapangan',
     description:
-      'Modul prioritas untuk pelaksanaan inspeksi/supervisi lapangan menggunakan smartphone atau tablet beserta dokumentasi foto.',
-    status: 'UI Ready',
+      'Modul Supervisi Ruangan & Kesling (10 Card Ruangan: Rawat Jalan, IGD, Ranap ICU & IBS, Ranap Usman, Ranap Aisyah, Ranap Fatimah, Ranap Khadijah, Manajemen, Halaman, dan Supervisi) beserta Form Input dan Tabel Rekap Supervisi.',
+    status: 'Functional',
     subItems: [
       {
         id: 'supervisi-dashboard',
         title: 'Dashboard Supervisi',
         href: '/supervisi/dashboard',
         description:
-          'Ringkasan pelaksanaan supervisi lapangan, cakupan ruangan, dan status temuan hasil supervisi.',
-        status: 'UI Ready',
+          'Pilih salah satu dari 10 card ruangan (Rawat Jalan, IGD, Ranap ICU dan IBS, Ranap Usman, Ranap Aisyah, Ranap Fatimah, Ranap Khadijah, Manajemen, Halaman, atau Supervisi) untuk membuka form penginputan data supervisi.',
+        status: 'Functional',
         plannedFeatures: [
-          'Ringkasan jumlah supervisi per instalasi/unit',
-          'Daftar supervisi terbaru dan temuan prioritas',
-          'Akses cepat memulai supervisi lapangan dari perangkat mobile',
+          '10 Card pilihan ruangan dan modul supervisi dengan ilustrasi 3D',
+          'Form penginputan berurut ke bawah (Tanggal, Supervisor, Unit, Nama Petugas, Kerapihan, Prosedur, Alat & Bahan, K3, Sikap & Perilaku, Skor 1-4, Temuan, Rekomendasi, Dokumentasi Foto, & Tanda Tangan)',
+          'Integrasi otomatis penyimpanan data ke Tabel Rekap Supervisi',
         ],
       },
       {
-        id: 'supervisi-baru',
-        title: 'Mulai Supervisi',
-        href: '/supervisi/baru',
+        id: 'supervisi-evaluasi',
+        title: 'Input Data Supervisi',
+        href: '/supervisi/evaluasi',
         description:
-          'Formulir generik supervisi lapangan ramah layar sentuh dengan dukungan upload dan preview dokumentasi foto.',
-        status: 'UI Ready',
+          'Form penginputan data supervisi berurut ke bawah beserta penilaian skor 1–4, dokumentasi foto temuan/perbaikan, dan tanda tangan.',
+        status: 'Functional',
         plannedFeatures: [
-          'Pemilihan tanggal, petugas, unit/ruangan, dan kategori supervisi',
-          'Pencatatan uraian pemeriksaan, temuan lapangan, dan rekomendasi tindak lanjut',
-          'Upload foto dokumentasi (kamera/galeri) dengan kompresi dan validasi ukuran/tipe',
-          'Integrasi template checklist dinamis pada tahap pengembangan berikutnya',
+          'Input Tanggal, Supervisor, Unit, dan Nama Petugas',
+          'Penilaian Kerapihan, Prosedur, Alat & Bahan, K3, dan Sikap & Perilaku (Skor 1-4)',
+          'Input Temuan, Rekomendasi, Dokumentasi Foto, dan Tanda Tangan',
         ],
       },
       {
         id: 'supervisi-riwayat',
-        title: 'Riwayat Supervisi',
+        title: 'Tabel Rekap Supervisi',
         href: '/supervisi/riwayat',
         description:
-          'Daftar seluruh kegiatan supervisi lingkungan yang telah dicatat beserta filter unit dan kategori.',
-        status: 'UI Ready',
+          'Tabel rekapan hasil input data supervisi ruangan beserta skor, kategori, temuan, rekomendasi, gambar dokumentasi, dan tanda tangan.',
+        status: 'Functional',
         plannedFeatures: [
-          'Tabel riwayat supervisi dengan filter tanggal, ruangan, petugas, dan status temuan',
-          'Tampilan detail hasil supervisi dan foto dokumentasi',
-        ],
-      },
-      {
-        id: 'supervisi-dokumentasi',
-        title: 'Dokumentasi Supervisi',
-        href: '/supervisi/dokumentasi',
-        description:
-          'Galeri terstruktur foto-foto hasil supervisi lapangan lengkap dengan keterangan dan lokasi ruangan.',
-        status: 'UI Ready',
-        plannedFeatures: [
-          'Tampilan grid foto dokumentasi supervisi beserta metadata ruangan dan tanggal',
-          'Filter berdasarkan unit/ruangan dan kategori pemeriksaan',
-        ],
-      },
-      {
-        id: 'supervisi-template',
-        title: 'Template Checklist',
-        href: '/supervisi/template',
-        description:
-          'Wadah pengelolaan instrumen dan daftar periksa (checklist) supervisi per jenis ruangan.',
-        status: 'Placeholder',
-        plannedFeatures: [
-          'Penyusunan grup pertanyaan checklist per jenis ruangan atau instalasi',
-          'Konfigurasi tipe jawaban (Ya/Tidak, Sesuai/Tidak Sesuai, Skala, Catatan)',
-          'Versi instrumen checklist dan status aktif/nonaktif',
-        ],
-      },
-      {
-        id: 'supervisi-rekap',
-        title: 'Hasil dan Rekap Supervisi',
-        href: '/supervisi/rekap',
-        description:
-          'Rekapitulasi hasil supervisi per unit/instalasi dan analisis temuan berulang.',
-        status: 'Placeholder',
-        plannedFeatures: [
-          'Matriks rekapitulasi supervisi per bulan dan per instalasi',
-          'Integrasi otomatis ke modul Laporan Supervisi dan Tindak Lanjut Temuan',
+          'Tabel rekap laporan supervisi ruangan lengkap dengan foto dokumentasi & tanda tangan',
+          'Navigasi tab per ruangan (Rawat Jalan, IGD, Ranap ICU & IBS, Usman, Aisyah, Fatimah, Khadijah, Manajemen, Halaman, Supervisi)',
         ],
       },
     ],
