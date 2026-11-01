@@ -10,10 +10,10 @@ import {
   BarChart3,
   CheckCircle2,
   ClipboardCheck,
+  Clock,
   Eye,
   EyeOff,
   Lock,
-  RotateCcw,
   ShieldCheck,
   Sparkles,
   TrendingUp,
@@ -45,6 +45,44 @@ export function WelcomeLoginGate({
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [realtimeClock, setRealtimeClock] = useState<{
+    time: string;
+    date: string;
+  }>({
+    time: '08:00:00',
+    date: 'WIB • Live',
+  });
+
+  useEffect(() => {
+    const updateClock = () => {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+      const monthNames = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'Mei',
+        'Jun',
+        'Jul',
+        'Agu',
+        'Sep',
+        'Okt',
+        'Nov',
+        'Des',
+      ];
+      setRealtimeClock({
+        time: `${hours}:${minutes}:${seconds}`,
+        date: `${dayNames[now.getDay()]}, ${now.getDate()} ${monthNames[now.getMonth()]}`,
+      });
+    };
+    updateClock();
+    const timer = setInterval(updateClock, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (stage !== 'welcome') return;
@@ -70,13 +108,6 @@ export function WelcomeLoginGate({
     }
   };
 
-  const replayVideo = () => {
-    const vid = videoRef.current;
-    if (!vid) return;
-    vid.currentTime = 0;
-    vid.play().catch(() => {});
-  };
-
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
@@ -90,9 +121,9 @@ export function WelcomeLoginGate({
 
   return (
     <div
-      className={`relative h-dvh max-h-dvh w-full flex items-center justify-center bg-gradient-to-br from-[#001226] via-[#002147] to-[#082B54] overflow-hidden select-none ${
+      className={`relative min-h-screen h-screen h-dvh max-h-dvh w-full flex items-center justify-center bg-gradient-to-br from-[#001226] via-[#002147] to-[#082B54] overflow-hidden select-none ${
         stage === 'welcome'
-          ? 'p-2.5 sm:p-3.5 md:p-4 lg:p-5'
+          ? 'p-1.5 sm:p-3.5 md:p-4 lg:p-5'
           : 'p-1.5 sm:p-3.5 lg:p-5'
       }`}
     >
@@ -106,191 +137,255 @@ export function WelcomeLoginGate({
       </div>
 
       {/* =====================================================================
-          STAGE 1: WELCOME SCREEN (CARD BERBINGKAI DENGAN MARGIN TIPIS PROPORSIONAL,
-          TOMBOL NAIK 3 BARIS, TANPA ICON PANAH KIRI, EFEK PANAH KANAN MAJU-MUNDUR HALUS)
+          STAGE 1: WELCOME SCREEN
+          - Mobile / Portrait: Unified Full-Viewport Executive Split Card (Navy Media Stage + Warm Ivory Summary Sheet)
+          - Tablet / Desktop: Framed Full-Canvas Video Card with Compact Edge Margin & Animated CTA
          ===================================================================== */}
       {stage === 'welcome' && (
         <motion.div
           key="welcome-screen"
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
-          className="relative z-10 w-full h-full flex flex-col items-center justify-center gap-3.5 sm:gap-0"
+          className="relative z-10 w-full h-full max-h-[calc(100dvh-0.75rem)] sm:max-h-none rounded-[26px] sm:rounded-none border-2 sm:border-0 border-white/95 bg-gradient-to-b from-[#082B54] via-[#002147] to-[#00152E] sm:bg-none shadow-[0_28px_80px_rgba(0,0,0,0.55)] sm:shadow-none overflow-hidden flex flex-col justify-between"
         >
-          {/* Portrait / Mobile Top Header Pill (Only visible on portrait/mobile screens) */}
-          <div className="flex sm:hidden w-full items-center justify-between px-3.5 py-2.5 rounded-2xl bg-white/[0.08] backdrop-blur-md border border-[#D2B48C]/40 shrink-0">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-xl bg-[#D2B48C] text-[#002147] flex items-center justify-center font-extrabold text-xs shadow-xs">
-                <ShieldCheck className="w-4 h-4" />
+          {/* Portrait / Mobile Upper Navy Header & Media Wrapper */}
+          <div className="w-full sm:h-full sm:flex-1 flex flex-col shrink-0 min-h-0">
+            {/* Mobile Institutional Top Bar (Only on Mobile Portrait) */}
+            <div className="flex sm:hidden w-full items-center justify-between px-3.5 pt-3 pb-2 border-b border-white/10 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="relative w-8 h-8 shrink-0 flex items-center justify-center">
+                  <Image
+                    src="/assets/aistudio/logo-1_06649eb7.png"
+                    alt="Logo RSUD Al-Mulk"
+                    width={32}
+                    height={32}
+                    className="object-contain drop-shadow-sm"
+                    referrerPolicy="no-referrer"
+                    priority
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[12.5px] font-extrabold uppercase tracking-wide text-[#FAF6F0] leading-tight font-sans">
+                    UOBK RSUD AL-MULK
+                  </span>
+                  <span className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-[#D2B48C] leading-none mt-0.5 font-sans">
+                    KOTA SUKABUMI
+                  </span>
+                </div>
               </div>
-              <div>
-                <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#D2B48C]">
-                  UOBK RSUD AL-MULK
-                </div>
-                <div className="text-xs font-extrabold text-white leading-tight">
-                  SIKESLING RSAM
-                </div>
-              </div>
-            </div>
 
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={toggleAudio}
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-[#002147]/90 border border-[#D2B48C]/60 text-[#FAF6F0] text-[10px] font-bold"
-              >
-                {isMuted ? (
-                  <>
-                    <VolumeX className="w-3 h-3 text-[#D2B48C]" />
-                    <span>Suara</span>
-                  </>
-                ) : (
-                  <>
-                    <Volume2 className="w-3 h-3 text-emerald-400" />
-                    <span>Aktif</span>
-                  </>
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={replayVideo}
-                aria-label="Putar Ulang Video"
-                className="p-1.5 rounded-full bg-[#002147]/90 border border-[#D2B48C]/60 text-[#D2B48C]"
-              >
-                <RotateCcw className="w-3 h-3" />
-              </button>
-            </div>
-          </div>
-
-          {/* Video Stage — Framed Card with Visible Gold Border & Compact Edge Margin on Tablet/Desktop,
-              Proportional 16:9 Card on Portrait Mobile */}
-          <div className="relative w-full aspect-video sm:aspect-auto sm:w-full sm:h-full rounded-[22px] sm:rounded-[26px] lg:rounded-[30px] overflow-hidden border-2 border-[#D2B48C]/80 ring-1 ring-white/15 shadow-[0_24px_70px_rgba(0,0,0,0.6)] bg-[#082747] shrink-0">
-            <video
-              ref={videoRef}
-              src="/assets/aistudio/gemini_generated_video_2ff806d3_bfa4751c.mp4"
-              autoPlay
-              loop
-              muted={isMuted}
-              playsInline
-              className="w-full h-full object-cover sm:object-fill"
-            />
-
-            {/* Top-Right Controls on Tablet/Desktop */}
-            <div className="hidden sm:flex absolute top-5 right-6 z-20 items-center gap-2.5">
-              <button
-                type="button"
-                onClick={toggleAudio}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#002147]/85 hover:bg-[#002147] backdrop-blur-md border border-[#D2B48C]/65 text-[#FAF6F0] text-xs font-bold shadow-lg transition-all cursor-pointer"
-                title={isMuted ? 'Nyalakan Suara Video' : 'Matikan Suara Video'}
-              >
-                {isMuted ? (
-                  <>
-                    <VolumeX className="w-3.5 h-3.5 text-[#D2B48C]" />
-                    <span>Nyalakan Suara</span>
-                  </>
-                ) : (
-                  <>
-                    <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Suara Aktif</span>
-                  </>
-                )}
-              </button>
-
-              <button
-                type="button"
-                onClick={replayVideo}
-                aria-label="Putar Ulang Video"
-                title="Putar Ulang Video"
-                className="p-2 rounded-full bg-[#002147]/85 hover:bg-[#002147] backdrop-blur-md border border-[#D2B48C]/65 text-[#D2B48C] shadow-lg transition-all cursor-pointer"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            {/* Bottom-Left Below Video Text (Raised by 3 lines to bottom-[22.5%]/bottom-[23%]):
-                Tombol Masuk Menu — No Left Arrow, Smooth Back-and-Forth Right Arrow */}
-            <div className="absolute left-[5.5%] bottom-[21%] sm:left-[6.8%] sm:bottom-[22.5%] md:bottom-[23%] z-20 flex flex-col items-start">
-              <motion.button
-                type="button"
-                onClick={onEnterLogin}
-                whileHover={{ scale: 1.04, y: -2 }}
-                whileTap={{ scale: 0.97 }}
-                className="group relative inline-flex items-center gap-1.5 sm:gap-3.5 px-2.5 py-1 sm:px-6 sm:py-2.5 md:px-7 md:py-3 rounded-full bg-gradient-to-r from-[#FAF6F0] via-[#F2E3CE] to-[#D2B48C] text-[#002147] border sm:border-2 border-white/95 shadow-[0_14px_35px_rgba(0,0,0,0.48),0_0_25px_rgba(210,180,140,0.45)] hover:shadow-[0_18px_42px_rgba(0,0,0,0.58),0_0_32px_rgba(210,180,140,0.75)] transition-all cursor-pointer"
-              >
-                <div className="text-left">
-                  <div className="hidden sm:block text-[9px] md:text-[10px] font-extrabold uppercase tracking-widest text-[#6E502B] leading-none">
-                    PORTAL UTAMA
-                  </div>
-                  <div className="text-[9px] sm:text-sm md:text-base font-extrabold tracking-tight text-[#002147] leading-tight sm:mt-0.5">
-                    Masuk Menu
-                  </div>
-                </div>
-
-                <motion.span
-                  animate={{ x: [0, 5, 0] }}
-                  transition={{
-                    duration: 1.35,
-                    repeat: Infinity,
-                    ease: 'easeInOut',
-                  }}
-                  className="inline-flex items-center justify-center w-4 h-4 sm:w-7 sm:h-7 rounded-full bg-[#002147] text-[#D2B48C] shadow-xs shrink-0"
+              <div className="flex items-center">
+                <button
+                  type="button"
+                  onClick={toggleAudio}
+                  aria-label={isMuted ? 'Nyalakan Suara Video' : 'Matikan Suara Video'}
+                  title={isMuted ? 'Nyalakan Suara Video' : 'Matikan Suara Video'}
+                  className="p-2 rounded-full bg-[#002147] hover:bg-[#082B54] border border-[#D2B48C]/70 text-[#FAF6F0] shadow-sm transition-colors cursor-pointer"
                 >
-                  <ArrowRight className="w-2.5 h-2.5 sm:w-4 sm:h-4 stroke-[2.5]" />
-                </motion.span>
-              </motion.button>
+                  {isMuted ? (
+                    <VolumeX className="w-4 h-4 text-[#D2B48C]/65" />
+                  ) : (
+                    <Volume2 className="w-4 h-4 text-[#D2B48C]" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Video Stage — Framed Showcase on Mobile Portrait, Full Framed Card on Tablet/Desktop */}
+            <div className="px-3.5 pt-3 pb-2 sm:p-0 w-full sm:h-full sm:flex-1 flex flex-col min-h-0">
+              <div className="relative w-full aspect-video sm:aspect-auto sm:w-full sm:h-full sm:flex-1 rounded-[18px] sm:rounded-[26px] lg:rounded-[30px] overflow-hidden border-2 border-[#D2B48C]/85 ring-1 ring-white/15 shadow-[0_16px_38px_rgba(0,0,0,0.55)] sm:shadow-[0_24px_70px_rgba(0,0,0,0.6)] bg-[#082747]">
+                <video
+                  ref={videoRef}
+                  src="/assets/aistudio/gemini_generated_video_e1082990_b7aa5ae6.mp4"
+                  preload="auto"
+                  autoPlay
+                  loop
+                  muted={isMuted}
+                  playsInline
+                  onClick={onEnterLogin}
+                  className="w-full h-full object-cover sm:object-fill cursor-pointer sm:cursor-default"
+                />
+
+                {/* Top-Left Official Hospital Logo & Header in Glassmorphism Blur Translucent Card */}
+                <div className="hidden sm:flex absolute top-5 left-6 md:top-6 md:left-7 z-20 items-center gap-3 px-3.5 py-2 rounded-2xl bg-[#002147]/75 hover:bg-[#002147]/85 backdrop-blur-md border border-[#D2B48C]/55 shadow-[0_12px_32px_rgba(0,0,0,0.45)] transition-all select-none">
+                  <div className="relative w-8.5 h-8.5 md:w-10 md:h-10 shrink-0 flex items-center justify-center">
+                    <Image
+                      src="/assets/aistudio/logo-1_06649eb7.png"
+                      alt="Logo UOBK RSUD Al-Mulk"
+                      width={40}
+                      height={40}
+                      className="object-contain"
+                      referrerPolicy="no-referrer"
+                      priority
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[13px] md:text-[15px] font-extrabold tracking-wide text-[#FAF6F0] font-sans leading-tight">
+                      UOBK RSUD AL-MULK
+                    </span>
+                    <span className="text-[9.5px] md:text-[10.5px] font-bold tracking-[0.16em] text-[#D2B48C] uppercase font-sans leading-none mt-0.5">
+                      KOTA SUKABUMI
+                    </span>
+                  </div>
+                </div>
+
+                {/* Top-Right Audio Icon Button on Tablet/Desktop (Icon Only, Cream Icon with Navy Background) */}
+                <div className="hidden sm:flex absolute top-5 right-6 md:top-6 md:right-7 z-20 items-center">
+                  <button
+                    type="button"
+                    onClick={toggleAudio}
+                    aria-label={isMuted ? 'Nyalakan Suara Video' : 'Matikan Suara Video'}
+                    title={isMuted ? 'Nyalakan Suara Video' : 'Matikan Suara Video'}
+                    className="p-2.5 md:p-3 rounded-full bg-[#002147]/90 hover:bg-[#082B54] backdrop-blur-md border border-[#D2B48C]/70 shadow-xl transition-all cursor-pointer"
+                  >
+                    {isMuted ? (
+                      <VolumeX className="w-4 h-4 md:w-5 md:h-5 text-[#D2B48C]/65" />
+                    ) : (
+                      <Volume2 className="w-4 h-4 md:w-5 md:h-5 text-[#D2B48C]" />
+                    )}
+                  </button>
+                </div>
+
+                {/* Overlay CTA Button on Video (Smooth Floating Up-Down Animation & Sliding Arrow Forward-Backward) */}
+                <div className="absolute left-[5.5%] bottom-[15.5%] sm:left-[6.5%] sm:bottom-[19.5%] md:bottom-[20%] z-20 flex flex-col items-start">
+                  <motion.button
+                    type="button"
+                    onClick={onEnterLogin}
+                    animate={{ y: [0, -6, 0] }}
+                    transition={{
+                      duration: 2.5,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                    }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="group relative inline-flex items-center gap-2 sm:gap-4 px-3.5 py-1.5 sm:px-7 sm:py-3 md:px-8 md:py-3.5 rounded-full bg-gradient-to-r from-[#FAF6F0] via-[#F2E3CE] to-[#D2B48C] text-[#002147] border sm:border-2 border-white/95 shadow-[0_12px_28px_rgba(0,0,0,0.5),0_0_22px_rgba(210,180,140,0.5)] sm:shadow-[0_16px_38px_rgba(0,0,0,0.52),0_0_28px_rgba(210,180,140,0.5)] transition-shadow cursor-pointer"
+                  >
+                    <div className="text-left select-none">
+                      <div className="hidden sm:block text-[11px] md:text-[12px] font-extrabold uppercase tracking-widest text-[#6E502B] leading-none">
+                        PORTAL UTAMA
+                      </div>
+                      <div className="text-[11.5px] sm:text-[16px] md:text-[18px] font-extrabold tracking-tight text-[#002147] leading-tight sm:mt-0.5">
+                        Masuk Menu
+                      </div>
+                    </div>
+
+                    <motion.span
+                      animate={{ x: [0, 5, 0] }}
+                      transition={{
+                        duration: 1.35,
+                        repeat: Infinity,
+                        ease: 'easeInOut',
+                      }}
+                      className="inline-flex items-center justify-center w-5 h-5 sm:w-8.5 sm:h-8.5 md:w-9 md:h-9 rounded-full bg-[#002147] text-[#D2B48C] shadow-xs shrink-0"
+                    >
+                      <ArrowRight className="w-3 h-3 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 stroke-[2.5]" />
+                    </motion.span>
+                  </motion.button>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile Live Institutional Status Bar below Video */}
+            <div className="flex sm:hidden items-center justify-between px-4 pb-3 pt-1 text-[10px] font-semibold text-[#D2B48C]/90">
+              <div className="inline-flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Sistem Monitoring & Supervisi Terpadu</span>
+              </div>
+              <span className="text-white/80 font-bold">UOBK RSUD Al-Mulk</span>
             </div>
           </div>
 
-          {/* Portrait / Mobile Bottom Welcome Summary Card (Only visible on portrait/mobile screens) */}
-          <div className="flex sm:hidden w-full flex-col gap-3 rounded-[24px] bg-gradient-to-br from-[#FAF6F0] via-[#F5EDE0] to-[#EADBC8] p-4 border-2 border-white/90 shadow-xl shrink-0">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#002147] text-[#D2B48C] text-[9px] font-extrabold uppercase tracking-wider">
-                  <Sparkles className="w-2.5 h-2.5" />
-                  SELAMAT DATANG DI SIKESLING RSAM
+          {/* Portrait / Mobile Lower Executive Sheet (Fills remaining height cleanly with balanced executive sections) */}
+          <div className="flex sm:hidden flex-1 w-full flex-col justify-between rounded-t-[26px] bg-gradient-to-br from-[#FAF6F0] via-[#F5EDE0] to-[#EADBC8] px-4 pt-4 pb-4 border-t-2 border-[#D2B48C]/70 shadow-[0_-14px_34px_rgba(0,0,0,0.35)]">
+            {/* Top Welcome Heading & Description */}
+            <div className="space-y-1.5">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#002147] text-[#D2B48C] text-[9.5px] font-extrabold uppercase tracking-wider shadow-xs">
+                <Sparkles className="w-3 h-3 text-[#D2B48C]" />
+                <span>SELAMAT DATANG DI SIKESLING RSAM</span>
+              </div>
+              <h2 className="text-[16.5px] font-extrabold text-[#002147] leading-snug tracking-tight">
+                Sistem Informasi Kesehatan Lingkungan RSUD Al-Mulk Kota Sukabumi
+              </h2>
+              <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
+                Platform digital pemantauan mutu lingkungan rumah sakit, ceklist kebersihan ruangan, dan tindak lanjut pengawasan sanitarian secara terintegrasi.
+              </p>
+            </div>
+
+            {/* 3 Executive Pillar Cards + Scope Tags */}
+            <div className="space-y-2.5">
+              <div className="grid grid-cols-3 gap-2.5">
+                <div className="rounded-2xl bg-white/95 border border-[#D2B48C]/80 p-3 flex flex-col items-center text-center shadow-xs">
+                  <div className="w-8.5 h-8.5 rounded-xl bg-[#002147] text-[#D2B48C] flex items-center justify-center mb-1.5 shadow-xs">
+                    <Activity className="w-4 h-4" />
+                  </div>
+                  <div className="text-xs font-extrabold text-[#002147] leading-tight">
+                    6 Modul
+                  </div>
+                  <div className="text-[9.5px] font-bold text-[#8B6B43] mt-0.5">
+                    Monitoring
+                  </div>
                 </div>
-                <h2 className="text-sm font-extrabold text-[#002147] mt-1 leading-snug">
-                  Sistem Informasi Kesehatan Lingkungan RSUD Al-Mulk Kota Sukabumi
-                </h2>
+
+                <div className="rounded-2xl bg-white/95 border border-[#D2B48C]/80 p-3 flex flex-col items-center text-center shadow-xs">
+                  <div className="w-8.5 h-8.5 rounded-xl bg-[#002147] text-[#D2B48C] flex items-center justify-center mb-1.5 shadow-xs">
+                    <ClipboardCheck className="w-4 h-4" />
+                  </div>
+                  <div className="text-xs font-extrabold text-[#002147] leading-tight">
+                    10 Unit
+                  </div>
+                  <div className="text-[9.5px] font-bold text-[#8B6B43] mt-0.5">
+                    Supervisi
+                  </div>
+                </div>
+
+                <div className="rounded-2xl bg-white/95 border border-[#D2B48C]/80 p-3 flex flex-col items-center text-center shadow-xs">
+                  <div className="w-8.5 h-8.5 rounded-xl bg-emerald-600 text-white flex items-center justify-center mb-1.5 shadow-xs">
+                    <CheckCircle2 className="w-4 h-4" />
+                  </div>
+                  <div className="text-xs font-extrabold text-[#002147] leading-tight">
+                    Terpadu
+                  </div>
+                  <div className="text-[9.5px] font-bold text-[#8B6B43] mt-0.5">
+                    Tindak Lanjut
+                  </div>
+                </div>
+              </div>
+
+              {/* Module Scope Strip */}
+              <div className="rounded-xl bg-white/75 border border-[#D2B48C]/60 px-3 py-2 flex items-center justify-between text-[9.5px] font-bold text-[#002147]">
+                <span className="text-[#8B6B43] uppercase tracking-wider">Cakupan:</span>
+                <span>Air • Udara • IPAL • Limbah B3 • Vektor • Pangan</span>
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
-              <div className="rounded-xl bg-white/85 border border-[#D2B48C]/60 p-2 text-center">
-                <Activity className="w-4 h-4 text-[#002147] mx-auto mb-0.5" />
-                <div className="text-[10px] font-extrabold text-[#002147]">
-                  6 Modul
-                </div>
-                <div className="text-[9px] text-slate-500">Monitoring</div>
-              </div>
-              <div className="rounded-xl bg-white/85 border border-[#D2B48C]/60 p-2 text-center">
-                <ClipboardCheck className="w-4 h-4 text-[#002147] mx-auto mb-0.5" />
-                <div className="text-[10px] font-extrabold text-[#002147]">
-                  5 Ruangan
-                </div>
-                <div className="text-[9px] text-slate-500">Supervisi</div>
-              </div>
-              <div className="rounded-xl bg-white/85 border border-[#D2B48C]/60 p-2 text-center">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 mx-auto mb-0.5" />
-                <div className="text-[10px] font-extrabold text-[#002147]">
-                  Terpadu
-                </div>
-                <div className="text-[9px] text-slate-500">Tindak Lanjut</div>
-              </div>
-            </div>
-
+            {/* Executive Primary CTA Button */}
             <button
               type="button"
               onClick={onEnterLogin}
-              className="w-full py-3 px-4 rounded-2xl bg-[#002147] text-[#FAF6F0] text-xs font-extrabold flex items-center justify-center gap-2 shadow-md"
+              className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#002147] via-[#082B54] to-[#002147] hover:from-[#002B5E] hover:to-[#002B5E] text-[#FAF6F0] border border-[#D2B48C]/60 shadow-[0_12px_28px_rgba(0,33,71,0.3)] flex items-center justify-between transition-all cursor-pointer"
             >
-              <span>Masuk Menu Log In</span>
+              <div className="flex items-center gap-3 text-left">
+                <div className="w-9 h-9 rounded-xl bg-[#D2B48C]/20 border border-[#D2B48C]/50 flex items-center justify-center text-[#D2B48C] shrink-0">
+                  <Lock className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-xs font-extrabold text-white tracking-tight">
+                    Masuk Menu Log In
+                  </div>
+                  <div className="text-[10px] text-[#D2B48C] font-medium">
+                    Akses Portal Petugas Kesling RSAM
+                  </div>
+                </div>
+              </div>
+
               <motion.span
                 animate={{ x: [0, 5, 0] }}
                 transition={{ duration: 1.35, repeat: Infinity, ease: 'easeInOut' }}
-                className="inline-flex"
+                className="w-8 h-8 rounded-full bg-[#D2B48C] text-[#002147] flex items-center justify-center shadow-xs shrink-0"
               >
-                <ArrowRight className="w-4 h-4 text-[#D2B48C]" />
+                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
               </motion.span>
             </button>
           </div>
@@ -298,19 +393,19 @@ export function WelcomeLoginGate({
       )}
 
       {/* =====================================================================
-          STAGE 2: LOGIN PAGE (FULL 1 LAYAR PENUH DI MOBILE TANPA SISA RUANG KOSONG
-          ATAS/BAWAH, TANPA BADGE UOBK RSUD AL-MULK, WIDGET GRAFIK BATANG & PERSENTASE CAPAIAN)
+          STAGE 2: LOGIN PAGE (FULL 1 LAYAR PENUH DI MOBILE TANPA SISA RUANG KOSONG,
+          GAMBAR SANITARIAN PROPORSIONAL BESAR, 3 WIDGET MELAYANG)
          ===================================================================== */}
       {stage === 'login' && (
         <motion.div
           key="login-page"
-          initial={{ opacity: 0, y: 12 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: 'easeOut' }}
           className="relative z-10 w-full h-full lg:h-auto max-w-[1080px] max-h-[calc(100dvh-0.75rem)] sm:max-h-[calc(100dvh-1.75rem)] mx-auto rounded-[24px] sm:rounded-[34px] bg-gradient-to-br from-[#FAF6F0] via-[#F5EDE0] to-[#EADBC8] border-2 border-white/95 shadow-[0_28px_80px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col lg:grid lg:grid-cols-12"
         >
           {/* Left / Top Panel: Proportional Full-Bleed Top Banner on Mobile, Full Split Panel on Desktop */}
-          <div className="lg:col-span-6 relative bg-gradient-to-b from-[#082B54] via-[#002147] to-[#00152E] text-white px-4 pt-3.5 pb-0 sm:p-6 lg:p-7 flex flex-col justify-between shrink-0 h-[48%] sm:h-[46%] lg:h-auto lg:min-h-[540px] overflow-hidden">
+          <div className="lg:col-span-6 relative bg-gradient-to-b from-[#082B54] via-[#002147] to-[#00152E] text-white px-4 pt-3 pb-0 sm:p-6 lg:p-7 flex flex-col justify-between shrink-0 h-[50%] sm:h-[47%] lg:h-auto lg:min-h-[540px] overflow-hidden">
             {/* Decorative Background Orbs */}
             <div
               aria-hidden="true"
@@ -332,71 +427,51 @@ export function WelcomeLoginGate({
               </button>
             </div>
 
-            {/* Title & Single-Line Desktop / Compact Mobile Subtitle */}
-            <div className="relative z-20 mt-1.5 lg:mt-3">
+            {/* Title & Single-Line Subtitle on All Platforms (Mobile & Desktop) */}
+            <div className="relative z-20 mt-1 lg:mt-2.5">
               <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white leading-tight">
                 SIKESLING RSAM
               </h1>
-              <p className="text-[11px] sm:text-xs lg:text-[12.5px] xl:text-[13px] text-[#D2B48C] font-medium mt-0.5 lg:mt-1 lg:whitespace-nowrap tracking-tight leading-snug">
+              <p className="text-[9px] sm:text-xs lg:text-[12.5px] xl:text-[13px] text-[#D2B48C] font-medium mt-0.5 lg:mt-1 whitespace-nowrap tracking-tight leading-snug">
                 Sistem Informasi Kesehatan Lingkungan RSUD Al-Mulk Kota Sukabumi
               </p>
             </div>
 
-            {/* Center Visual Stage: Fitria Cutout + Floating Bar Chart Widget & Percentage Achievement Widget (Visible on Mobile & Desktop) */}
-            <div className="relative z-10 flex-1 flex items-end justify-center pt-2 lg:pt-4 min-h-0">
-              {/* Left Floating Widget: WIDGET GRAFIK BATANG (Compact Size) */}
+            {/* Center Visual Stage: Proportional Large Fitria Cutout + 3 Floating Widgets */}
+            <div className="relative z-10 flex-1 flex items-end justify-center pt-1 lg:pt-3 min-h-0">
+              {/* KIRI ATAS AGAK KE BAWAH DIKIT (Top-Left Slightly Lower) Floating Widget: WIDGET WAKTU REALTIME */}
               <motion.div
-                animate={{ y: [0, -4, 0] }}
-                transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute left-0 sm:left-2 lg:left-0 top-2 sm:top-5 lg:top-8 z-20 rounded-xl sm:rounded-2xl bg-[#16355D]/90 backdrop-blur-md border border-white/25 p-1.5 sm:p-2.5 flex flex-col gap-1 shadow-[0_12px_24px_rgba(0,0,0,0.35)] w-[98px] sm:w-[124px] lg:w-[134px]"
+                animate={{ y: [0, -3.5, 0] }}
+                transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute left-0 sm:left-2 lg:left-0 top-5 sm:top-7 lg:top-9 z-20 rounded-xl sm:rounded-2xl bg-[#16355D]/90 backdrop-blur-md border border-white/25 p-1.5 sm:p-2 flex flex-col gap-0.5 shadow-[0_12px_24px_rgba(0,0,0,0.4)] w-[88px] sm:w-[106px] lg:w-[114px]"
               >
                 <div className="flex items-center justify-between gap-1">
                   <div className="flex items-center gap-1">
-                    <span className="w-3.5 h-3.5 sm:w-5 sm:h-5 rounded-md bg-[#D2B48C] text-[#002147] flex items-center justify-center shrink-0">
-                      <BarChart3 className="w-2 h-2 sm:w-3 sm:h-3" />
+                    <span className="w-3 h-3 sm:w-4 sm:h-4 rounded-md bg-[#D2B48C] text-[#002147] flex items-center justify-center shrink-0">
+                      <Clock className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
                     </span>
-                    <span className="text-[7.5px] sm:text-[9px] font-extrabold text-white leading-tight">
-                      Grafik Batang
+                    <span className="text-[6.5px] sm:text-[7.5px] font-extrabold text-[#D2B48C] leading-tight">
+                      Waktu Realtime
                     </span>
                   </div>
-                  <span className="text-[7px] sm:text-[8px] font-extrabold text-emerald-400 tabular-nums">
-                    +14%
-                  </span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
                 </div>
 
-                {/* Mini Multi-Bar Chart Graphic */}
-                <div className="flex items-end justify-between gap-1 h-6 sm:h-8 pt-1 px-0.5 border-b border-white/15 pb-0.5">
-                  <div className="flex flex-col items-center flex-1">
-                    <div className="w-full h-2.5 sm:h-3.5 rounded-t-xs bg-[#D2B48C]/85" />
-                  </div>
-                  <div className="flex flex-col items-center flex-1">
-                    <div className="w-full h-4 sm:h-5 rounded-t-xs bg-emerald-400" />
-                  </div>
-                  <div className="flex flex-col items-center flex-1">
-                    <div className="w-full h-3 sm:h-4 rounded-t-xs bg-[#FAF6F0]/90" />
-                  </div>
-                  <div className="flex flex-col items-center flex-1">
-                    <div className="w-full h-4.5 sm:h-6 rounded-t-xs bg-[#D2B48C]" />
-                  </div>
-                  <div className="flex flex-col items-center flex-1">
-                    <div className="w-full h-5 sm:h-7 rounded-t-xs bg-emerald-400" />
-                  </div>
+                <div className="text-[10px] sm:text-xs lg:text-[13px] font-extrabold text-white tabular-nums tracking-tight leading-tight mt-0.5">
+                  {realtimeClock.time}
                 </div>
 
-                <div className="flex items-center justify-between text-[6.5px] sm:text-[7.5px] text-slate-300 font-semibold px-0.5">
-                  <span>Air</span>
-                  <span>Udr</span>
-                  <span>IPL</span>
-                  <span>B3</span>
-                  <span>Vkt</span>
+                <div className="flex items-center justify-between text-[6px] sm:text-[7px] text-slate-300 font-semibold leading-none">
+                  <span>{realtimeClock.date}</span>
+                  <span className="text-emerald-400 font-bold">WIB</span>
                 </div>
               </motion.div>
 
-              {/* Right Floating Widget: WIDGET PERSENTASE CAPAIAN (Compact Size) */}
+              {/* KANAN ATAS (Top-Right) Floating Widget: WIDGET PERSENTASE CAPAIAN */}
               <motion.div
-                animate={{ y: [0, 4, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute right-0 sm:right-2 lg:right-0 top-3.5 sm:top-8 lg:top-12 z-20 rounded-xl sm:rounded-2xl bg-[#16355D]/90 backdrop-blur-md border border-white/25 p-1.5 sm:p-2.5 flex flex-col gap-1 shadow-[0_12px_24px_rgba(0,0,0,0.35)] w-[102px] sm:w-[128px] lg:w-[138px]"
+                animate={{ y: [0, -4, 0] }}
+                transition={{ duration: 3.8, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute right-0 sm:right-2 lg:right-0 top-1 sm:top-2.5 lg:top-4 z-20 rounded-xl sm:rounded-2xl bg-[#16355D]/90 backdrop-blur-md border border-white/25 p-1.5 sm:p-2.5 flex flex-col gap-1 shadow-[0_12px_24px_rgba(0,0,0,0.4)] w-[104px] sm:w-[128px] lg:w-[138px]"
               >
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-[7.5px] sm:text-[9px] font-extrabold text-white leading-tight">
@@ -450,8 +525,56 @@ export function WelcomeLoginGate({
                 </div>
               </motion.div>
 
-              {/* Center Sanitarian Character Image with Crisp Thin White Outline Stroke Effect */}
-              <div className="relative flex items-end justify-center shrink-0">
+              {/* KIRI BAWAH (Bottom-Left) Floating Widget: WIDGET GRAFIK BATANG (Slightly Smaller Size) */}
+              <motion.div
+                animate={{ y: [0, 3.5, 0] }}
+                transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute left-0 sm:left-2 lg:left-0 bottom-2.5 sm:bottom-4 lg:bottom-5 z-20 rounded-xl sm:rounded-2xl bg-[#16355D]/90 backdrop-blur-md border border-white/25 p-1.5 sm:p-2 flex flex-col gap-0.5 shadow-[0_12px_24px_rgba(0,0,0,0.4)] w-[88px] sm:w-[108px] lg:w-[116px]"
+              >
+                <div className="flex items-center justify-between gap-1">
+                  <div className="flex items-center gap-1">
+                    <span className="w-3 h-3 sm:w-4 sm:h-4 rounded-md bg-[#D2B48C] text-[#002147] flex items-center justify-center shrink-0">
+                      <BarChart3 className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
+                    </span>
+                    <span className="text-[6.5px] sm:text-[8px] font-extrabold text-white leading-tight">
+                      Grafik Batang
+                    </span>
+                  </div>
+                  <span className="text-[6.5px] sm:text-[7.5px] font-extrabold text-emerald-400 tabular-nums">
+                    +14%
+                  </span>
+                </div>
+
+                {/* Mini Multi-Bar Chart Graphic */}
+                <div className="flex items-end justify-between gap-1 h-4.5 sm:h-6 pt-0.5 px-0.5 border-b border-white/15 pb-0.5">
+                  <div className="flex flex-col items-center flex-1">
+                    <div className="w-full h-2 sm:h-2.5 rounded-t-xs bg-[#D2B48C]/85" />
+                  </div>
+                  <div className="flex flex-col items-center flex-1">
+                    <div className="w-full h-3 sm:h-4 rounded-t-xs bg-emerald-400" />
+                  </div>
+                  <div className="flex flex-col items-center flex-1">
+                    <div className="w-full h-2.5 sm:h-3 rounded-t-xs bg-[#FAF6F0]/90" />
+                  </div>
+                  <div className="flex flex-col items-center flex-1">
+                    <div className="w-full h-3.5 sm:h-4.5 rounded-t-xs bg-[#D2B48C]" />
+                  </div>
+                  <div className="flex flex-col items-center flex-1">
+                    <div className="w-full h-4 sm:h-5 rounded-t-xs bg-emerald-400" />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between text-[6px] sm:text-[7px] text-slate-300 font-semibold px-0.5">
+                  <span>Air</span>
+                  <span>Udr</span>
+                  <span>IPL</span>
+                  <span>B3</span>
+                  <span>Vkt</span>
+                </div>
+              </motion.div>
+
+              {/* Center Sanitarian Character Image with Proportional Hero Size & Crisp Thin White Outline Stroke */}
+              <div className="relative z-10 flex items-end justify-center shrink-0">
                 <svg className="sr-only" aria-hidden="true">
                   <defs>
                     <filter id="fitria-white-outline" x="-10%" y="-10%" width="120%" height="120%">
@@ -470,11 +593,11 @@ export function WelcomeLoginGate({
                 <Image
                   src="/assets/aistudio/fitria_mirrored_cutout.png"
                   alt="Fitria Wulandari, A.M.KL - Sanitarian RSUD Al-Mulk"
-                  width={260}
-                  height={290}
+                  width={340}
+                  height={370}
                   priority
                   referrerPolicy="no-referrer"
-                  className="w-36 h-40 sm:w-44 sm:h-48 lg:w-60 lg:h-64 object-contain object-bottom [filter:url(#fitria-white-outline)]"
+                  className="w-[235px] h-[252px] sm:w-[260px] sm:h-[280px] lg:w-[300px] lg:h-[325px] object-contain object-bottom [filter:url(#fitria-white-outline)]"
                 />
               </div>
             </div>
@@ -486,7 +609,7 @@ export function WelcomeLoginGate({
                   Fitria Wulandari, A.M.KL
                 </div>
                 <div className="text-xs font-semibold text-[#D2B48C]">
-                  Sanitarian Ahli Kesehatan Lingkungan
+                  Sanitarian
                 </div>
               </div>
               <div className="w-9 h-9 rounded-xl bg-[#D2B48C]/20 border border-[#D2B48C]/50 flex items-center justify-center text-[#D2B48C]">
@@ -503,9 +626,13 @@ export function WelcomeLoginGate({
                 <h2 className="text-xl sm:text-2xl font-extrabold text-[#002147] tracking-tight">
                   Log In ke Halaman Utama
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  Masukkan username dan password petugas kesehatan lingkungan untuk
-                  mengakses Dashboard utama SIKESLING RSAM.
+                <p className="text-[9.5px] sm:text-xs xl:text-[13px] text-slate-600 leading-relaxed tracking-tight sm:tracking-normal">
+                  <span className="block whitespace-nowrap">
+                    Masukkan username dan password petugas kesehatan lingkungan
+                  </span>
+                  <span className="block whitespace-nowrap">
+                    untuk mengakses Dashboard utama SIKESLING RSAM.
+                  </span>
                 </p>
               </div>
 
