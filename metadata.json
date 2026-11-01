@@ -1,0 +1,6 @@
+{
+  "name": "SIKESLING RSAM",
+  "description": "Sistem Informasi Kesehatan Lingkungan UOBK RSUD Al-Mulk Kota Sukabumi — Smart Environmental Health Monitoring & Management",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

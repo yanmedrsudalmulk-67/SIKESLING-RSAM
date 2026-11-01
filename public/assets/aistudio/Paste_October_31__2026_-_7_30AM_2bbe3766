@@ -1,0 +1,1404 @@
+MASTER PROMPT
+
+SIKESLING RSAM
+
+Sistem Informasi Kesehatan Lingkungan
+
+UOBK RSUD Al-Mulk Kota Sukabumi
+
+Project Type: Hospital Environmental Health Management System
+
+Application Name: SIKESLING RSAM
+
+Tagline: Smart Environmental Health Monitoring & Management
+
+Version: 1.0 — Foundation Development
+
+Platform: Responsive Web Application & Progressive Web App (PWA)
+
+---
+
+1. ROLE & OBJECTIVE
+
+Bertindaklah sebagai tim pengembang perangkat lunak profesional yang terdiri dari:
+
+- Senior Full-Stack Software Engineer
+- Senior UI/UX Designer
+- Software Architect
+- Database Architect
+- Healthcare Information System Specialist
+- Quality Assurance Engineer
+
+Tugas utama Anda adalah membangun aplikasi web bernama SIKESLING RSAM, sebuah sistem informasi manajemen kesehatan lingkungan untuk UOBK RSUD Al-Mulk Kota Sukabumi.
+
+Aplikasi ini dirancang untuk mendigitalisasi seluruh kegiatan operasional kesehatan lingkungan rumah sakit, monitoring kondisi lingkungan, inspeksi atau supervisi lapangan, dokumentasi kegiatan, pengelolaan tindak lanjut temuan, serta penyusunan laporan berkala.
+
+Bangun aplikasi dengan pendekatan:
+
+Modern, Professional, Responsive, Modular, Scalable, Secure, and User-Friendly.
+
+Aplikasi harus memiliki kualitas visual setara dengan sistem informasi rumah sakit modern dan dashboard SaaS profesional.
+
+Namun, perhatikan bahwa pengembangan saat ini masih berada pada TAHAP PERTAMA (FOUNDATION).
+
+Pada tahap ini, prioritaskan pembuatan arsitektur, navigasi, antarmuka, dan wadah seluruh modul.
+
+Jangan memaksakan implementasi fitur kompleks atau membuat indikator teknis kesehatan lingkungan tanpa dasar yang jelas.
+
+Seluruh modul harus mudah dikembangkan dan dimodifikasi pada tahap berikutnya.
+
+---
+
+2. DEVELOPMENT PHILOSOPHY
+
+Gunakan prinsip berikut:
+
+A. Modular Architecture
+
+Setiap menu utama harus memiliki struktur kode dan komponen yang terorganisasi.
+
+Pengembangan satu modul tidak boleh merusak modul lainnya.
+
+B. Future-Ready Application
+
+Siapkan arsitektur agar aplikasi nantinya dapat mendukung:
+
+- Pencatatan kegiatan harian.
+- Monitoring lingkungan rumah sakit.
+- Supervisi dan audit lapangan.
+- Dokumentasi foto.
+- Pengelolaan tindak lanjut temuan.
+- Pengelolaan indikator kesehatan lingkungan.
+- Analisis pencapaian indikator.
+- Grafik monitoring.
+- Pelaporan otomatis.
+- Pengingat jadwal pemeriksaan.
+- Pengelolaan dokumen.
+- Integrasi AI pada pengembangan berikutnya.
+
+C. Progressive Development
+
+Jangan langsung mengimplementasikan seluruh fitur kompleks.
+
+Bangun struktur aplikasi terlebih dahulu.
+
+Setiap modul yang belum dikembangkan dapat menggunakan placeholder profesional dengan keterangan:
+
+"Modul ini sedang dalam tahap pengembangan."
+
+Tambahkan deskripsi singkat mengenai fungsi modul dan fitur yang direncanakan.
+
+Pastikan seluruh menu dapat diakses dan tidak menghasilkan error.
+
+D. Data-Driven Design
+
+Semua indikator, parameter pemeriksaan, daftar ruangan, kategori kegiatan, satuan pengukuran, dan standar penilaian nantinya harus dapat dikonfigurasi.
+
+Hindari hardcoding aturan teknis kesehatan lingkungan yang belum dikonfirmasi.
+
+---
+
+3. TECHNOLOGY STACK
+
+Gunakan teknologi modern berikut.
+
+Frontend
+
+- Next.js menggunakan App Router.
+- React.
+- TypeScript.
+- Tailwind CSS.
+- shadcn/ui.
+- Lucide React Icons.
+- Recharts untuk visualisasi data.
+- Framer Motion atau Motion untuk animasi ringan.
+
+Backend
+
+Gunakan backend yang terintegrasi dengan Next.js melalui Server Actions atau API Routes sesuai kebutuhan.
+
+Pastikan terdapat pemisahan yang jelas antara:
+
+- Presentation Layer.
+- Business Logic.
+- Data Access Layer.
+- Database Layer.
+
+Database
+
+Prioritaskan dukungan PostgreSQL melalui Prisma ORM.
+
+Database harus dapat dijalankan secara lokal pada komputer atau server rumah sakit.
+
+Jangan membuat aplikasi bergantung secara wajib pada Supabase Cloud atau layanan database berbayar.
+
+Gunakan environment variables untuk seluruh konfigurasi koneksi.
+
+Siapkan arsitektur agar database dapat dipindahkan dari lingkungan pengembangan ke server produksi tanpa perlu menulis ulang logika utama aplikasi.
+
+Progressive Web App
+
+Siapkan fondasi PWA agar aplikasi nantinya dapat dipasang pada desktop maupun smartphone.
+
+Rancang struktur yang memungkinkan pengembangan kemampuan offline-first dan sinkronisasi data pada tahap berikutnya.
+
+Jangan mengklaim fitur offline atau sinkronisasi sudah berfungsi jika belum diimplementasikan dan diuji.
+
+Code Quality
+
+Gunakan:
+
+- Reusable Components.
+- Type Safety.
+- Clean Code.
+- Modular Folder Structure.
+- Error Handling.
+- Loading States.
+- Empty States.
+- Form Validation.
+- Accessibility Best Practices.
+
+---
+
+4. APPLICATION BRANDING
+
+Identitas Aplikasi
+
+SIKESLING RSAM
+
+Sistem Informasi Kesehatan Lingkungan
+
+UOBK RSUD Al-Mulk Kota Sukabumi
+
+Tagline:
+
+Smart Environmental Health Monitoring & Management
+
+Konsep Visual
+
+Buat aplikasi dengan desain:
+
+- Modern healthcare dashboard.
+- Clean enterprise interface.
+- Premium SaaS design.
+- Minimalist professional.
+- Elegant micro-interactions.
+- Soft shadows.
+- Rounded corners.
+- Spacious layout.
+- Modern typography.
+- Konsistensi komponen pada seluruh halaman.
+
+Primary Color Palette
+
+Emerald Green:
+
+"#059669"
+
+Deep Emerald:
+
+"#047857"
+
+Deep Navy:
+
+"#0F172A"
+
+Teal Accent:
+
+"#0D9488"
+
+Soft Background:
+
+"#F8FAFC"
+
+White:
+
+"#FFFFFF"
+
+Status Colors
+
+Success: Green.
+
+Warning: Amber.
+
+Danger: Red.
+
+Information: Blue.
+
+Gunakan warna status secara konsisten.
+
+Typography
+
+Gunakan font modern seperti Inter atau Plus Jakarta Sans.
+
+Terapkan hierarki tipografi yang konsisten pada judul halaman, subjudul, label formulir, tabel, dan dashboard.
+
+---
+
+5. RESPONSIVE DESIGN SYSTEM
+
+Aplikasi harus menggunakan pendekatan Mobile-First Responsive Design.
+
+Pastikan seluruh fitur dan antarmuka dapat digunakan dengan nyaman pada:
+
+- Desktop.
+- Laptop.
+- Tablet.
+- Smartphone Android.
+- Smartphone iOS.
+
+Desktop Layout
+
+Gunakan layout dashboard profesional dengan:
+
+- Sidebar navigasi di sebelah kiri.
+- Top navigation bar.
+- Main content area.
+- Summary cards.
+- Charts.
+- Data tables.
+- Filter panel.
+- Notification indicator.
+- User profile dropdown.
+
+Sidebar dapat diperluas atau diperkecil.
+
+Pada keadaan diperkecil, tampilkan ikon dengan tooltip.
+
+Tablet Layout
+
+Buat layout adaptif.
+
+Gunakan sidebar collapsible atau drawer.
+
+Kartu dashboard mengikuti ukuran layar.
+
+Tabel dapat menggunakan horizontal scrolling apabila diperlukan.
+
+Mobile Layout
+
+Optimalkan pengalaman menggunakan smartphone.
+
+Gunakan:
+
+- Compact top navigation.
+- Mobile navigation drawer.
+- Bottom navigation untuk menu utama yang paling sering digunakan.
+- Responsive cards.
+- Touch-friendly buttons.
+- Full-width forms.
+- Mobile-friendly tables.
+- Floating Action Button apabila relevan.
+
+Pastikan tidak terjadi horizontal overflow pada layout utama.
+
+Semua tombol dan input harus mudah digunakan melalui layar sentuh.
+
+---
+
+6. MAIN APPLICATION LAYOUT
+
+Bangun kerangka aplikasi dengan komponen berikut:
+
+Sidebar
+
+Berisi identitas aplikasi:
+
+Logo SIKESLING RSAM.
+
+Nama aplikasi.
+
+Nama rumah sakit.
+
+Menu navigasi yang dikelompokkan berdasarkan fungsi.
+
+Sidebar harus mendukung:
+
+- Expand/collapse.
+- Active menu indicator.
+- Nested submenu.
+- Smooth transitions.
+- Tooltip.
+- Responsive mobile drawer.
+
+Topbar
+
+Berisi:
+
+- Breadcrumb navigation.
+- Page title.
+- Global search UI.
+- Notification button.
+- Date display.
+- User avatar.
+- User dropdown.
+- Theme toggle.
+
+Jika fitur pencarian dan notifikasi belum memiliki backend, tampilkan sebagai komponen nonaktif dengan penjelasan yang jelas. Jangan membuat tombol terlihat berfungsi padahal belum diimplementasikan.
+
+Main Content
+
+Gunakan container yang konsisten pada seluruh halaman.
+
+Setiap halaman harus memiliki:
+
+- Page title.
+- Page description.
+- Breadcrumb.
+- Action area.
+- Main content.
+- Loading state.
+- Empty state.
+- Error state.
+
+---
+
+7. MAIN NAVIGATION STRUCTURE
+
+Bangun seluruh menu dan submenu berikut.
+
+Semua halaman harus mempunyai route tersendiri.
+
+MENU 1 — DASHBOARD
+
+Route:
+
+"/dashboard"
+
+Dashboard merupakan halaman utama aplikasi.
+
+Desain dashboard yang informatif, modern, dan elegan.
+
+Komponen Dashboard
+
+A. Welcome Section
+
+Tampilkan:
+
+"Selamat Datang di SIKESLING RSAM"
+
+Subjudul:
+
+"Sistem Monitoring dan Manajemen Kesehatan Lingkungan UOBK RSUD Al-Mulk Kota Sukabumi."
+
+Tambahkan visual atau ilustrasi sederhana bertema kesehatan lingkungan dan teknologi.
+
+B. Summary Cards
+
+Siapkan kartu berikut:
+
+1. Total Kegiatan Kesling
+2. Total Supervisi Lingkungan
+3. Temuan Belum Ditindaklanjuti
+4. Persentase Kepatuhan Lingkungan
+5. Jadwal Monitoring Mendatang
+6. Total Laporan Tersedia
+
+Gunakan ikon relevan.
+
+Pada tahap awal, apabila belum terdapat data, tampilkan nilai nol atau empty state.
+
+Jangan membuat angka statistik palsu.
+
+C. Grafik Monitoring
+
+Siapkan wadah grafik untuk:
+
+- Tren kegiatan Kesling.
+- Grafik hasil supervisi.
+- Grafik tingkat kepatuhan.
+- Grafik status tindak lanjut temuan.
+
+Gunakan Recharts.
+
+Grafik harus memiliki empty state ketika belum tersedia data.
+
+D. Recent Activities
+
+Siapkan tabel atau activity feed untuk menampilkan kegiatan terbaru.
+
+E. Upcoming Monitoring
+
+Siapkan komponen jadwal monitoring atau supervisi berikutnya.
+
+F. Quick Actions
+
+Tambahkan tombol:
+
+- Tambah Kegiatan.
+- Mulai Supervisi.
+- Lihat Monitoring.
+- Buat Laporan.
+
+Arahkan tombol menuju halaman yang sesuai.
+
+---
+
+MENU 2 — KEGIATAN OPERASIONAL
+
+Buat menu utama bernama:
+
+Kegiatan Operasional
+
+Submenu:
+
+2.1 Pencatatan Kegiatan Harian
+
+Route:
+
+"/operasional/kegiatan-harian"
+
+Siapkan wadah pencatatan aktivitas rutin petugas Kesling.
+
+Rancangan awal mencakup:
+
+- Tanggal kegiatan.
+- Jenis kegiatan.
+- Lokasi kegiatan.
+- Nama petugas.
+- Uraian kegiatan.
+- Dokumentasi.
+- Keterangan.
+
+Detail formulir dapat dikembangkan setelah konsultasi dengan petugas Kesling.
+
+2.2 Jadwal Kegiatan
+
+Route:
+
+"/operasional/jadwal"
+
+Siapkan tampilan kalender kegiatan.
+
+Nantinya dapat digunakan untuk:
+
+- Jadwal pemeriksaan.
+- Jadwal monitoring.
+- Jadwal supervisi.
+- Jadwal pengambilan sampel.
+- Jadwal kegiatan rutin.
+
+2.3 Riwayat Kegiatan
+
+Route:
+
+"/operasional/riwayat"
+
+Siapkan halaman tabel seluruh aktivitas yang telah dilaksanakan.
+
+Sediakan desain filter:
+
+- Periode.
+- Jenis kegiatan.
+- Petugas.
+- Lokasi.
+- Status.
+
+---
+
+MENU 3 — MONITORING KESEHATAN LINGKUNGAN
+
+Buat menu utama:
+
+Monitoring Lingkungan
+
+Submenu:
+
+3.1 Monitoring Kualitas Air
+
+Route:
+
+"/monitoring/kualitas-air"
+
+Wadah monitoring kualitas air bersih, air minum, dan kategori lain sesuai kebutuhan.
+
+3.2 Monitoring Kualitas Udara
+
+Route:
+
+"/monitoring/kualitas-udara"
+
+Wadah pemantauan parameter lingkungan udara.
+
+3.3 Monitoring Pengelolaan Limbah
+
+Route:
+
+"/monitoring/limbah"
+
+Siapkan kategori:
+
+- Limbah medis.
+- Limbah B3.
+- Limbah domestik.
+- Kategori lainnya.
+
+3.4 Monitoring IPAL
+
+Route:
+
+"/monitoring/ipal"
+
+Wadah pemantauan instalasi pengolahan air limbah rumah sakit.
+
+3.5 Pengendalian Vektor dan Binatang Pembawa Penyakit
+
+Route:
+
+"/monitoring/vektor"
+
+Wadah monitoring kegiatan pengendalian vektor dan binatang pembawa penyakit.
+
+3.6 Higiene dan Sanitasi Lingkungan
+
+Route:
+
+"/monitoring/higiene-sanitasi"
+
+Wadah monitoring kebersihan, higiene, dan sanitasi lingkungan rumah sakit.
+
+3.7 Higiene Sanitasi Pangan
+
+Route:
+
+"/monitoring/sanitasi-pangan"
+
+Wadah monitoring higiene sanitasi pangan dan fasilitas penyelenggaraan makanan.
+
+3.8 Monitoring Lainnya
+
+Route:
+
+"/monitoring/lainnya"
+
+Wadah yang dapat dikembangkan untuk jenis monitoring tambahan sesuai kebutuhan rumah sakit.
+
+PENTING:
+
+Seluruh halaman monitoring pada tahap pertama cukup dibuat menggunakan komponen standar berupa:
+
+- Header halaman.
+- Deskripsi modul.
+- Summary card placeholder.
+- Area filter.
+- Area tabel data.
+- Tombol tambah data.
+- Empty state.
+- Informasi fitur yang akan dikembangkan.
+
+Jangan membuat nilai ambang batas, indikator resmi, rumus kepatuhan, atau parameter pemeriksaan yang belum terverifikasi.
+
+---
+
+MENU 4 — SUPERVISI LINGKUNGAN
+
+Route utama:
+
+"/supervisi"
+
+Menu supervisi merupakan salah satu modul prioritas SIKESLING RSAM.
+
+Siapkan struktur submenu:
+
+4.1 Dashboard Supervisi
+
+"/supervisi/dashboard"
+
+4.2 Mulai Supervisi
+
+"/supervisi/baru"
+
+4.3 Riwayat Supervisi
+
+"/supervisi/riwayat"
+
+4.4 Dokumentasi Supervisi
+
+"/supervisi/dokumentasi"
+
+4.5 Template Checklist
+
+"/supervisi/template"
+
+4.6 Hasil dan Rekap Supervisi
+
+"/supervisi/rekap"
+
+Konsep Supervisi
+
+Pada pengembangan berikutnya, supervisi dilakukan menggunakan smartphone atau tablet.
+
+Petugas akan dapat:
+
+1. Memilih ruangan.
+2. Mengisi tanggal supervisi.
+3. Memilih kategori pemeriksaan.
+4. Mengisi checklist.
+5. Memberikan hasil penilaian.
+6. Mengambil foto dokumentasi.
+7. Menambahkan uraian temuan.
+8. Memberikan rekomendasi.
+9. Menentukan prioritas tindak lanjut.
+10. Menyimpan hasil supervisi.
+
+Untuk tahap pertama, cukup siapkan antarmuka formulir supervisi sederhana yang bersifat generik.
+
+Field awal:
+
+- Tanggal supervisi.
+- Petugas.
+- Unit atau ruangan.
+- Kategori supervisi.
+- Uraian pemeriksaan.
+- Temuan.
+- Rekomendasi.
+- Dokumentasi foto.
+
+Jika penyimpanan data dan foto belum diimplementasikan, gunakan mode rancangan formulir dengan label yang jelas. Jangan menampilkan notifikasi "Data berhasil disimpan" tanpa benar-benar menyimpan data.
+
+Dokumentasi Foto
+
+Rancang antarmuka upload foto yang mendukung:
+
+- Kamera smartphone.
+- File upload.
+- Image preview.
+- Multiple photos.
+- Image compression.
+- Keterangan foto.
+
+Siapkan arsitektur penyimpanan foto yang aman dan bersifat privat.
+
+Batasi ukuran serta jenis file.
+
+Metadata lokasi atau geotag bersifat opsional dan hanya digunakan dengan persetujuan pengguna.
+
+Jangan mengaktifkan pengambilan lokasi otomatis.
+
+---
+
+MENU 5 — TINDAK LANJUT TEMUAN
+
+Route utama:
+
+"/tindak-lanjut"
+
+Submenu:
+
+5.1 Daftar Temuan
+
+"/tindak-lanjut/temuan"
+
+5.2 Temuan Belum Selesai
+
+"/tindak-lanjut/pending"
+
+5.3 Proses Perbaikan
+
+"/tindak-lanjut/proses"
+
+5.4 Verifikasi Perbaikan
+
+"/tindak-lanjut/verifikasi"
+
+5.5 Riwayat Tindak Lanjut
+
+"/tindak-lanjut/riwayat"
+
+Konsep Alur Kerja
+
+Siapkan rancangan status:
+
+Temuan Baru → Dalam Proses → Menunggu Verifikasi → Selesai Terverifikasi
+
+Setiap temuan nantinya dapat memiliki:
+
+- Nomor identifikasi.
+- Tanggal temuan.
+- Lokasi.
+- Kategori.
+- Deskripsi.
+- Dokumentasi sebelum perbaikan.
+- Rekomendasi.
+- Penanggung jawab.
+- Target penyelesaian.
+- Status.
+- Dokumentasi setelah perbaikan.
+- Hasil verifikasi.
+
+Pada tahap pertama, fokus pada tampilan daftar temuan, status badge, filter, dan struktur halaman detail.
+
+---
+
+MENU 6 — GRAFIK & ANALISIS
+
+Route:
+
+"/analisis"
+
+Submenu:
+
+6.1 Analisis Kegiatan
+
+"/analisis/kegiatan"
+
+6.2 Analisis Monitoring
+
+"/analisis/monitoring"
+
+6.3 Analisis Supervisi
+
+"/analisis/supervisi"
+
+6.4 Analisis Tindak Lanjut
+
+"/analisis/tindak-lanjut"
+
+6.5 Tren Indikator
+
+"/analisis/tren"
+
+Siapkan visualisasi profesional menggunakan:
+
+- Line Chart.
+- Bar Chart.
+- Donut Chart.
+- Area Chart.
+- Progress Indicator.
+- Status Distribution.
+
+Seluruh grafik harus menggunakan data aktual ketika modul sudah terhubung dengan database.
+
+Sediakan empty state yang elegan untuk grafik tanpa data.
+
+Buat komponen grafik reusable agar nantinya mudah digunakan oleh seluruh modul.
+
+---
+
+MENU 7 — LAPORAN
+
+Route utama:
+
+"/laporan"
+
+Submenu:
+
+7.1 Laporan Bulanan
+
+"/laporan/bulanan"
+
+7.2 Laporan Triwulanan
+
+"/laporan/triwulanan"
+
+7.3 Laporan Semesteran
+
+"/laporan/semesteran"
+
+7.4 Laporan Tahunan
+
+"/laporan/tahunan"
+
+7.5 Laporan Supervisi
+
+"/laporan/supervisi"
+
+7.6 Laporan Monitoring
+
+"/laporan/monitoring"
+
+7.7 Laporan Tindak Lanjut
+
+"/laporan/tindak-lanjut"
+
+Konsep Reporting System
+
+Rancang halaman laporan dengan pilihan filter:
+
+- Tahun.
+- Bulan.
+- Triwulan.
+- Semester.
+- Kategori laporan.
+- Unit atau ruangan.
+
+Siapkan rancangan fitur:
+
+- Generate laporan.
+- Preview laporan.
+- Download PDF.
+- Export Excel.
+- Print laporan.
+
+Pada tahap pertama, cukup buat UI dan struktur modul laporan.
+
+Jangan membuat laporan berisi data fiktif.
+
+Jika fitur ekspor belum diimplementasikan, tampilkan sebagai fitur dalam pengembangan.
+
+Future Reporting Architecture
+
+Persiapkan rancangan agar seluruh data kegiatan operasional, monitoring, dan supervisi nantinya dapat direkapitulasi secara otomatis.
+
+Prinsip utamanya:
+
+Single Data Entry, Multiple Reporting Outputs.
+
+Pengguna cukup memasukkan data satu kali.
+
+Data tersebut dapat digunakan untuk penyusunan laporan bulanan, triwulanan, semesteran, dan tahunan.
+
+---
+
+MENU 8 — DOKUMENTASI & ARSIP
+
+Route:
+
+"/dokumentasi"
+
+Submenu:
+
+8.1 Galeri Kegiatan
+
+"/dokumentasi/galeri"
+
+8.2 Arsip Pemeriksaan
+
+"/dokumentasi/pemeriksaan"
+
+8.3 Dokumen Kesling
+
+"/dokumentasi/dokumen"
+
+8.4 SOP & Regulasi
+
+"/dokumentasi/sop-regulasi"
+
+Siapkan struktur penyimpanan dan tampilan dokumen yang mudah digunakan.
+
+Nantinya modul dapat mendukung:
+
+- Upload dokumen.
+- Kategori dokumen.
+- Preview.
+- Download.
+- Pencarian.
+- Riwayat dokumen.
+
+---
+
+MENU 9 — MASTER DATA
+
+Route:
+
+"/master-data"
+
+Submenu:
+
+9.1 Data Unit dan Ruangan
+
+"/master-data/ruangan"
+
+9.2 Data Petugas
+
+"/master-data/petugas"
+
+9.3 Kategori Kegiatan
+
+"/master-data/kategori-kegiatan"
+
+9.4 Kategori Monitoring
+
+"/master-data/kategori-monitoring"
+
+9.5 Indikator & Parameter
+
+"/master-data/indikator"
+
+9.6 Template Pemeriksaan
+
+"/master-data/template"
+
+9.7 Standar & Referensi
+
+"/master-data/standar"
+
+Seluruh data master harus dirancang untuk mendukung penambahan, perubahan, serta penonaktifan data pada pengembangan berikutnya.
+
+Standar dan referensi teknis harus dapat memiliki informasi:
+
+- Nama standar.
+- Sumber regulasi.
+- Nomor regulasi.
+- Tanggal berlaku.
+- Versi.
+- Status aktif.
+
+Jangan mengisi nilai standar secara sembarangan.
+
+---
+
+MENU 10 — PENGATURAN
+
+Route:
+
+"/pengaturan"
+
+Submenu:
+
+10.1 Profil Rumah Sakit
+
+"/pengaturan/rumah-sakit"
+
+10.2 Manajemen Pengguna
+
+"/pengaturan/pengguna"
+
+10.3 Hak Akses
+
+"/pengaturan/hak-akses"
+
+10.4 Preferensi Tampilan
+
+"/pengaturan/tampilan"
+
+10.5 Pengaturan Aplikasi
+
+"/pengaturan/aplikasi"
+
+10.6 Tentang Aplikasi
+
+"/pengaturan/tentang"
+
+Siapkan rancangan role pengguna:
+
+Administrator
+
+Mengelola konfigurasi sistem, pengguna, master data, dan pengaturan aplikasi.
+
+Petugas Kesling
+
+Mengelola data kegiatan, monitoring, supervisi, dan laporan sesuai kewenangan.
+
+Koordinator Kesling
+
+Melakukan monitoring kegiatan, review, dan verifikasi sesuai kewenangan.
+
+Pimpinan / Viewer
+
+Melihat dashboard, hasil monitoring, grafik, dan laporan yang diizinkan.
+
+Hak akses harus divalidasi pada server, bukan hanya dengan menyembunyikan menu di antarmuka.
+
+Pada tahap awal, bangun struktur role dan permission yang siap dikembangkan.
+
+---
+
+8. DESIGN COMPONENT SYSTEM
+
+Buat reusable component library untuk seluruh aplikasi.
+
+Komponen yang dibutuhkan:
+
+Layout Components
+
+- AppSidebar
+- AppHeader
+- MobileNavigation
+- PageContainer
+- PageHeader
+- BreadcrumbNavigation
+
+Dashboard Components
+
+- SummaryCard
+- StatisticsCard
+- ChartContainer
+- RecentActivity
+- QuickActionCard
+- StatusOverview
+
+Data Components
+
+- DataTable
+- FilterToolbar
+- SearchInput
+- DateRangeFilter
+- StatusBadge
+- Pagination
+- EmptyState
+
+Form Components
+
+- FormSection
+- TextField
+- SelectField
+- DatePicker
+- FileUploader
+- ImagePreview
+- FormActions
+
+Feedback Components
+
+- LoadingSkeleton
+- ToastNotification
+- ConfirmationDialog
+- ErrorMessage
+- SuccessMessage
+
+Pastikan seluruh komponen menggunakan design system yang sama.
+
+Hindari membuat komponen duplikat dengan fungsi identik.
+
+---
+
+9. DATABASE FOUNDATION
+
+Siapkan rancangan struktur database awal yang mendukung pengembangan bertahap.
+
+Prioritaskan entitas dasar:
+
+1. Users
+2. Roles
+3. Permissions
+4. Units
+5. Rooms
+6. ActivityCategories
+7. Activities
+8. MonitoringCategories
+9. InspectionTemplates
+10. Inspections
+11. InspectionFindings
+12. Attachments
+13. FollowUpActions
+14. ApplicationSettings
+
+Gunakan struktur relasional yang terorganisasi.
+
+Tambahkan field umum apabila relevan:
+
+- id
+- createdAt
+- updatedAt
+- createdBy
+- updatedBy
+- status
+
+Gunakan identifier yang aman.
+
+Pastikan struktur database mendukung proses migrasi pada pengembangan berikutnya.
+
+Tidak semua tabel harus diimplementasikan secara lengkap pada tahap pertama.
+
+Implementasikan tabel minimum yang benar-benar dibutuhkan oleh fitur dasar. Dokumentasikan model data lainnya sebagai rancangan untuk tahap selanjutnya.
+
+Jangan membuat struktur database terlalu kompleks sebelum kebutuhan operasional dikonfirmasi.
+
+---
+
+10. SECURITY FOUNDATION
+
+Bangun fondasi keamanan sejak awal.
+
+Persiapkan:
+
+- Authentication.
+- Role-Based Access Control.
+- Server-side authorization.
+- Input validation.
+- Secure environment variables.
+- File upload validation.
+- Error handling.
+- Audit trail architecture.
+- Database migration management.
+
+Jika menggunakan autentikasi, gunakan library yang terpelihara dan mekanisme password hashing yang aman.
+
+Jangan menyimpan password dalam plaintext.
+
+Jangan mengekspos kredensial database melalui frontend.
+
+Jangan menyimpan foto atau dokumen internal pada direktori publik tanpa kontrol akses.
+
+Jangan memasukkan data pasien atau informasi pribadi sensitif sebagai dummy data.
+
+Jika fitur keamanan belum diimplementasikan, jangan mengklaim aplikasi aman digunakan pada produksi.
+
+---
+
+11. LIGHT & DARK MODE
+
+Sediakan sistem tema:
+
+- Light Mode.
+- Dark Mode.
+- Follow System Preference.
+
+Pastikan seluruh komponen mendukung kedua tema.
+
+Gunakan CSS variables untuk konsistensi warna.
+
+Simpan preferensi tema pengguna secara lokal atau dalam pengaturan akun ketika sudah tersedia.
+
+Default theme menggunakan Light Mode.
+
+---
+
+12. ANIMATION & INTERACTION
+
+Gunakan micro-interactions yang halus dan profesional.
+
+Contohnya:
+
+- Smooth sidebar transitions.
+- Card hover effects.
+- Button interactions.
+- Loading skeleton.
+- Page transitions.
+- Dropdown animation.
+- Modal transitions.
+- Tooltip animation.
+
+Jangan menggunakan animasi berlebihan yang mengganggu performa atau aktivitas petugas.
+
+Hormati preferensi reduced motion.
+
+---
+
+13. FOUNDATION IMPLEMENTATION PRIORITY
+
+Lakukan implementasi dalam urutan berikut.
+
+PRIORITY 1 — Project Foundation
+
+Bangun:
+
+- Next.js project.
+- TypeScript configuration.
+- Tailwind setup.
+- shadcn/ui setup.
+- Application routing.
+- Theme system.
+- Global layout.
+- Error boundaries.
+- Environment configuration.
+
+PRIORITY 2 — Responsive Application Shell
+
+Bangun:
+
+- Sidebar.
+- Topbar.
+- Mobile navigation.
+- Breadcrumb.
+- Main content layout.
+- Reusable page components.
+
+PRIORITY 3 — Dashboard
+
+Bangun halaman dashboard lengkap secara visual.
+
+Gunakan empty states untuk data yang belum tersedia.
+
+PRIORITY 4 — Complete Navigation
+
+Implementasikan seluruh route dan halaman menu.
+
+Pastikan setiap menu dapat dibuka.
+
+Jangan menggunakan dead links.
+
+PRIORITY 5 — Module Placeholders
+
+Bangun tampilan standar untuk modul yang belum memiliki fungsi operasional.
+
+Setiap placeholder harus memiliki:
+
+- Ikon modul.
+- Judul modul.
+- Deskripsi fungsi.
+- Informasi tahap pengembangan.
+- Area yang siap diisi dengan komponen berikutnya.
+
+PRIORITY 6 — Database & Security Foundation
+
+Siapkan koneksi database dan struktur dasar keamanan.
+
+Pastikan tidak ada fitur yang mengklaim data sudah tersimpan apabila backend belum tersedia.
+
+PRIORITY 7 — Quality Assurance
+
+Lakukan pemeriksaan:
+
+- Responsivitas desktop.
+- Responsivitas tablet.
+- Responsivitas mobile.
+- Navigasi seluruh halaman.
+- Light dan dark mode.
+- Console errors.
+- Build errors.
+- TypeScript errors.
+- Konsistensi layout.
+- Accessibility.
+- Basic performance.
+
+---
+
+14. FUTURE DEVELOPMENT PRINCIPLES
+
+Aplikasi SIKESLING RSAM akan dikembangkan secara bertahap berdasarkan hasil konsultasi dengan petugas kesehatan lingkungan rumah sakit.
+
+Oleh karena itu:
+
+1. Jangan mengunci indikator pemeriksaan dalam kode.
+2. Jangan mengunci kategori kegiatan.
+3. Jangan menggunakan rumus capaian yang belum ditetapkan.
+4. Jangan mengasumsikan semua kegiatan Kesling memiliki frekuensi pemeriksaan yang sama.
+5. Jangan mengunci pilihan unit atau ruangan.
+6. Jangan membuat ketergantungan yang tidak diperlukan antarmodul.
+7. Pastikan struktur aplikasi mudah diperluas.
+8. Pertahankan konsistensi UI/UX pada setiap pengembangan fitur.
+9. Dokumentasikan perubahan penting.
+10. Hindari mengubah modul yang tidak berkaitan ketika melakukan penambahan fitur.
+
+Sistem harus mudah dikembangkan melalui instruksi tambahan pada tahap berikutnya.
+
+---
+
+15. PROJECT DOCUMENTATION
+
+Buat dokumentasi awal:
+
+README.md
+
+Berisi:
+
+- Deskripsi proyek.
+- Technology stack.
+- Cara instalasi.
+- Cara menjalankan aplikasi.
+- Konfigurasi environment.
+- Cara menghubungkan database.
+- Struktur proyek.
+
+DEVELOPMENT_ROADMAP.md
+
+Berisi rencana pengembangan modul secara bertahap.
+
+MODULE_STATUS.md
+
+Berisi daftar seluruh modul beserta status:
+
+- UI Ready.
+- Placeholder.
+- In Development.
+- Functional.
+- Needs Validation.
+
+KESLING_REQUIREMENTS.md
+
+Berisi daftar kebutuhan yang masih harus dikonsultasikan dengan petugas Kesling.
+
+Contoh:
+
+- Jenis kegiatan operasional.
+- Frekuensi pemeriksaan.
+- Parameter monitoring.
+- Standar penilaian.
+- Format supervisi.
+- Format laporan.
+- Alur tindak lanjut.
+- Struktur penanggung jawab.
+
+CHANGELOG.md
+
+Berisi riwayat pengembangan aplikasi.
+
+---
+
+16. STRICT DEVELOPMENT RULES
+
+Patuhi ketentuan berikut:
+
+RULE 1
+
+Fokus pada pembuatan fondasi aplikasi terlebih dahulu.
+
+RULE 2
+
+Seluruh menu dan submenu harus tersedia dan memiliki halaman.
+
+RULE 3
+
+Jangan membuat terlalu banyak fitur kompleks pada tahap pertama.
+
+RULE 4
+
+Jangan menggunakan data statistik fiktif yang terlihat seperti data resmi rumah sakit.
+
+RULE 5
+
+Gunakan placeholder profesional untuk modul yang belum siap.
+
+RULE 6
+
+Prioritaskan kualitas desain antarmuka dan pengalaman pengguna.
+
+RULE 7
+
+Seluruh aplikasi harus responsif pada desktop, tablet, dan smartphone.
+
+RULE 8
+
+Gunakan arsitektur modular agar pengembangan berikutnya tidak memerlukan pembuatan ulang aplikasi.
+
+RULE 9
+
+Pastikan kode dapat dijalankan dan tidak hanya berupa mockup statis.
+
+RULE 10
+
+Sebelum menyelesaikan pekerjaan, jalankan pemeriksaan typecheck, lint, dan build sesuai konfigurasi proyek. Perbaiki error yang ditemukan.
+
+RULE 11
+
+Jangan menghapus atau mengganti modul yang sudah berjalan tanpa alasan teknis yang jelas.
+
+RULE 12
+
+Selalu prioritaskan kemudahan penggunaan bagi petugas Kesling rumah sakit.
+
+---
+
+17. EXPECTED FINAL RESULT
+
+Hasil tahap pertama harus berupa aplikasi web SIKESLING RSAM yang:
+
+1. Dapat dijalankan secara lokal.
+2. Memiliki desain dashboard modern dan profesional.
+3. Memiliki sidebar dengan seluruh menu dan submenu.
+4. Memiliki halaman untuk setiap modul.
+5. Responsif pada desktop, tablet, dan smartphone.
+6. Mendukung light dan dark mode.
+7. Memiliki komponen UI yang konsisten.
+8. Memiliki fondasi backend dan database yang siap dikembangkan.
+9. Memiliki struktur folder modular.
+10. Memiliki dokumentasi teknis dasar.
+11. Mudah dimodifikasi melalui instruksi pengembangan selanjutnya.
+12. Tidak menggunakan indikator maupun data kesehatan lingkungan yang belum dikonfirmasi.
+
+PENTING:
+
+Jangan berhenti pada tahap memberikan penjelasan, konsep, atau contoh kode.
+
+Implementasikan aplikasi secara nyata di dalam proyek.
+
+Jika proyek belum tersedia, buat struktur proyek baru.
+
+Jika proyek sudah tersedia, periksa struktur yang ada sebelum melakukan perubahan.
+
+Bangun antarmuka dan navigasi secara menyeluruh sesuai spesifikasi di atas.
+
+Mulai implementasi dari fondasi, layout utama, dashboard, kemudian seluruh wadah menu dan submenu.
+
+Fokus utama saat ini adalah menghasilkan aplikasi SIKESLING RSAM dengan tampilan profesional, struktur navigasi lengkap, serta arsitektur yang siap dikembangkan secara bertahap.

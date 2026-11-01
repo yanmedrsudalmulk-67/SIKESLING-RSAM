@@ -1,0 +1,260 @@
+// Prisma Schema — SIKESLING RSAM (Sistem Informasi Kesehatan Lingkungan)
+// UOBK RSUD Al-Mulk Kota Sukabumi
+// Version: 1.0 — Foundation Development
+// Database: Local or Hospital Server PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// 1. Users
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  username     String   @unique
+  fullName     String
+  nip          String?
+  passwordHash String
+  roleId       String
+  role         Role     @relation(fields: [roleId], references: [id])
+  status       String   @default("ACTIVE") // ACTIVE, INACTIVE, SUSPENDED
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  createdBy    String?
+  updatedBy    String?
+
+  activities        Activity[]
+  inspections       Inspection[]
+  assignedFindings  InspectionFinding[] @relation("FindingPIC")
+  followUpActions   FollowUpAction[]
+}
+
+// 2. Roles
+model Role {
+  id          String       @id @default(cuid())
+  code        String       @unique // ADMIN, PETUGAS_KESLING, KOORDINATOR_KESLING, PIMPINAN_VIEWER
+  name        String
+  description String?
+  status      String       @default("ACTIVE")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  users       User[]
+  permissions Permission[]
+}
+
+// 3. Permissions
+model Permission {
+  id          String   @id @default(cuid())
+  action      String   // e.g. view_dashboard, manage_operational, verify_findings
+  module      String   // e.g. operasional, monitoring, supervisi, tindak_lanjut
+  description String?
+  roleId      String
+  role        Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([roleId, action, module])
+}
+
+// 4. Units (Instalasi / Unit Kerja Rumah Sakit)
+model Unit {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  building    String?
+  description String?
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  rooms       Room[]
+}
+
+// 5. Rooms (Ruangan di dalam Unit)
+model Room {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  floor       String?
+  riskZone    String?  // Konfigurasi zona risiko (opsional setelah validasi Kesling)
+  unitId      String
+  unit        Unit     @relation(fields: [unitId], references: [id])
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+
+  activities  Activity[]
+  inspections Inspection[]
+  findings    InspectionFinding[]
+}
+
+// 6. ActivityCategories (Master Kategori Kegiatan Operasional)
+model ActivityCategory {
+  id          String     @id @default(cuid())
+  code        String     @unique
+  name        String
+  description String?
+  status      String     @default("ACTIVE")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  activities  Activity[]
+}
+
+// 7. Activities (Pencatatan Kegiatan Harian Petugas Kesling)
+model Activity {
+  id           String           @id @default(cuid())
+  activityDate DateTime
+  categoryId   String
+  category     ActivityCategory @relation(fields: [categoryId], references: [id])
+  roomId       String?
+  room         Room?            @relation(fields: [roomId], references: [id])
+  locationText String
+  officerId    String
+  officer      User             @relation(fields: [officerId], references: [id])
+  description  String
+  notes        String?
+  status       String           @default("RECORDED") // RECORDED, VERIFIED, ARCHIVED
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  createdBy    String?
+  updatedBy    String?
+  attachments  Attachment[]
+}
+
+// 8. MonitoringCategories (Master Kategori Monitoring Lingkungan)
+model MonitoringCategory {
+  id          String   @id @default(cuid())
+  code        String   @unique // AIR, UDARA, LIMBAH, IPAL, VEKTOR, HIGIENE_SANITASI, SANITASI_PANGAN, LAINNYA
+  name        String
+  description String?
+  configJson  String?  // JSON konfigurasi parameter dinamis setelah validasi petugas Kesling
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+}
+
+// 9. InspectionTemplates (Template Checklist Supervisi & Pemeriksaan)
+model InspectionTemplate {
+  id          String       @id @default(cuid())
+  code        String       @unique
+  title       String
+  category    String
+  version     String       @default("1.0")
+  schemaJson  String       // Struktur butir checklist yang dapat dikonfigurasi
+  status      String       @default("DRAFT") // DRAFT, ACTIVE, INACTIVE
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  inspections Inspection[]
+}
+
+// 10. Inspections (Pelaksanaan Supervisi Lingkungan)
+model Inspection {
+  id                String              @id @default(cuid())
+  inspectionDate    DateTime
+  officerId         String
+  officer           User                @relation(fields: [officerId], references: [id])
+  roomId            String
+  room              Room                @relation(fields: [roomId], references: [id])
+  templateId        String?
+  template          InspectionTemplate? @relation(fields: [templateId], references: [id])
+  category          String
+  inspectionDetails String
+  summaryFindings   String?
+  recommendations   String?
+  status            String              @default("SUBMITTED")
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  createdBy         String?
+  updatedBy         String?
+
+  findings    InspectionFinding[]
+  attachments Attachment[]
+}
+
+// 11. InspectionFindings (Temuan Lapangan & Tindak Lanjut)
+model InspectionFinding {
+  id              String           @id @default(cuid())
+  findingCode     String           @unique
+  findingDate     DateTime
+  inspectionId    String?
+  inspection      Inspection?      @relation(fields: [inspectionId], references: [id])
+  roomId          String?
+  room            Room?            @relation(fields: [roomId], references: [id])
+  locationText    String
+  category        String
+  description     String
+  recommendation  String?
+  priority        String           @default("SEDANG") // RENDAH, SEDANG, TINGGI
+  picUserId       String?
+  picUser         User?            @relation("FindingPIC", fields: [picUserId], references: [id])
+  picNameText     String?
+  targetDate      DateTime?
+  status          String           @default("TEMUAN_BARU") // TEMUAN_BARU, DALAM_PROSES, MENUNGGU_VERIFIKASI, SELESAI_TERVERIFIKASI
+  verificationLog String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  createdBy       String?
+  updatedBy       String?
+
+  followUpActions FollowUpAction[]
+  attachments     Attachment[]
+}
+
+// 12. Attachments (Dokumentasi Foto & Dokumen Privat)
+model Attachment {
+  id           String             @id @default(cuid())
+  fileName     String
+  mimeType     String
+  sizeBytes    Int
+  storagePath  String             // Path privat di luar direktori publik
+  caption      String?
+  stage        String?            // BEFORE_FIX, AFTER_FIX, ACTIVITY_DOC, LAB_REPORT
+  activityId   String?
+  activity     Activity?          @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  inspectionId String?
+  inspection   Inspection?        @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  findingId    String?
+  finding      InspectionFinding? @relation(fields: [findingId], references: [id], onDelete: Cascade)
+  createdAt    DateTime           @default(now())
+  createdBy    String?
+}
+
+// 13. FollowUpActions (Riwayat Progres Tindak Lanjut & Verifikasi)
+model FollowUpAction {
+  id          String            @id @default(cuid())
+  findingId   String
+  finding     InspectionFinding @relation(fields: [findingId], references: [id], onDelete: Cascade)
+  actorId     String?
+  actor       User?             @relation(fields: [actorId], references: [id])
+  fromStatus  String
+  toStatus    String
+  actionNotes String
+  createdAt   DateTime          @default(now())
+}
+
+// 14. ApplicationSettings (Konfigurasi Sistem & Standar Referensi)
+model ApplicationSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  category    String   @default("GENERAL") // HOSPITAL_PROFILE, SYSTEM_CONFIG, REGULATION_REF
+  description String?
+  status      String   @default("ACTIVE")
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?
+}
