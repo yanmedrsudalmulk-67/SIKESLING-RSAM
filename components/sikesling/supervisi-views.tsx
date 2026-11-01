@@ -69,7 +69,6 @@ export function RiwayatSupervisiView() {
     <PageContainer>
       <PageHeader
         title={meta.title}
-        description={meta.description}
         status="Functional"
         breadcrumbs={meta.breadcrumbs}
       />
@@ -85,7 +84,6 @@ export function DokumentasiSupervisiView() {
     <PageContainer>
       <PageHeader
         title={meta.title}
-        description={meta.description}
         status="Functional"
         breadcrumbs={meta.breadcrumbs}
       />
@@ -100,15 +98,19 @@ export function SupervisiPlaceholderSubView({
   routePath: string;
 }) {
   const meta = resolveRouteMeta(routePath);
+  const isRekapRoute = routePath.includes('rekap') || routePath.includes('riwayat');
   return (
     <PageContainer>
       <PageHeader
-        title={meta.title}
-        description={meta.description}
+        title={ isRekapRoute ? 'Tabel Rekap Supervisi' : meta.title }
+        description={ isRekapRoute ? undefined : meta.description }
         status="Functional"
         breadcrumbs={meta.breadcrumbs}
       />
-      <SupervisiHubWorkspace initialMode="cards" initialCardId="SUPERVISI" />
+      <SupervisiHubWorkspace
+        initialMode={isRekapRoute ? 'table' : 'cards'}
+        initialCardId="SUPERVISI"
+      />
     </PageContainer>
   );
 }

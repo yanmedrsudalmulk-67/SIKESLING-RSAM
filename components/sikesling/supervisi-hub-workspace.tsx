@@ -2490,93 +2490,93 @@ export function SupervisiHubWorkspace({
 
       {/* =====================================================================
           VIEW 3: GAMBAR NO. 5 — TABEL REKAP SUPERVISI & CEKLIST RUANGAN
-          (MENYESUAIKAN KOLOM PER TAB RUANGAN + TAB SHEET DI BAGIAN BAWAH)
+          (TAB SHEET DI ATAS TABEL SATU LAYAR PENUH + TEMA WARNA SIKESLING RSAM)
          ===================================================================== */}
       {mode === 'table' && (
-        <div className="rounded-2xl bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-700 shadow-xl overflow-hidden">
-          {/* Top Action & Filter Toolbar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 bg-[#FAF6F0] dark:bg-slate-800 border-b border-slate-300 dark:border-slate-700">
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setMode('cards')}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs font-bold text-[#002147] dark:text-slate-200 hover:bg-slate-50 cursor-pointer"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Pilih Card Ruangan</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  resetFormForCard(activeCardId);
-                  setMode('form');
-                }}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#1B8720] hover:bg-[#146918] text-white text-xs font-extrabold shadow-2xs cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>+ Input {activeCardConfig.title}</span>
-              </button>
-            </div>
-
-            <div className="relative w-full sm:w-64">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={`Cari di tab ${activeCardConfig.title}...`}
-                className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:border-[#002147]"
-              />
+        <div className="rounded-2xl bg-white dark:bg-slate-900 border border-[#D2B48C]/50 dark:border-slate-700 shadow-xl overflow-hidden">
+          {/* Top Full-Width Sheet Switcher Bar (All 10 Room Sheets Visible Without Horizontal Scroll) */}
+          <div
+            data-testid="rekap-sheet-tabs"
+            className="bg-[#FAF6F0] dark:bg-slate-800/90 border-b border-[#D2B48C]/50 dark:border-slate-700 p-2 select-none"
+          >
+            <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-1.5 w-full">
+              {SUPERVISI_CARDS.map((card) => {
+                const isSelected = activeCardId === card.id;
+                return (
+                  <button
+                    key={card.id}
+                    type="button"
+                    data-testid={`sheet-tab-${card.id}`}
+                    onClick={() => setActiveCardId(card.id)}
+                    className={`w-full min-h-[38px] px-1.5 py-1.5 rounded-lg text-[10px] xl:text-[10.5px] leading-tight font-extrabold uppercase tracking-tight text-center flex items-center justify-center transition-all cursor-pointer border ${
+                      isSelected
+                        ? 'bg-[#002147] text-[#D2B48C] border-[#002147] shadow-sm ring-1 ring-[#D2B48C]/60'
+                        : 'bg-white dark:bg-slate-900 hover:bg-[#002147]/5 dark:hover:bg-slate-700 text-[#002147] dark:text-slate-200 border-[#D2B48C]/40 dark:border-slate-700'
+                    }`}
+                  >
+                    <span className="line-clamp-2 break-words">
+                      {card.title}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Spreadsheet Title Header (Exact Match to Gambar 5) */}
-          <div className="bg-white text-black px-4 py-3 border-b border-slate-300">
-            <div className="text-lg sm:text-xl font-extrabold tracking-tight uppercase">
-              {activeCardConfig.reportTitle}
+          {/* Themed Report Title Header */}
+          <div className="bg-gradient-to-r from-[#002147] via-[#002b5c] to-[#002147] text-[#FAF6F0] px-4 py-3 border-b border-[#D2B48C]/40 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <div>
+              <div className="text-sm sm:text-base lg:text-lg font-extrabold tracking-tight uppercase text-[#FAF6F0]">
+                {activeCardConfig.reportTitle}
+              </div>
+              <div className="text-xs sm:text-sm font-bold tracking-wide uppercase text-[#D2B48C] mt-0.5">
+                UOBK RSUD AL-MULK KOTA SUKABUMI BULAN FEBRUARI 2026
+              </div>
             </div>
-            <div className="text-base sm:text-lg font-extrabold tracking-tight uppercase mt-0.5">
-              UOBK RSUD AL-MULK KOTA SUKABUMI BULAN FEBRUARI 2026
+            <div className="inline-flex items-center self-start sm:self-auto px-2.5 py-1 rounded-md bg-[#FAF6F0]/10 border border-[#D2B48C]/40 text-[#D2B48C] text-[10px] font-extrabold uppercase tracking-wider shrink-0">
+              Sheet Aktif: {activeCardConfig.title}
             </div>
           </div>
 
-          {/* Dynamic Spreadsheet Table: Room Checklist Table (9 rooms) OR Supervisi Audit Table (10th card) */}
-          <div className="overflow-x-auto bg-white text-black">
+          {/* Dynamic Full-Width Table: Room Checklist Table (9 rooms) OR Supervisi Audit Table (10th card) */}
+          <div className="w-full overflow-x-hidden bg-white dark:bg-slate-900 text-[#002147] dark:text-slate-100">
             {activeCardConfig.kind === 'room_checklist' ? (
-              <table className="w-full min-w-[1080px] border-collapse text-[9px] leading-tight">
+              <table
+                data-testid="rekap-room-table"
+                className="w-full table-fixed border-collapse text-[8px] xl:text-[8.5px] leading-tight"
+              >
                 <thead>
-                  <tr className="bg-[#00FF00] text-black font-extrabold uppercase text-center">
-                    <th className="border border-black px-1 py-1.5 w-[64px]">
+                  <tr className="bg-[#002147] text-[#FAF6F0] font-extrabold uppercase text-center border-b-2 border-[#D2B48C]">
+                    <th className="border border-[#1e3a5f] px-1 py-2 w-[5.8%]">
                       TANGGAL
                     </th>
-                    <th className="border border-black px-1 py-1.5 w-[44px]">
+                    <th className="border border-[#1e3a5f] px-1 py-2 w-[4.2%]">
                       HARI
                     </th>
                     {activeCardConfig.tasks.map((t) => (
                       <React.Fragment key={t.id}>
-                        <th className="border border-black px-1 py-1.5 w-[68px]">
+                        <th className="border border-[#1e3a5f] px-1 py-2 w-[5.8%] leading-snug">
                           {t.label}
                         </th>
                         {t.photoSlotLabels.length > 0 && (
-                          <th className="border border-black px-0.5 py-1.5 w-[46px]">
+                          <th className="border border-[#1e3a5f] px-0.5 py-2 w-[4.1%] text-[#D2B48C] leading-snug">
                             {t.photoSlotLabels[0]}
                           </th>
                         )}
                       </React.Fragment>
                     ))}
-                    <th className="border border-black px-1 py-1.5 w-[66px]">
+                    <th className="border border-[#1e3a5f] px-1 py-2 w-[5.8%]">
                       PETUGAS
                     </th>
                     {activeCardConfig.hasEvaluasiSupervisor && (
-                      <th className="border border-black px-1 py-1.5 w-[105px]">
+                      <th className="border border-[#1e3a5f] px-1 py-2 w-[8.5%]">
                         EVALUASI SUPERVISOR
                       </th>
                     )}
-                    <th className="border border-black px-1 py-1.5 w-[56px]">
+                    <th className="border border-[#1e3a5f] px-1 py-2 w-[4.6%] text-[#D2B48C]">
                       TANDA TANGAN
                     </th>
-                    <th className="border border-black px-0.5 py-1.5 w-[28px]">
+                    <th className="border border-[#1e3a5f] px-0.5 py-2 w-[2.8%]">
                       AKSI
                     </th>
                   </tr>
@@ -2586,23 +2586,21 @@ export function SupervisiHubWorkspace({
                     <tr>
                       <td
                         colSpan={20}
-                        className="border border-black px-4 py-8 text-center text-xs font-bold text-slate-500"
+                        className="border border-[#D2B48C]/40 dark:border-slate-700 px-4 py-8 text-center text-xs font-bold text-slate-500 dark:text-slate-400 bg-[#FAF6F0]/40 dark:bg-slate-800/40"
                       >
-                        Belum ada data untuk tab {activeCardConfig.title}. Klik
-                        tombol &ldquo;+ Input {activeCardConfig.title}&rdquo; di
-                        atas untuk menambahkan data.
+                        Belum ada data rekapan untuk sheet {activeCardConfig.title}.
                       </td>
                     </tr>
                   ) : (
                     filteredRoomRecords.map((row) => (
                       <tr
                         key={row.id}
-                        className="bg-white hover:bg-emerald-50/40 transition-colors text-center align-middle"
+                        className="odd:bg-white even:bg-[#FAF6F0]/70 hover:bg-[#D2B48C]/15 dark:odd:bg-slate-900 dark:even:bg-slate-800/60 dark:hover:bg-slate-800 transition-colors text-center align-middle"
                       >
-                        <td className="border border-black px-1 py-1.5 font-medium tabular-nums text-[9.5px]">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-1 py-1.5 font-semibold tabular-nums text-[8px] xl:text-[8.5px] text-[#002147] dark:text-slate-200">
                           {row.tanggal}
                         </td>
-                        <td className="border border-black px-1 py-1.5 font-bold text-[9.5px]">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-1 py-1.5 font-extrabold text-[8px] xl:text-[8.5px] text-[#002147] dark:text-[#D2B48C]">
                           {row.hari}
                         </td>
                         {activeCardConfig.tasks.map((t) => {
@@ -2611,19 +2609,19 @@ export function SupervisiHubWorkspace({
                           const photos = (entry?.photos || []).filter(Boolean);
                           return (
                             <React.Fragment key={t.id}>
-                              <td className="border border-black px-1 py-1.5 font-extrabold text-[9.5px]">
+                              <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-0.5 py-1.5 font-extrabold">
                                 <span
-                                  className={
+                                  className={`inline-block max-w-full px-1 py-0.5 rounded text-[7px] xl:text-[7.5px] font-extrabold tracking-tight ${
                                     status === 'TIDAK'
-                                      ? 'text-rose-700'
-                                      : 'text-[#1B8720]'
-                                  }
+                                      ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
+                                      : 'bg-[#002147]/10 text-[#002147] dark:bg-[#D2B48C]/20 dark:text-[#D2B48C]'
+                                  }`}
                                 >
                                   {status}
                                 </span>
                               </td>
                               {t.photoSlotLabels.length > 0 && (
-                                <td className="border border-black p-0.5">
+                                <td className="border border-[#D2B48C]/40 dark:border-slate-700 p-0.5">
                                   {photos.length > 0 ? (
                                     <div className="flex items-center justify-center gap-0.5">
                                       {photos.slice(0, 2).map((pUrl, pIdx) => (
@@ -2642,7 +2640,7 @@ export function SupervisiHubWorkspace({
                                           <img
                                             src={pUrl}
                                             alt={t.label}
-                                            className="w-11 h-12 object-cover border border-slate-300"
+                                            className="w-9 h-10 object-cover rounded border border-[#D2B48C]/60 shadow-2xs"
                                           />
                                         </button>
                                       ))}
@@ -2653,29 +2651,29 @@ export function SupervisiHubWorkspace({
                             </React.Fragment>
                           );
                         })}
-                        <td className="border border-black px-1 py-1.5 font-bold text-[9.5px]">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-1 py-1.5 font-bold text-[8px] xl:text-[8.5px] text-[#002147] dark:text-slate-100">
                           {row.petugas}
                         </td>
                         {activeCardConfig.hasEvaluasiSupervisor && (
-                          <td className="border border-black px-1.5 py-1.5 text-[9.5px] leading-snug">
+                          <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-1 py-1.5 text-[8px] xl:text-[8.5px] leading-snug text-slate-700 dark:text-slate-300">
                             {row.evaluasiSupervisor}
                           </td>
                         )}
-                        <td className="border border-black p-0.5 bg-white">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 p-0.5 bg-white">
                           {row.signatures?.[0] ? (
                             <img
                               src={row.signatures[0]}
                               alt={`TTD ${row.petugas}`}
-                              className="w-14 h-12 object-contain mx-auto"
+                              className="w-11 h-10 object-contain mx-auto"
                             />
                           ) : null}
                         </td>
-                        <td className="border border-black px-1 py-1.5">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-0.5 py-1.5">
                           <button
                             type="button"
                             onClick={() => handleDeleteRoomRecord(row.id)}
                             title="Hapus Baris"
-                            className="p-1 rounded text-rose-600 hover:bg-rose-50 cursor-pointer"
+                            className="p-1 rounded text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5 mx-auto" />
                           </button>
@@ -2686,74 +2684,77 @@ export function SupervisiHubWorkspace({
                 </tbody>
               </table>
             ) : (
-              /* Supervisi Audit Table (Exact Match to Gambar 5) */
-              <table className="w-full min-w-[1180px] border-collapse text-[10px] leading-tight">
+              /* Supervisi Audit Table (Themed SIKESLING RSAM & Full-Width Without Horizontal Scroll) */
+              <table
+                data-testid="rekap-audit-table"
+                className="w-full table-fixed border-collapse text-[8px] xl:text-[9px] leading-tight"
+              >
                 <thead>
-                  <tr className="bg-[#00FF00] text-black font-extrabold uppercase text-center">
-                    <th className="border border-black px-1 py-1.5 w-[66px]">
+                  <tr className="bg-[#002147] text-[#FAF6F0] font-extrabold uppercase text-center border-b-2 border-[#D2B48C]">
+                    <th className="border border-[#1e3a5f] px-1 py-2 w-[5.4%]">
                       TANGGAL
                     </th>
-                    <th className="border border-black px-1 py-1.5 w-[72px]">
+                    <th className="border border-[#1e3a5f] px-1 py-2 w-[5.8%]">
                       SUPERVISOR
                     </th>
-                    <th className="border border-black px-1 py-1.5 w-[68px]">
+                    <th className="border border-[#1e3a5f] px-1 py-2 w-[4.4%]">
                       UNIT
                     </th>
-                    <th className="border border-black px-1 py-1.5 w-[68px]">
+                    <th className="border border-[#1e3a5f] px-1 py-2 w-[5.4%]">
                       NAMA PETUGAS
                     </th>
-                    <th className="border border-black px-1 py-1.5 w-[64px]">
+                    <th className="border border-[#1e3a5f] px-1 py-2 w-[5.8%]">
                       KERAPIHAN
                     </th>
-                    <th className="border border-black px-1 py-1.5 w-[34px]">
+                    <th className="border border-[#1e3a5f] px-0.5 py-2 w-[3%] text-[#D2B48C] whitespace-nowrap">
                       SKOR
                     </th>
-                    <th className="border border-black px-1 py-1.5 w-[64px]">
+                    <th className="border border-[#1e3a5f] px-1 py-2 w-[5.8%]">
                       PROSEDUR
                     </th>
-                    <th className="border border-black px-1 py-1.5 w-[34px]">
+                    <th className="border border-[#1e3a5f] px-0.5 py-2 w-[3%] text-[#D2B48C] whitespace-nowrap">
                       SKOR
                     </th>
-                    <th className="border border-black px-1 py-1.5 w-[68px]">
+                    <th className="border border-[#1e3a5f] px-1 py-2 w-[5.8%]">
                       ALAT DAN BAHAN
                     </th>
-                    <th className="border border-black px-1 py-1.5 w-[34px]">
+                    <th className="border border-[#1e3a5f] px-0.5 py-2 w-[3%] text-[#D2B48C] whitespace-nowrap">
                       SKOR
                     </th>
-                    <th className="border border-black px-1 py-1.5 w-[86px]">
-                      KESELAMATAN DAN KESEHATAN KERJA (K3)
+                    <th className="border border-[#1e3a5f] px-1 py-2 w-[6.2%]">
+                      KESELAMATAN &amp; KESEHATAN KERJA (K3)
                     </th>
-                    <th className="border border-black px-1 py-1.5 w-[34px]">
+                    <th className="border border-[#1e3a5f] px-0.5 py-2 w-[3%] text-[#D2B48C] whitespace-nowrap">
                       SKOR
                     </th>
-                    <th className="border border-black px-1 py-1.5 w-[68px]">
+                    <th className="border border-[#1e3a5f] px-1 py-2 w-[5.8%]">
                       SIKAP DAN PERILAKU
                     </th>
-                    <th className="border border-black px-1 py-1.5 w-[34px]">
+                    <th className="border border-[#1e3a5f] px-0.5 py-2 w-[3%] text-[#D2B48C] whitespace-nowrap">
                       SKOR
                     </th>
-                    <th className="border border-black px-1 py-1.5 w-[42px]">
+                    <th className="border border-[#1e3a5f] px-0.5 py-2 w-[3.4%] text-[#D2B48C]">
                       TOTAL SKOR
                     </th>
-                    <th className="border border-black px-1 py-1.5 w-[56px]">
+                    <th className="border border-[#1e3a5f] px-1 py-2 w-[5.2%] text-[#D2B48C] whitespace-nowrap">
                       KATEGORI
                     </th>
-                    <th className="border border-black px-1.5 py-1.5 w-[135px]">
+                    <th className="border border-[#1e3a5f] px-1 py-2 w-[7.2%]">
                       TEMUAN
                     </th>
-                    <th className="border border-black px-1.5 py-1.5 w-[130px]">
+                    <th className="border border-[#1e3a5f] px-1 py-2 w-[7.2%]">
                       REKOMENDASI
                     </th>
-                    <th className="border border-black px-1 py-1.5 w-[72px]">
-                      DOKUMENTASI TEMUAN
+                    <th className="border border-[#1e3a5f] px-0.5 py-2 w-[4.4%] text-[#D2B48C]">
+                      DOK. TEMUAN
                     </th>
-                    <th className="border border-black px-1 py-1.5 w-[72px]">
-                      DOKUMENTASI PERBAIKAN
+                    <th className="border border-[#1e3a5f] px-0.5 py-2 w-[4.8%] text-[#D2B48C]">
+                      DOK. PERBAIKAN
                     </th>
-                    <th className="border border-black px-1 py-1.5 w-[70px]">
+                    <th className="border border-[#1e3a5f] px-0.5 py-2 w-[4.6%] text-[#D2B48C]">
                       TANDA TANGAN
                     </th>
-                    <th className="border border-black px-1 py-1.5 w-[32px]">
+                    <th className="border border-[#1e3a5f] px-0.5 py-2 w-[2.8%] whitespace-nowrap">
                       AKSI
                     </th>
                   </tr>
@@ -2763,74 +2764,74 @@ export function SupervisiHubWorkspace({
                     <tr>
                       <td
                         colSpan={22}
-                        className="border border-black px-4 py-8 text-center text-xs font-bold text-slate-500"
+                        className="border border-[#D2B48C]/40 dark:border-slate-700 px-4 py-8 text-center text-xs font-bold text-slate-500 dark:text-slate-400 bg-[#FAF6F0]/40 dark:bg-slate-800/40"
                       >
-                        Belum ada data untuk tab ini. Klik tombol &ldquo;+ Input{' '}
-                        {activeCardConfig.title}&rdquo; di atas untuk
-                        menambahkan data supervisi.
+                        Belum ada data rekapan untuk sheet ini.
                       </td>
                     </tr>
                   ) : (
                     filteredAuditRecords.map((row) => (
                       <tr
                         key={row.id}
-                        className="bg-white hover:bg-emerald-50/40 transition-colors text-center align-middle"
+                        className="odd:bg-white even:bg-[#FAF6F0]/70 hover:bg-[#D2B48C]/15 dark:odd:bg-slate-900 dark:even:bg-slate-800/60 dark:hover:bg-slate-800 transition-colors text-center align-middle"
                       >
-                        <td className="border border-black px-1 py-1.5 font-medium tabular-nums text-[9.5px]">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-1 py-1.5 font-semibold tabular-nums text-[8.5px] xl:text-[9px] text-[#002147] dark:text-slate-200 break-words">
                           {row.tanggal}
                         </td>
-                        <td className="border border-black px-1 py-1.5 text-[9.5px]">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-1 py-1.5 text-[8.5px] xl:text-[9px] text-slate-700 dark:text-slate-300 break-words">
                           {row.supervisor}
                         </td>
-                        <td className="border border-black px-1 py-1.5 font-semibold text-[9.5px]">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-1 py-1.5 font-extrabold text-[8.5px] xl:text-[9px] text-[#002147] dark:text-[#D2B48C] break-words">
                           {row.unit}
                         </td>
-                        <td className="border border-black px-1 py-1.5 text-[9.5px]">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-1 py-1.5 font-semibold text-[8.5px] xl:text-[9px] text-[#002147] dark:text-slate-200 break-words">
                           {row.namaPetugas}
                         </td>
-                        <td className="border border-black px-1 py-1.5 text-[9px]">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-1 py-1.5 text-[8px] xl:text-[8.5px] text-slate-700 dark:text-slate-300 break-words">
                           {row.kerapihan}
                         </td>
-                        <td className="border border-black px-1 py-1.5 font-bold tabular-nums">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-0.5 py-1.5 font-extrabold tabular-nums text-[#002147] dark:text-[#D2B48C] bg-[#FAF6F0]/50 dark:bg-slate-800/40">
                           {row.skorKerapihan ?? ''}
                         </td>
-                        <td className="border border-black px-1 py-1.5 text-[9px]">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-1 py-1.5 text-[8px] xl:text-[8.5px] text-slate-700 dark:text-slate-300 break-words">
                           {row.prosedur}
                         </td>
-                        <td className="border border-black px-1 py-1.5 font-bold tabular-nums">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-0.5 py-1.5 font-extrabold tabular-nums text-[#002147] dark:text-[#D2B48C] bg-[#FAF6F0]/50 dark:bg-slate-800/40">
                           {row.skorProsedur ?? ''}
                         </td>
-                        <td className="border border-black px-1 py-1.5 text-[9px]">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-1 py-1.5 text-[8px] xl:text-[8.5px] text-slate-700 dark:text-slate-300 break-words">
                           {row.alatDanBahan}
                         </td>
-                        <td className="border border-black px-1 py-1.5 font-bold tabular-nums">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-0.5 py-1.5 font-extrabold tabular-nums text-[#002147] dark:text-[#D2B48C] bg-[#FAF6F0]/50 dark:bg-slate-800/40">
                           {row.skorAlatDanBahan ?? ''}
                         </td>
-                        <td className="border border-black px-1 py-1.5 text-[9px]">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-1 py-1.5 text-[8px] xl:text-[8.5px] text-slate-700 dark:text-slate-300 break-words">
                           {row.k3}
                         </td>
-                        <td className="border border-black px-1 py-1.5 font-bold tabular-nums">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-0.5 py-1.5 font-extrabold tabular-nums text-[#002147] dark:text-[#D2B48C] bg-[#FAF6F0]/50 dark:bg-slate-800/40">
                           {row.skorK3 ?? ''}
                         </td>
-                        <td className="border border-black px-1 py-1.5 text-[9px]">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-1 py-1.5 text-[8px] xl:text-[8.5px] text-slate-700 dark:text-slate-300 break-words">
                           {row.sikapDanPerilaku}
                         </td>
-                        <td className="border border-black px-1 py-1.5 font-bold tabular-nums">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-0.5 py-1.5 font-extrabold tabular-nums text-[#002147] dark:text-[#D2B48C] bg-[#FAF6F0]/50 dark:bg-slate-800/40">
                           {row.skorSikapDanPerilaku ?? ''}
                         </td>
-                        <td className="border border-black px-1 py-1.5 font-extrabold tabular-nums">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-0.5 py-1.5 font-extrabold tabular-nums text-[9.5px] text-[#002147] dark:text-[#D2B48C] bg-[#D2B48C]/20 dark:bg-slate-800">
                           {row.totalSkor ?? ''}
                         </td>
-                        <td className="border border-black px-1 py-1.5 font-bold text-[9px]">
-                          {row.kategori}
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-1 py-1.5 font-extrabold text-[8px] xl:text-[8.5px] break-words">
+                          <span className="inline-block px-1.5 py-0.5 rounded bg-[#002147] text-[#D2B48C]">
+                            {row.kategori}
+                          </span>
                         </td>
-                        <td className="border border-black px-1.5 py-1.5 text-[10px] leading-snug">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-1 py-1.5 text-[8.5px] xl:text-[9px] leading-snug text-slate-800 dark:text-slate-200 break-words">
                           {row.temuan}
                         </td>
-                        <td className="border border-black px-1.5 py-1.5 text-[10px] leading-snug">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-1 py-1.5 text-[8.5px] xl:text-[9px] leading-snug text-slate-800 dark:text-slate-200 break-words">
                           {row.rekomendasi}
                         </td>
-                        <td className="border border-black p-0.5">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 p-0.5">
                           {row.dokumentasiTemuanUrl ? (
                             <button
                               type="button"
@@ -2846,12 +2847,12 @@ export function SupervisiHubWorkspace({
                               <img
                                 src={row.dokumentasiTemuanUrl}
                                 alt={row.temuan || 'Dokumentasi Temuan'}
-                                className="w-14 h-18 object-cover mx-auto border border-slate-300"
+                                className="w-11 h-14 object-cover mx-auto rounded border border-[#D2B48C]/60 shadow-2xs"
                               />
                             </button>
                           ) : null}
                         </td>
-                        <td className="border border-black p-0.5">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 p-0.5">
                           {row.dokumentasiPerbaikanUrl ? (
                             <button
                               type="button"
@@ -2867,26 +2868,26 @@ export function SupervisiHubWorkspace({
                               <img
                                 src={row.dokumentasiPerbaikanUrl}
                                 alt="Dokumentasi Perbaikan"
-                                className="w-14 h-18 object-cover mx-auto border border-slate-300"
+                                className="w-11 h-14 object-cover mx-auto rounded border border-[#D2B48C]/60 shadow-2xs"
                               />
                             </button>
                           ) : null}
                         </td>
-                        <td className="border border-black p-0.5 bg-white">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 p-0.5 bg-white">
                           {row.tandaTanganUrl ? (
                             <img
                               src={row.tandaTanganUrl}
                               alt={`Tanda Tangan ${row.namaPetugas}`}
-                              className="w-14 h-16 object-contain mx-auto"
+                              className="w-12 h-12 object-contain mx-auto"
                             />
                           ) : null}
                         </td>
-                        <td className="border border-black px-1 py-1.5">
+                        <td className="border border-[#D2B48C]/40 dark:border-slate-700 px-0.5 py-1.5">
                           <button
                             type="button"
                             onClick={() => handleDeleteAuditRecord(row.id)}
                             title="Hapus Baris"
-                            className="p-1 rounded text-rose-600 hover:bg-rose-50 cursor-pointer"
+                            className="p-1 rounded text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5 mx-auto" />
                           </button>
@@ -2897,49 +2898,6 @@ export function SupervisiHubWorkspace({
                 </tbody>
               </table>
             )}
-          </div>
-
-          {/* Bottom Google-Sheets-Style Unit Tab Bar (Exact Match to Bottom of Gambar 5) */}
-          <div className="flex items-center justify-between bg-[#F1F3F4] border-t border-slate-300 px-2 py-1 select-none">
-            <div className="flex items-center gap-0.5 overflow-x-auto no-scrollbar">
-              {SUPERVISI_CARDS.map((card) => {
-                const isSelected = activeCardId === card.id;
-                return (
-                  <button
-                    key={card.id}
-                    type="button"
-                    onClick={() => setActiveCardId(card.id)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold whitespace-nowrap border-r border-slate-300 transition-colors cursor-pointer ${
-                      isSelected
-                        ? 'bg-white text-[#1A73E8] border-b-2 border-b-[#1A73E8] shadow-2xs font-extrabold'
-                        : 'bg-[#F1F3F4] hover:bg-[#E8EAED] text-slate-700'
-                    }`}
-                  >
-                    <span>{card.title}</span>
-                    <ChevronDown className="w-3 h-3 opacity-70" />
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="flex items-center gap-1 pl-2 shrink-0 bg-[#F1F3F4]">
-              <button
-                type="button"
-                onClick={() => stepActiveSheetTab(-1)}
-                aria-label="Tab Sebelumnya"
-                className="p-1 rounded hover:bg-slate-200 text-slate-700 cursor-pointer"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => stepActiveSheetTab(1)}
-                aria-label="Tab Selanjutnya"
-                className="p-1 rounded hover:bg-slate-200 text-slate-700 cursor-pointer"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
           </div>
         </div>
       )}

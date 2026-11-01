@@ -287,8 +287,7 @@ export const MAIN_NAVIGATION: MainMenuItem[] = [
         id: 'supervisi-riwayat',
         title: 'Tabel Rekap Supervisi',
         href: '/supervisi/riwayat',
-        description:
-          'Tabel rekapan hasil input data supervisi ruangan beserta skor, kategori, temuan, rekomendasi, gambar dokumentasi, dan tanda tangan.',
+        description: '',
         status: 'Functional',
         plannedFeatures: [
           'Tabel rekap laporan supervisi ruangan lengkap dengan foto dokumentasi & tanda tangan',
