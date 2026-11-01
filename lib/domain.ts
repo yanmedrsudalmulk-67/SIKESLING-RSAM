@@ -43,7 +43,7 @@ export interface DailyActivityRecord {
   officerName: string;
   description: string;
   notes: string;
-  status: 'Tercatat (Sesi Lokal)' | 'Terverifikasi';
+  status: 'Tersimpan di Supabase' | 'Tercatat (Sesi Lokal)' | 'Terverifikasi';
   attachments: PhotoAttachmentMeta[];
   createdAt: string;
 }

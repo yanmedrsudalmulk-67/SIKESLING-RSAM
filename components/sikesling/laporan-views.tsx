@@ -226,7 +226,7 @@ export function LaporanView({ routePath }: { routePath: string }) {
             pushToast({
               type: 'success',
               title: 'Preview Laporan Diperbarui',
-              message: 'Kompilasi laporan disinkronkan dengan data sesi lokal terkini.',
+              message: 'Kompilasi laporan disinkronkan dengan data Supabase Cloud terkini.',
             });
           }}
           className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-[#153E75] text-white hover:bg-[#10315E] whitespace-nowrap"

@@ -289,5 +289,23 @@ test('air quality and indoor physical environment dataset is populated with requ
   assert.ok(meta.breadcrumbs.length >= 2);
 });
 
+test('supabase integration normalizes REST v1 URLs and defines all 16 application collections', () => {
+  const {
+    normalizeSupabaseUrls,
+    getSupabaseConfig,
+    createInitialSikeslingCloudState,
+  } = require('./supabase');
+
+  const parsed = normalizeSupabaseUrls('https://zwsshqpenadbpytvwkje.supabase.co/rest/v1/');
+  assert.equal(parsed.projectUrl, 'https://zwsshqpenadbpytvwkje.supabase.co');
+  assert.equal(parsed.restUrl, 'https://zwsshqpenadbpytvwkje.supabase.co/rest/v1');
+
+  const cfg = getSupabaseConfig();
+  assert.equal(cfg.restUrl, 'https://zwsshqpenadbpytvwkje.supabase.co/rest/v1');
+  assert.ok(cfg.anonKey.startsWith('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'));
+
+  const initialState = createInitialSikeslingCloudState();
+  assert.equal(Object.keys(initialState).length, 16);
+});
 
 

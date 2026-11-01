@@ -10,6 +10,8 @@ import {
   BarChart3,
   Bell,
   Building2,
+  CalendarDays,
+  CalendarRange,
   CheckSquare,
   ChevronDown,
   ClipboardList,
@@ -35,6 +37,10 @@ function getMenuIcon(iconName: string, className = 'w-4 h-4') {
   switch (iconName) {
     case 'LayoutDashboard':
       return <LayoutDashboard className={className} />;
+    case 'CalendarRange':
+      return <CalendarRange className={className} />;
+    case 'CalendarDays':
+      return <CalendarDays className={className} />;
     case 'ClipboardList':
       return <ClipboardList className={className} />;
     case 'Activity':

@@ -293,67 +293,36 @@ export function calculateMonthVectorSummary(
 
 export function VectorControlView() {
   const meta = resolveRouteMeta('/monitoring/vektor');
-  const { pushToast } = useApp();
+  const {
+    pushToast,
+    vectorFindings,
+    updateVectorFindings,
+    vectorUnits,
+    updateVectorUnits,
+  } = useApp();
 
   const [selectedYear, setSelectedYear] = useState<number>(2026);
   const [selectedPeriod, setSelectedPeriod] = useState<VectorPeriodFilter>('FULL_YEAR');
   const [activeSheet, setActiveSheet] = useState<'sheet1' | 'sheet2'>('sheet1');
   const [chartType, setChartType] = useState<'monthly' | 'indicator'>('monthly');
 
-  // Daftar nama unit
-  const [units, setUnits] = useState<string[]>(DEFAULT_VECTOR_UNITS);
+  const units = vectorUnits;
+  const setUnits = (
+    updater: string[] | ((prev: string[]) => string[])
+  ) => {
+    const next = typeof updater === 'function' ? updater(units) : updater;
+    updateVectorUnits(next);
+  };
 
-  // Data checklist vektor per bulan dan unit
-  const [findings, setFindings] = useState<VectorFindingsMap>(() =>
-    createInitialVectorFindings()
-  );
-  const [storageHydrated, setStorageHydrated] = useState(false);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      try {
-        const savedUnits = localStorage.getItem(STORAGE_UNITS_KEY);
-        if (savedUnits) {
-          const parsedUnits = JSON.parse(savedUnits);
-          if (Array.isArray(parsedUnits) && parsedUnits.length > 0) {
-            setUnits(parsedUnits);
-          }
-        }
-        const savedFindings = localStorage.getItem(STORAGE_FINDINGS_KEY);
-        if (savedFindings) {
-          const parsedFindings = JSON.parse(savedFindings);
-          if (parsedFindings && typeof parsedFindings === 'object') {
-            setFindings(parsedFindings);
-          }
-        }
-      } catch {
-        // ignore
-      }
-      setStorageHydrated(true);
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  // Persist changes
-  useEffect(() => {
-    if (!storageHydrated) return;
-    try {
-      localStorage.setItem(STORAGE_UNITS_KEY, JSON.stringify(units));
-      window.dispatchEvent(new Event('sikesling-monitoring-updated'));
-    } catch {
-      // ignore
-    }
-  }, [units, storageHydrated]);
-
-  useEffect(() => {
-    if (!storageHydrated) return;
-    try {
-      localStorage.setItem(STORAGE_FINDINGS_KEY, JSON.stringify(findings));
-      window.dispatchEvent(new Event('sikesling-monitoring-updated'));
-    } catch {
-      // ignore
-    }
-  }, [findings, storageHydrated]);
+  const findings = vectorFindings as VectorFindingsMap;
+  const setFindings = (
+    updater:
+      | VectorFindingsMap
+      | ((prev: VectorFindingsMap) => VectorFindingsMap)
+  ) => {
+    const next = typeof updater === 'function' ? updater(findings) : updater;
+    updateVectorFindings(next);
+  };
 
   // Inline edit unit name state
   const [editingUnitIdx, setEditingUnitIdx] = useState<number | null>(null);
@@ -1136,18 +1105,30 @@ export function VectorControlView() {
           <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white underline underline-offset-4 decoration-2 decoration-slate-900 dark:decoration-white">
             Rekomendasi :
           </h3>
-          <ol className="list-decimal pl-5 space-y-2 text-xs sm:text-[13.5px] text-slate-800 dark:text-slate-200 leading-relaxed">
-            <li>
-              Melaksanakan gerakan Pemberantasan Sarang Nyamuk (PSN 3M Plus) dan penaburan bubuk larvasida (<em>abatisasi</em>) secara berkala pada bak kontrol, saluran air sekitar Pos Satpam, area IPAL, dan taman rumah sakit.
+          <ol className="list-none pl-1 space-y-2 text-xs sm:text-[13.5px] text-slate-800 dark:text-slate-200 leading-relaxed">
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">1.</span>
+              <span className="text-justify">
+                Melaksanakan gerakan Pemberantasan Sarang Nyamuk (PSN 3M Plus) dan penaburan bubuk larvasida (<em>abatisasi</em>) secara berkala pada bak kontrol, saluran air sekitar Pos Satpam, area IPAL, dan taman rumah sakit.
+              </span>
             </li>
-            <li>
-              Melakukan aplikasi <em>residual spraying</em> dan pemasangan <em>gel baiting</em> kecoa pada jalur perpipaan, celah lemari penyimpanan di Gudang Farmasi, Manajemen, serta garasi Ambulan.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">2.</span>
+              <span className="text-justify">
+                Melakukan aplikasi <em>residual spraying</em> dan pemasangan <em>gel baiting</em> kecoa pada jalur perpipaan, celah lemari penyimpanan di Gudang Farmasi, Manajemen, serta garasi Ambulan.
+              </span>
             </li>
-            <li>
-              Mengoptimalkan pengoperasian unit perangkap lalat elektrik (<em>insect killer / fly catcher</em>) dan menutup rapat tempat penampungan sampah domestik maupun saluran <em>floor drain</em> dengan kawat kasa anti-serangga.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">3.</span>
+              <span className="text-justify">
+                Mengoptimalkan pengoperasian unit perangkap lalat elektrik (<em>insect killer / fly catcher</em>) dan menutup rapat tempat penampungan sampah domestik maupun saluran <em>floor drain</em> dengan kawat kasa anti-serangga.
+              </span>
             </li>
-            <li>
-              Melanjutkan kerja sama pengendalian vektor dan hama terpadu (<em>Integrated Pest Management</em>) dengan pihak ketiga berizin resmi secara rutin setiap bulan.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">4.</span>
+              <span className="text-justify">
+                Melanjutkan kerja sama pengendalian vektor dan hama terpadu (<em>Integrated Pest Management</em>) dengan pihak ketiga berizin resmi secara rutin setiap bulan.
+              </span>
             </li>
           </ol>
         </div>
@@ -1157,18 +1138,30 @@ export function VectorControlView() {
           <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white underline underline-offset-4 decoration-2 decoration-slate-900 dark:decoration-white">
             Rencana Tindak Lanjut :
           </h3>
-          <ol className="list-decimal pl-5 space-y-2 text-xs sm:text-[13.5px] text-slate-800 dark:text-slate-200 leading-relaxed">
-            <li>
-              Melakukan inspeksi survei jentik dan pemantauan perangkap vektor mingguan pada seluruh 20 unit pelayanan dan penunjang oleh tim Sanitarian RSUD Al-Mulk.
+          <ol className="list-none pl-1 space-y-2 text-xs sm:text-[13.5px] text-slate-800 dark:text-slate-200 leading-relaxed">
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">1.</span>
+              <span className="text-justify">
+                Melakukan inspeksi survei jentik dan pemantauan perangkap vektor mingguan pada seluruh 20 unit pelayanan dan penunjang oleh tim Sanitarian RSUD Al-Mulk.
+              </span>
             </li>
-            <li>
-              Menutup celah fisik bangunan (<em>pest proofing</em>) dan memperbaiki penutup <em>septic tank</em> depan serta bak kontrol IPAL agar tidak menjadi tempat perkembangbiakan nyamuk dan kecoa.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">2.</span>
+              <span className="text-justify">
+                Menutup celah fisik bangunan (<em>pest proofing</em>) dan memperbaiki penutup <em>septic tank</em> depan serta bak kontrol IPAL agar tidak menjadi tempat perkembangbiakan nyamuk dan kecoa.
+              </span>
             </li>
-            <li>
-              Melaksanakan tindakan <em>fogging</em> fokus atau <em>ULV cold fogging</em> di area luar gedung apabila ditemukan penurunan Angka Bebas Jentik di bawah ambang baku mutu 95%.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">3.</span>
+              <span className="text-justify">
+                Melaksanakan tindakan <em>fogging</em> fokus atau <em>ULV cold fogging</em> di area luar gedung apabila ditemukan penurunan Angka Bebas Jentik di bawah ambang baku mutu 95%.
+              </span>
             </li>
-            <li>
-              Menyusun dan mengevaluasi laporan bulanan capaian ruangan bebas vektor sebagai bahan evaluasi mutu komite PPI dan pelaporan kesehatan lingkungan ke Dinas Kesehatan Kota Sukabumi.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">4.</span>
+              <span className="text-justify">
+                Menyusun dan mengevaluasi laporan bulanan capaian ruangan bebas vektor sebagai bahan evaluasi mutu komite PPI dan pelaporan kesehatan lingkungan ke Dinas Kesehatan Kota Sukabumi.
+              </span>
             </li>
           </ol>
         </div>

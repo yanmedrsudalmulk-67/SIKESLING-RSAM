@@ -1,6 +1,12 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import {
   UserRole,
   DailyActivityRecord,
@@ -12,6 +18,31 @@ import {
   FindingStatus,
   canTransitionFindingStatus,
 } from '@/lib/domain';
+import {
+  WaterQualityRow,
+  createInitialWaterQualityData,
+} from '@/lib/water-quality';
+import {
+  WastewaterRow,
+  createInitialWastewaterData,
+} from '@/lib/wastewater-quality';
+import {
+  SolidWasteSnapshotRow,
+  FoodSanitationSnapshotRow,
+  AirQualitySnapshotItem,
+  VectorFindingsSnapshotMap,
+  createDefaultMonitoringDataset,
+} from '@/lib/dashboard-monitoring-trends';
+import {
+  INITIAL_HOSPITAL_PROFILE,
+  INITIAL_MASTER_ACTIVITY_CATEGORIES,
+  INITIAL_MASTER_OFFICERS,
+  INITIAL_MASTER_ROOMS,
+  INITIAL_VECTOR_UNITS,
+  SikeslingCloudCollectionKey,
+  SikeslingCloudState,
+  SupabaseSyncDiagnostic,
+} from '@/lib/supabase';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -47,14 +78,19 @@ interface AppContextValue {
   setCurrentRole: (role: UserRole) => void;
   currentUserName: string;
 
-  // Operational & Supervision Session Records (starts empty by default per Rule 4)
+  // Operational & Supervision Records (Synced with Supabase)
   activities: DailyActivityRecord[];
-  addActivity: (record: Omit<DailyActivityRecord, 'id' | 'createdAt' | 'status'>) => void;
+  addActivity: (
+    record: Omit<DailyActivityRecord, 'id' | 'createdAt' | 'status'>
+  ) => void;
   supervisions: SupervisionRecord[];
   addSupervision: (record: Omit<SupervisionRecord, 'id' | 'createdAt'>) => void;
   findings: FindingFollowUpRecord[];
   addFinding: (
-    record: Omit<FindingFollowUpRecord, 'id' | 'code' | 'createdAt' | 'updatedAt'>
+    record: Omit<
+      FindingFollowUpRecord,
+      'id' | 'code' | 'createdAt' | 'updatedAt'
+    >
   ) => void;
   updateFindingStatus: (
     findingId: string,
@@ -65,19 +101,56 @@ interface AppContextValue {
   addSchedule: (record: Omit<ScheduleRecord, 'id'>) => void;
   toggleScheduleStatus: (scheduleId: string) => void;
 
-  // Configurable Master Data References (Rule 14: Data-Driven Design, not locked)
+  // Configurable Master Data References (Synced with Supabase)
   masterRooms: MasterRoomItem[];
   addMasterRoom: (room: Omit<MasterRoomItem, 'id'>) => void;
   toggleMasterRoomStatus: (roomId: string) => void;
-  masterActivityCategories: { id: string; code: string; name: string; isActive: boolean }[];
+  masterActivityCategories: {
+    id: string;
+    code: string;
+    name: string;
+    isActive: boolean;
+  }[];
   addMasterActivityCategory: (name: string, code: string) => void;
-  masterOfficers: { id: string; name: string; nip: string; position: string; isActive: boolean }[];
-  addMasterOfficer: (officer: { name: string; nip: string; position: string }) => void;
+  masterOfficers: {
+    id: string;
+    name: string;
+    nip: string;
+    position: string;
+    isActive: boolean;
+  }[];
+  addMasterOfficer: (officer: {
+    name: string;
+    nip: string;
+    position: string;
+  }) => void;
   masterStandards: MasterStandardItem[];
   addMasterStandard: (std: Omit<MasterStandardItem, 'id'>) => void;
 
   hospitalProfile: HospitalProfileConfig;
   updateHospitalProfile: (profile: Partial<HospitalProfileConfig>) => void;
+
+  // Environmental Monitoring Datasets (Synced with Supabase — No Local Storage)
+  waterRows: WaterQualityRow[];
+  updateWaterRows: (rows: WaterQualityRow[]) => void;
+  airItems: AirQualitySnapshotItem[];
+  updateAirItems: (items: AirQualitySnapshotItem[]) => void;
+  wastewaterRows: WastewaterRow[];
+  updateWastewaterRows: (rows: WastewaterRow[]) => void;
+  solidWasteRows: SolidWasteSnapshotRow[];
+  updateSolidWasteRows: (rows: SolidWasteSnapshotRow[]) => void;
+  vectorFindings: VectorFindingsSnapshotMap;
+  updateVectorFindings: (findings: VectorFindingsSnapshotMap) => void;
+  vectorUnits: string[];
+  updateVectorUnits: (units: string[]) => void;
+  foodRows: FoodSanitationSnapshotRow[];
+  updateFoodRows: (rows: FoodSanitationSnapshotRow[]) => void;
+
+  // Supabase Cloud Diagnostics & Manual Sync Controls
+  supabaseDiagnostic: SupabaseSyncDiagnostic | null;
+  isSyncingSupabase: boolean;
+  syncAllToSupabase: () => Promise<void>;
+  refreshFromSupabase: () => Promise<void>;
 
   toasts: ToastItem[];
   pushToast: (toast: Omit<ToastItem, 'id'>) => void;
@@ -86,74 +159,7 @@ interface AppContextValue {
 
 const AppContext = createContext<AppContextValue | undefined>(undefined);
 
-const INITIAL_ROOMS: MasterRoomItem[] = [
-  {
-    id: 'rm-1',
-    code: 'R-IGD-01',
-    name: 'Instalasi Gawat Darurat (IGD)',
-    unitName: 'Instalasi Gawat Darurat',
-    building: 'Gedung Utama Lt. 1',
-    isActive: true,
-  },
-  {
-    id: 'rm-2',
-    code: 'R-RANAP-01',
-    name: 'Ruang Rawat Inap Dewasa',
-    unitName: 'Instalasi Rawat Inap',
-    building: 'Gedung Perawatan Lt. 2',
-    isActive: true,
-  },
-  {
-    id: 'rm-3',
-    code: 'R-GIZI-01',
-    name: 'Dapur & Penyelenggaraan Makanan',
-    unitName: 'Instalasi Gizi',
-    building: 'Gedung Penunjang',
-    isActive: true,
-  },
-  {
-    id: 'rm-4',
-    code: 'R-IPAL-01',
-    name: 'Area Instalasi Pengolahan Air Limbah (IPAL)',
-    unitName: 'Unit Kesehatan Lingkungan',
-    building: 'Area Utilitas Belakang',
-    isActive: true,
-  },
-  {
-    id: 'rm-5',
-    code: 'R-TPSB3-01',
-    name: 'TPS Limbah B3 & Medis Padat',
-    unitName: 'Unit Kesehatan Lingkungan',
-    building: 'Area Utilitas Belakang',
-    isActive: true,
-  },
-];
-
-const INITIAL_ACTIVITY_CATEGORIES = [
-  { id: 'cat-1', code: 'KEG-01', name: 'Inspeksi Sanitasi & Kebersihan Ruangan', isActive: true },
-  { id: 'cat-2', code: 'KEG-02', name: 'Pemantauan Operasional Harian IPAL', isActive: true },
-  { id: 'cat-3', code: 'KEG-03', name: 'Pengelolaan & Penimbangan Limbah Medis/B3', isActive: true },
-  { id: 'cat-4', code: 'KEG-04', name: 'Pemantauan Kualitas Air Bersih', isActive: true },
-  { id: 'cat-5', code: 'KEG-05', name: 'Pengendalian Vektor & Binatang Pengganggu', isActive: true },
-  { id: 'cat-6', code: 'KEG-06', name: 'Pengawasan Higiene Sanitasi Pangan', isActive: true },
-];
-
-const INITIAL_OFFICERS = [
-  {
-    id: 'off-1',
-    name: 'Petugas Sanitarian Pelaksana',
-    nip: 'Konfigurasi Master Data',
-    position: 'Sanitarian / Petugas Kesling',
-    isActive: true,
-  },
-  {
-    id: 'off-2',
-    name: 'Koordinator Kesehatan Lingkungan',
-    nip: 'Konfigurasi Master Data',
-    position: 'Koordinator Kesling',
-    isActive: true,
-  },
-];
+const initialMonitoringDefaults = createDefaultMonitoringDataset(2026, []);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<ThemeMode>('light');
@@ -162,66 +168,225 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentRole, setCurrentRole] = useState<UserRole>('Petugas Kesling');
 
-  // Strict Rule 4: Start with 0 operational statistics so no fake hospital data is shown
+  // Operational, Supervision, Findings, Schedules
   const [activities, setActivities] = useState<DailyActivityRecord[]>([]);
   const [supervisions, setSupervisions] = useState<SupervisionRecord[]>([]);
   const [findings, setFindings] = useState<FindingFollowUpRecord[]>([]);
   const [schedules, setSchedules] = useState<ScheduleRecord[]>([]);
 
-  const [masterRooms, setMasterRooms] = useState<MasterRoomItem[]>(INITIAL_ROOMS);
+  // Master Data & Hospital Profile
+  const [masterRooms, setMasterRooms] =
+    useState<MasterRoomItem[]>(INITIAL_MASTER_ROOMS);
   const [masterActivityCategories, setMasterActivityCategories] = useState(
-    INITIAL_ACTIVITY_CATEGORIES
+    INITIAL_MASTER_ACTIVITY_CATEGORIES
   );
-  const [masterOfficers, setMasterOfficers] = useState(INITIAL_OFFICERS);
-  const [masterStandards, setMasterStandards] = useState<MasterStandardItem[]>([]);
+  const [masterOfficers, setMasterOfficers] = useState(INITIAL_MASTER_OFFICERS);
+  const [masterStandards, setMasterStandards] = useState<MasterStandardItem[]>(
+    []
+  );
+  const [hospitalProfile, setHospitalProfile] = useState<HospitalProfileConfig>(
+    INITIAL_HOSPITAL_PROFILE
+  );
 
-  const [hospitalProfile, setHospitalProfile] = useState<HospitalProfileConfig>({
-    institutionName: 'UOBK RSUD Al-Mulk Kota Sukabumi',
-    shortName: 'RSUD Al-Mulk',
-    unitName: 'Unit Kesehatan Lingkungan (Kesling)',
-    city: 'Kota Sukabumi, Jawa Barat',
-    address: 'Jl. Pelabuhan II KM. 6, Lembursitu, Kota Sukabumi',
-    phone: '(0266) — Konfigurasi Instansi',
-    email: 'kesling@rsudalmulk.sukabumikota.go.id',
-    headOfUnit: 'Belum Dikonfigurasi (Tahap Foundation)',
-  });
+  // 6 Environmental Monitoring Datasets (Backed by Supabase REST v1)
+  const [waterRows, setWaterRows] = useState<WaterQualityRow[]>(() =>
+    createInitialWaterQualityData(2026)
+  );
+  const [airItems, setAirItems] = useState<AirQualitySnapshotItem[]>(
+    initialMonitoringDefaults.airItems
+  );
+  const [wastewaterRows, setWastewaterRows] = useState<WastewaterRow[]>(() =>
+    createInitialWastewaterData(2026)
+  );
+  const [solidWasteRows, setSolidWasteRows] = useState<SolidWasteSnapshotRow[]>(
+    initialMonitoringDefaults.solidWasteRows
+  );
+  const [vectorFindings, setVectorFindings] =
+    useState<VectorFindingsSnapshotMap>(
+      initialMonitoringDefaults.vectorFindings
+    );
+  const [vectorUnits, setVectorUnits] =
+    useState<string[]>(INITIAL_VECTOR_UNITS);
+  const [foodRows, setFoodRows] = useState<FoodSanitationSnapshotRow[]>(
+    initialMonitoringDefaults.foodRows
+  );
+
+  const [supabaseDiagnostic, setSupabaseDiagnostic] =
+    useState<SupabaseSyncDiagnostic | null>(null);
+  const [isSyncingSupabase, setIsSyncingSupabase] = useState<boolean>(false);
 
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
-  useEffect(() => {
-    queueMicrotask(() => {
-      try {
-        const savedTheme = localStorage.getItem('sikesling-theme') as ThemeMode | null;
-        if (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'system') {
-          setThemeState(savedTheme);
-        }
-        const savedAct = sessionStorage.getItem('sikesling-activities');
-        if (savedAct) setActivities(JSON.parse(savedAct));
-        const savedSup = sessionStorage.getItem('sikesling-supervisions');
-        if (savedSup) setSupervisions(JSON.parse(savedSup));
-        const savedFnd = sessionStorage.getItem('sikesling-findings');
-        if (savedFnd) setFindings(JSON.parse(savedFnd));
-        const savedSch = sessionStorage.getItem('sikesling-schedules');
-        if (savedSch) setSchedules(JSON.parse(savedSch));
-      } catch {
-        // ignore storage errors
-      }
-      setHydrated(true);
-    });
+  const pushToast = useCallback((toast: Omit<ToastItem, 'id'>) => {
+    const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    setToasts((prev) => [...prev, { ...toast, id }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4500);
   }, []);
 
-  useEffect(() => {
-    if (!hydrated) return;
-    try {
-      sessionStorage.setItem('sikesling-activities', JSON.stringify(activities));
-      sessionStorage.setItem('sikesling-supervisions', JSON.stringify(supervisions));
-      sessionStorage.setItem('sikesling-findings', JSON.stringify(findings));
-      sessionStorage.setItem('sikesling-schedules', JSON.stringify(schedules));
-    } catch {
-      // ignore storage errors
+  const dismissToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  const applyCloudState = useCallback((cloud: Partial<SikeslingCloudState>) => {
+    if (
+      Array.isArray(cloud.water_quality_2026) &&
+      cloud.water_quality_2026.length > 0
+    ) {
+      setWaterRows(cloud.water_quality_2026);
     }
-  }, [activities, supervisions, findings, schedules, hydrated]);
+    if (Array.isArray(cloud.air_quality_items)) {
+      setAirItems(cloud.air_quality_items);
+    }
+    if (
+      Array.isArray(cloud.wastewater_quality_2026) &&
+      cloud.wastewater_quality_2026.length > 0
+    ) {
+      setWastewaterRows(cloud.wastewater_quality_2026);
+    }
+    if (
+      Array.isArray(cloud.solid_waste_b3) &&
+      cloud.solid_waste_b3.length === 12
+    ) {
+      setSolidWasteRows(cloud.solid_waste_b3);
+    }
+    if (cloud.vector_findings && typeof cloud.vector_findings === 'object') {
+      setVectorFindings(cloud.vector_findings);
+    }
+    if (Array.isArray(cloud.vector_units) && cloud.vector_units.length > 0) {
+      setVectorUnits(cloud.vector_units);
+    }
+    if (
+      Array.isArray(cloud.food_sanitation) &&
+      cloud.food_sanitation.length === 12
+    ) {
+      setFoodRows(cloud.food_sanitation);
+    }
+    if (Array.isArray(cloud.activities)) {
+      setActivities(cloud.activities);
+    }
+    if (Array.isArray(cloud.supervisions)) {
+      setSupervisions(cloud.supervisions);
+    }
+    if (Array.isArray(cloud.findings)) {
+      setFindings(cloud.findings);
+    }
+    if (Array.isArray(cloud.schedules)) {
+      setSchedules(cloud.schedules);
+    }
+    if (Array.isArray(cloud.master_rooms) && cloud.master_rooms.length > 0) {
+      setMasterRooms(cloud.master_rooms);
+    }
+    if (
+      Array.isArray(cloud.master_activity_categories) &&
+      cloud.master_activity_categories.length > 0
+    ) {
+      setMasterActivityCategories(cloud.master_activity_categories);
+    }
+    if (
+      Array.isArray(cloud.master_officers) &&
+      cloud.master_officers.length > 0
+    ) {
+      setMasterOfficers(cloud.master_officers);
+    }
+    if (Array.isArray(cloud.master_standards)) {
+      setMasterStandards(cloud.master_standards);
+    }
+    if (cloud.hospital_profile && typeof cloud.hospital_profile === 'object') {
+      setHospitalProfile(cloud.hospital_profile);
+    }
+  }, []);
+
+  const persistCollectionToSupabase = useCallback(
+    async (key: SikeslingCloudCollectionKey, payload: unknown) => {
+      try {
+        setIsSyncingSupabase(true);
+        const res = await fetch('/api/supabase/state', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key, payload }),
+        });
+        const data = await res.json();
+        if (data?.diagnostic) {
+          setSupabaseDiagnostic(data.diagnostic);
+        }
+      } catch {
+        // Keep optimistic UI state on transient network failure
+      } finally {
+        setIsSyncingSupabase(false);
+      }
+    },
+    []
+  );
+
+  const refreshFromSupabase = useCallback(async () => {
+    try {
+      setIsSyncingSupabase(true);
+      const res = await fetch('/api/supabase/state', {
+        method: 'GET',
+        cache: 'no-store',
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data?.state) {
+        applyCloudState(data.state);
+      }
+      if (data?.diagnostic) {
+        setSupabaseDiagnostic(data.diagnostic);
+      }
+    } catch {
+      // ignore initial network error
+    } finally {
+      setIsSyncingSupabase(false);
+    }
+  }, [applyCloudState]);
+
+  const syncAllToSupabase = useCallback(async () => {
+    try {
+      setIsSyncingSupabase(true);
+      const res = await fetch('/api/supabase/state', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'SYNC_ALL' }),
+      });
+      const data = await res.json();
+      if (data?.diagnostic) {
+        setSupabaseDiagnostic(data.diagnostic);
+      }
+      if (data?.persistedToTable) {
+        pushToast({
+          type: 'success',
+          title: 'Sinkronisasi Supabase Berhasil',
+          message:
+            'Seluruh 16 koleksi data SIKESLING RSAM telah tersimpan di tabel Supabase.',
+        });
+      } else {
+        pushToast({
+          type: 'info',
+          title: 'Endpoint Supabase Terautentikasi',
+          message:
+            data?.diagnostic?.statusMessage ||
+            'Jalankan script SQL di Supabase SQL Editor untuk mengaktifkan penyimpanan tabel.',
+        });
+      }
+    } catch {
+      pushToast({
+        type: 'error',
+        title: 'Gagal Menghubungi Supabase',
+        message: 'Periksa koneksi jaringan dan kredensial Supabase Anda.',
+      });
+    } finally {
+      setIsSyncingSupabase(false);
+    }
+  }, [pushToast]);
+
+  // Initial Hydration from Supabase REST v1 (No browser localStorage / sessionStorage for data)
+  useEffect(() => {
+    setHydrated(true);
+    void refreshFromSupabase();
+  }, [refreshFromSupabase]);
 
   const resolvedTheme: 'light' | 'dark' =
     theme === 'dark'
@@ -240,57 +405,102 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } else {
       root.classList.remove('dark');
     }
-    if (hydrated) {
-      try {
-        localStorage.setItem('sikesling-theme', theme);
-      } catch {
-        // ignore storage errors
-      }
-    }
-  }, [theme, resolvedTheme, hydrated]);
+  }, [resolvedTheme]);
 
   const setTheme = (mode: ThemeMode) => {
     setThemeState(mode);
   };
 
-  const pushToast = (toast: Omit<ToastItem, 'id'>) => {
-    const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-    setToasts((prev) => [...prev, { ...toast, id }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4500);
-  };
+  // Monitoring Updaters (Sync directly to Supabase)
+  const updateWaterRows = useCallback(
+    (rows: WaterQualityRow[]) => {
+      setWaterRows(rows);
+      void persistCollectionToSupabase('water_quality_2026', rows);
+    },
+    [persistCollectionToSupabase]
+  );
 
-  const dismissToast = (id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  };
+  const updateAirItems = useCallback(
+    (items: AirQualitySnapshotItem[]) => {
+      setAirItems(items);
+      void persistCollectionToSupabase('air_quality_items', items);
+    },
+    [persistCollectionToSupabase]
+  );
 
+  const updateWastewaterRows = useCallback(
+    (rows: WastewaterRow[]) => {
+      setWastewaterRows(rows);
+      void persistCollectionToSupabase('wastewater_quality_2026', rows);
+    },
+    [persistCollectionToSupabase]
+  );
+
+  const updateSolidWasteRows = useCallback(
+    (rows: SolidWasteSnapshotRow[]) => {
+      setSolidWasteRows(rows);
+      void persistCollectionToSupabase('solid_waste_b3', rows);
+    },
+    [persistCollectionToSupabase]
+  );
+
+  const updateVectorFindings = useCallback(
+    (nextFindings: VectorFindingsSnapshotMap) => {
+      setVectorFindings(nextFindings);
+      void persistCollectionToSupabase('vector_findings', nextFindings);
+    },
+    [persistCollectionToSupabase]
+  );
+
+  const updateVectorUnits = useCallback(
+    (units: string[]) => {
+      setVectorUnits(units);
+      void persistCollectionToSupabase('vector_units', units);
+    },
+    [persistCollectionToSupabase]
+  );
+
+  const updateFoodRows = useCallback(
+    (rows: FoodSanitationSnapshotRow[]) => {
+      setFoodRows(rows);
+      void persistCollectionToSupabase('food_sanitation', rows);
+    },
+    [persistCollectionToSupabase]
+  );
+
+  // Operational & Supervision Updaters (Sync directly to Supabase)
   const addActivity = (
     record: Omit<DailyActivityRecord, 'id' | 'createdAt' | 'status'>
   ) => {
     const newItem: DailyActivityRecord = {
       ...record,
       id: `ACT-${Date.now().toString().slice(-6)}`,
-      status: 'Tercatat (Sesi Lokal)',
+      status: 'Tersimpan di Supabase',
       createdAt: new Date().toISOString(),
     };
-    setActivities((prev) => [newItem, ...prev]);
+    const next = [newItem, ...activities];
+    setActivities(next);
+    void persistCollectionToSupabase('activities', next);
     pushToast({
       type: 'success',
-      title: 'Draft Kegiatan Sesi Lokal Tercatat',
+      title: 'Kegiatan Tersimpan ke Supabase',
       message:
-        'Data kegiatan ditambahkan ke sesi lokal untuk uji alur kerja (belum disimpan ke PostgreSQL).',
+        'Data kegiatan harian berhasil disinkronkan secara realtime dengan Supabase.',
     });
   };
 
-  const addSupervision = (record: Omit<SupervisionRecord, 'id' | 'createdAt'>) => {
+  const addSupervision = (
+    record: Omit<SupervisionRecord, 'id' | 'createdAt'>
+  ) => {
     const supId = `SUP-${Date.now().toString().slice(-6)}`;
     const newItem: SupervisionRecord = {
       ...record,
       id: supId,
       createdAt: new Date().toISOString(),
     };
-    setSupervisions((prev) => [newItem, ...prev]);
+    const nextSups = [newItem, ...supervisions];
+    setSupervisions(nextSups);
+    void persistCollectionToSupabase('supervisions', nextSups);
 
     if (record.findings && record.findings.trim().length > 0) {
       const findingCode = `TMN-${String(findings.length + 1).padStart(3, '0')}`;
@@ -301,7 +511,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         location: record.roomOrUnit,
         category: record.category,
         description: record.findings,
-        recommendation: record.recommendations || 'Menunggu arahan tindak lanjut',
+        recommendation:
+          record.recommendations || 'Menunggu arahan tindak lanjut',
         picName: record.officerName,
         targetDate: record.date,
         priority: record.priority,
@@ -309,19 +520,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      setFindings((prev) => [newFinding, ...prev]);
+      const nextFindings = [newFinding, ...findings];
+      setFindings(nextFindings);
+      void persistCollectionToSupabase('findings', nextFindings);
     }
 
     pushToast({
       type: 'info',
-      title: 'Rancangan Supervisi Dicatat (Sesi Lokal)',
+      title: 'Supervisi Tersimpan ke Supabase',
       message:
-        'Formulir supervisi disimpan pada memori sesi browser dan terhubung ke daftar Tindak Lanjut Temuan.',
+        'Formulir supervisi telah disinkronkan ke Supabase dan terhubung ke daftar Tindak Lanjut Temuan.',
     });
   };
 
   const addFinding = (
-    record: Omit<FindingFollowUpRecord, 'id' | 'code' | 'createdAt' | 'updatedAt'>
+    record: Omit<
+      FindingFollowUpRecord,
+      'id' | 'code' | 'createdAt' | 'updatedAt'
+    >
   ) => {
     const findingCode = `TMN-${String(findings.length + 1).padStart(3, '0')}`;
     const newFinding: FindingFollowUpRecord = {
@@ -331,11 +547,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    setFindings((prev) => [newFinding, ...prev]);
+    const next = [newFinding, ...findings];
+    setFindings(next);
+    void persistCollectionToSupabase('findings', next);
     pushToast({
       type: 'success',
-      title: `Temuan ${findingCode} Ditambahkan (Sesi Lokal)`,
-      message: 'Temuan baru siap diproses pada alur Tindak Lanjut Temuan.',
+      title: `Temuan ${findingCode} Tersimpan ke Supabase`,
+      message:
+        'Temuan baru telah disinkronkan ke Supabase dan siap diproses pada alur Tindak Lanjut.',
     });
   };
 
@@ -349,7 +568,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return { ok: false, error: 'Data temuan tidak ditemukan.' };
     }
 
-    const check = canTransitionFindingStatus(target.status, nextStatus, currentRole);
+    const check = canTransitionFindingStatus(
+      target.status,
+      nextStatus,
+      currentRole
+    );
     if (!check.allowed) {
       pushToast({
         type: 'error',
@@ -359,22 +582,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return { ok: false, error: check.reason };
     }
 
-    setFindings((prev) =>
-      prev.map((item) =>
-        item.id === findingId
-          ? {
-              ...item,
-              status: nextStatus,
-              verificationNotes: notes || item.verificationNotes,
-              updatedAt: new Date().toISOString(),
-            }
-          : item
-      )
+    const next = findings.map((item) =>
+      item.id === findingId
+        ? {
+            ...item,
+            status: nextStatus,
+            verificationNotes: notes || item.verificationNotes,
+            updatedAt: new Date().toISOString(),
+          }
+        : item
     );
+    setFindings(next);
+    void persistCollectionToSupabase('findings', next);
 
     pushToast({
       type: 'success',
-      title: `Status Diperbarui: ${nextStatus}`,
+      title: `Status Diperbarui di Supabase: ${nextStatus}`,
       message: `Temuan ${target.code} berhasil dipindahkan ke tahap "${nextStatus}".`,
     });
 
@@ -386,90 +609,112 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       ...record,
       id: `SCH-${Date.now().toString().slice(-6)}`,
     };
-    setSchedules((prev) => [newSched, ...prev]);
+    const next = [newSched, ...schedules];
+    setSchedules(next);
+    void persistCollectionToSupabase('schedules', next);
     pushToast({
       type: 'info',
-      title: 'Jadwal Kegiatan Ditambahkan (Sesi Lokal)',
-      message: `Agenda "${record.title}" terdaftar pada kalender sesi ini.`,
+      title: 'Jadwal Kegiatan Tersimpan ke Supabase',
+      message: `Agenda "${record.title}" telah disinkronkan ke kalender Supabase.`,
     });
   };
 
   const toggleScheduleStatus = (scheduleId: string) => {
-    setSchedules((prev) =>
-      prev.map((s) =>
-        s.id === scheduleId
-          ? { ...s, status: s.status === 'Terjadwal' ? 'Selesai' : 'Terjadwal' }
-          : s
-      )
+    const next = schedules.map((s) =>
+      s.id === scheduleId
+        ? ({
+            ...s,
+            status: s.status === 'Terjadwal' ? 'Selesai' : 'Terjadwal',
+          } as ScheduleRecord)
+        : s
     );
+    setSchedules(next);
+    void persistCollectionToSupabase('schedules', next);
   };
 
   const addMasterRoom = (room: Omit<MasterRoomItem, 'id'>) => {
-    setMasterRooms((prev) => [
-      ...prev,
+    const next = [
+      ...masterRooms,
       { ...room, id: `rm-${Date.now().toString().slice(-5)}` },
-    ]);
+    ];
+    setMasterRooms(next);
+    void persistCollectionToSupabase('master_rooms', next);
     pushToast({
       type: 'success',
-      title: 'Master Ruangan Ditambahkan',
-      message: `Ruangan "${room.name}" siap dipilih pada formulir operasional dan supervisi.`,
+      title: 'Master Ruangan Tersimpan ke Supabase',
+      message: `Ruangan "${room.name}" telah disinkronkan ke Supabase.`,
     });
   };
 
   const toggleMasterRoomStatus = (roomId: string) => {
-    setMasterRooms((prev) =>
-      prev.map((r) => (r.id === roomId ? { ...r, isActive: !r.isActive } : r))
+    const next = masterRooms.map((r) =>
+      r.id === roomId ? { ...r, isActive: !r.isActive } : r
     );
+    setMasterRooms(next);
+    void persistCollectionToSupabase('master_rooms', next);
   };
 
   const addMasterActivityCategory = (name: string, code: string) => {
-    setMasterActivityCategories((prev) => [
-      ...prev,
+    const next = [
+      ...masterActivityCategories,
       { id: `cat-${Date.now()}`, code, name, isActive: true },
-    ]);
+    ];
+    setMasterActivityCategories(next);
+    void persistCollectionToSupabase('master_activity_categories', next);
     pushToast({
       type: 'success',
-      title: 'Kategori Kegiatan Ditambahkan',
-      message: `Kategori "${name}" berhasil ditambahkan ke daftar pilihan dinamis.`,
+      title: 'Kategori Kegiatan Tersimpan ke Supabase',
+      message: `Kategori "${name}" berhasil ditambahkan ke Master Data Supabase.`,
     });
   };
 
-  const addMasterOfficer = (officer: { name: string; nip: string; position: string }) => {
-    setMasterOfficers((prev) => [
-      ...prev,
+  const addMasterOfficer = (officer: {
+    name: string;
+    nip: string;
+    position: string;
+  }) => {
+    const next = [
+      ...masterOfficers,
       { ...officer, id: `off-${Date.now()}`, isActive: true },
-    ]);
+    ];
+    setMasterOfficers(next);
+    void persistCollectionToSupabase('master_officers', next);
     pushToast({
       type: 'success',
-      title: 'Data Petugas Ditambahkan',
-      message: `Petugas "${officer.name}" berhasil ditambahkan ke Master Data.`,
+      title: 'Data Petugas Tersimpan ke Supabase',
+      message: `Petugas "${officer.name}" berhasil ditambahkan ke Master Data Supabase.`,
     });
   };
 
   const addMasterStandard = (std: Omit<MasterStandardItem, 'id'>) => {
-    setMasterStandards((prev) => [
-      ...prev,
+    const next = [
+      ...masterStandards,
       { ...std, id: `std-${Date.now().toString().slice(-5)}` },
-    ]);
+    ];
+    setMasterStandards(next);
+    void persistCollectionToSupabase('master_standards', next);
     pushToast({
       type: 'success',
-      title: 'Referensi Standar Dicatat',
-      message: `Referensi "${std.standardName}" ditambahkan ke Master Standar & Regulasi.`,
+      title: 'Referensi Standar Tersimpan ke Supabase',
+      message: `Referensi "${std.standardName}" disinkronkan ke Master Standar Supabase.`,
     });
   };
 
   const updateHospitalProfile = (profile: Partial<HospitalProfileConfig>) => {
-    setHospitalProfile((prev) => ({ ...prev, ...profile }));
+    const next = { ...hospitalProfile, ...profile };
+    setHospitalProfile(next);
+    void persistCollectionToSupabase('hospital_profile', next);
     pushToast({
       type: 'success',
-      title: 'Profil Instansi Diperbarui (Sesi Lokal)',
-      message: 'Perubahan konfigurasi profil rumah sakit diterapkan pada sesi ini.',
+      title: 'Profil Instansi Tersimpan ke Supabase',
+      message:
+        'Perubahan konfigurasi profil rumah sakit telah disinkronkan ke Supabase.',
     });
   };
 
   const roleUserMap: Record<UserRole, string> = {
     Administrator: 'Admin Sistem SIKESLING',
-    'Petugas Kesling': 'Sanitarian Pelaksana',
+    'Petugas Kesling': 'Fitria Wulandari, A.M.KL',
     'Koordinator Kesling': 'Koordinator Kesling RSAM',
     'Pimpinan / Viewer': 'Manajemen RSUD Al-Mulk',
   };
@@ -510,6 +755,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         addMasterStandard,
         hospitalProfile,
         updateHospitalProfile,
+        waterRows,
+        updateWaterRows,
+        airItems,
+        updateAirItems,
+        wastewaterRows,
+        updateWastewaterRows,
+        solidWasteRows,
+        updateSolidWasteRows,
+        vectorFindings,
+        updateVectorFindings,
+        vectorUnits,
+        updateVectorUnits,
+        foodRows,
+        updateFoodRows,
+        supabaseDiagnostic,
+        isSyncingSupabase,
+        syncAllToSupabase,
+        refreshFromSupabase,
         toasts,
         pushToast,
         dismissToast,

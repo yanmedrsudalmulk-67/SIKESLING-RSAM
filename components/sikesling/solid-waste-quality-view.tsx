@@ -202,8 +202,6 @@ const INITIAL_SOLID_WASTE_DATA: SolidWasteMonthRow[] = [
   },
 ];
 
-const STORAGE_KEY_SOLID_WASTE = 'sikesling_solid_waste_b3_v1';
-
 function formatNumberID(val: number): string {
   if (Number.isInteger(val)) return String(val);
   return val.toFixed(2).replace('.', ',');
@@ -226,7 +224,7 @@ function getRowB3Total(row: SolidWasteMonthRow): number {
 
 export function SolidWasteQualityView() {
   const meta = resolveRouteMeta('/monitoring/ipal');
-  const { pushToast } = useApp();
+  const { pushToast, solidWasteRows, updateSolidWasteRows } = useApp();
 
   // Sheet switcher ('sheet1' = Indikator Baku Mutu Limbah Padat, 'sheet2' = Grafik/Tabel Hasil Limbah B3)
   const [activeSheet, setActiveSheet] = useState<'sheet1' | 'sheet2'>('sheet1');
@@ -234,37 +232,15 @@ export function SolidWasteQualityView() {
   // Filter periode
   const [selectedPeriod, setSelectedPeriod] = useState<string>('FULL_YEAR');
 
-  // State data
-  const [rows, setRows] = useState<SolidWasteMonthRow[]>(INITIAL_SOLID_WASTE_DATA);
-  const [storageHydrated, setStorageHydrated] = useState(false);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY_SOLID_WASTE);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length === 12) {
-            setRows(parsed);
-          }
-        }
-      } catch {
-        // ignore
-      }
-      setStorageHydrated(true);
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    if (!storageHydrated) return;
-    try {
-      localStorage.setItem(STORAGE_KEY_SOLID_WASTE, JSON.stringify(rows));
-      window.dispatchEvent(new Event('sikesling-monitoring-updated'));
-    } catch {
-      // ignore
-    }
-  }, [rows, storageHydrated]);
+  const rows = solidWasteRows as SolidWasteMonthRow[];
+  const setRows = (
+    updater:
+      | SolidWasteMonthRow[]
+      | ((prev: SolidWasteMonthRow[]) => SolidWasteMonthRow[])
+  ) => {
+    const next = typeof updater === 'function' ? updater(rows) : updater;
+    updateSolidWasteRows(next);
+  };
 
   // Inline editing state for Sheet 2 numbers
   const [editingCell, setEditingCell] = useState<{
@@ -944,42 +920,66 @@ export function SolidWasteQualityView() {
 
         {/* Rekomendasi */}
         <div className="space-y-2.5">
-          <h3 className="text-sm sm:text-base font-black underline underline-offset-4 decoration-2 text-slate-950 dark:text-white">
+          <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white underline underline-offset-4 decoration-2 decoration-slate-900 dark:decoration-white">
             Rekomendasi :
           </h3>
-          <ol className="list-decimal list-inside space-y-1.5 text-xs sm:text-sm leading-relaxed text-slate-800 dark:text-slate-200 pl-2">
-            <li>
-              Mempertahankan kedisiplinan pemilahan limbah medis infeksius (kantong kuning), limbah benda tajam (<em>safety box</em>), dan limbah domestik non-medis (kantong hitam) pada seluruh ruangan pelayanan.
+          <ol className="list-none pl-1 space-y-2 text-xs sm:text-[13.5px] text-slate-800 dark:text-slate-200 leading-relaxed">
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">1.</span>
+              <span className="text-justify">
+                Mempertahankan kedisiplinan pemilahan limbah medis infeksius (kantong kuning), limbah benda tajam (<em>safety box</em>), dan limbah domestik non-medis (kantong hitam) pada seluruh ruangan pelayanan.
+              </span>
             </li>
-            <li>
-              Menjaga jadwal pengangkutan limbah B3 bersama pihak ketiga pengangkut dan pengolah berizin secara berkala agar durasi penyimpanan di TPS B3 senantiasa berada jauh di bawah ambang batas maksimal 90 hari.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">2.</span>
+              <span className="text-justify">
+                Menjaga jadwal pengangkutan limbah B3 bersama pihak ketiga pengangkut dan pengolah berizin secara berkala agar durasi penyimpanan di TPS B3 senantiasa berada jauh di bawah ambang batas maksimal 90 hari.
+              </span>
             </li>
-            <li>
-              Melakukan koordinasi berkala dengan Instalasi Farmasi terkait inventarisasi sediaan farmasi mendekati masa kedaluwarsa (<em>near-expired</em>) guna meminimalkan timbulan limbah obat kadaluarsa pada akhir tahun.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">3.</span>
+              <span className="text-justify">
+                Melakukan koordinasi berkala dengan Instalasi Farmasi terkait inventarisasi sediaan farmasi mendekati masa kedaluwarsa (<em>near-expired</em>) guna meminimalkan timbulan limbah obat kadaluarsa pada akhir tahun.
+              </span>
             </li>
-            <li>
-              Memastikan fasilitas timbangan digital, <em>cold storage</em>/pendingin limbah medis, serta kelengkapan simbol dan label B3 di TPS B3 selalu dalam kondisi laik fungsi dan terkalibrasi.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">4.</span>
+              <span className="text-justify">
+                Memastikan fasilitas timbangan digital, <em>cold storage</em>/pendingin limbah medis, serta kelengkapan simbol dan label B3 di TPS B3 selalu dalam kondisi laik fungsi dan terkalibrasi.
+              </span>
             </li>
           </ol>
         </div>
 
         {/* Rencana Tindak Lanjut */}
         <div className="space-y-2.5">
-          <h3 className="text-sm sm:text-base font-black underline underline-offset-4 decoration-2 text-slate-950 dark:text-white">
+          <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white underline underline-offset-4 decoration-2 decoration-slate-900 dark:decoration-white">
             Rencana Tindak Lanjut :
           </h3>
-          <ol className="list-decimal list-inside space-y-1.5 text-xs sm:text-sm leading-relaxed text-slate-800 dark:text-slate-200 pl-2">
-            <li>
-              Melaksanakan supervisi harian ke unit penghasil limbah (IGD, Rawat Inap, IBS, Laboratorium, dan Poliklinik) untuk memantau kepatuhan pemilahan serta penggantian <em>safety box</em> setelah terisi 3/4 penuh.
+          <ol className="list-none pl-1 space-y-2 text-xs sm:text-[13.5px] text-slate-800 dark:text-slate-200 leading-relaxed">
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">1.</span>
+              <span className="text-justify">
+                Melaksanakan supervisi harian ke unit penghasil limbah (IGD, Rawat Inap, IBS, Laboratorium, dan Poliklinik) untuk memantau kepatuhan pemilahan serta penggantian <em>safety box</em> setelah terisi 3/4 penuh.
+              </span>
             </li>
-            <li>
-              Melakukan pencatatan neraca limbah B3 harian pada logbook TPS B3 dan memverifikasi dokumen manifes elektronik (Festronik) setiap kali dilakukan pengangkutan oleh mitra pengolah berizin.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">2.</span>
+              <span className="text-justify">
+                Melakukan pencatatan neraca limbah B3 harian pada <em>logbook</em> TPS B3 dan memverifikasi dokumen manifes elektronik (Festronik) setiap kali dilakukan pengangkutan oleh mitra pengolah berizin.
+              </span>
             </li>
-            <li>
-              Melaksanakan prosedur berita acara pemusnahan/penyerahan khusus bersama Instalasi Farmasi untuk pengelolaan stok obat kadaluarsa sesuai regulasi BPOM dan Kementerian LHK.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">3.</span>
+              <span className="text-justify">
+                Melaksanakan prosedur berita acara pemusnahan/penyerahan khusus bersama Instalasi Farmasi untuk pengelolaan stok obat kadaluarsa sesuai regulasi BPOM dan Kementerian LHK.
+              </span>
             </li>
-            <li>
-              Melaporkan rekapitulasi neraca timbulan limbah padat dan B3 secara berkala setiap triwulan dan semester kepada manajemen rumah sakit serta instansi lingkungan hidup terkait.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">4.</span>
+              <span className="text-justify">
+                Melaporkan rekapitulasi neraca timbulan limbah padat dan B3 secara berkala setiap triwulan dan semester kepada manajemen rumah sakit serta instansi lingkungan hidup terkait.
+              </span>
             </li>
           </ol>
         </div>

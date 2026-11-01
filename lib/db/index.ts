@@ -1,32 +1,32 @@
 /**
  * Database Layer (lib/db/index.ts)
  * Provides database configuration metadata and connection readiness check
- * for local or hospital server PostgreSQL via Prisma ORM.
+ * for Supabase PostgreSQL & REST v1 integration.
  */
 
+import { getSupabaseConfig } from '@/lib/supabase';
+
 export interface DatabaseConnectionStatus {
-  provider: 'postgresql';
-  orm: 'Prisma ORM';
+  provider: 'supabase-postgresql';
+  orm: 'Supabase REST v1 & PostgreSQL';
   isConfigured: boolean;
-  mode: 'Local Session Draft Mode (Foundation)' | 'PostgreSQL Connected';
+  mode: 'Supabase Cloud Connected (REST v1)' | 'PostgreSQL Connected';
+  supabaseRestUrl: string;
+  supabaseProjectRef: string;
   storagePath: string;
   maxUploadSizeMb: number;
 }
 
 export function getDatabaseConnectionStatus(): DatabaseConnectionStatus {
-  const dbUrl = process.env.DATABASE_URL;
-  const isRealPostgresConfigured =
-    Boolean(dbUrl) &&
-    !dbUrl!.includes('localhost:5432/sikesling_rsam') &&
-    dbUrl!.startsWith('postgres');
+  const cfg = getSupabaseConfig();
 
   return {
-    provider: 'postgresql',
-    orm: 'Prisma ORM',
-    isConfigured: isRealPostgresConfigured,
-    mode: isRealPostgresConfigured
-      ? 'PostgreSQL Connected'
-      : 'Local Session Draft Mode (Foundation)',
+    provider: 'supabase-postgresql',
+    orm: 'Supabase REST v1 & PostgreSQL',
+    isConfigured: cfg.isConfigured,
+    mode: 'Supabase Cloud Connected (REST v1)',
+    supabaseRestUrl: cfg.restUrl,
+    supabaseProjectRef: cfg.projectRef,
     storagePath: process.env.STORAGE_PRIVATE_DIR || './storage/private',
     maxUploadSizeMb: Number(process.env.UPLOAD_MAX_SIZE_MB || 5),
   };

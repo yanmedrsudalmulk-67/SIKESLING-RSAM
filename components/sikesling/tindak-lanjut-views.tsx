@@ -326,7 +326,7 @@ export function TindakLanjutView({
                 id="modal-add-finding"
                 className="text-base font-bold text-slate-900 dark:text-slate-100"
               >
-                Catat Temuan Baru (Sesi Lokal)
+                Catat Temuan Baru (Supabase Cloud)
               </h3>
               <button
                 type="button"

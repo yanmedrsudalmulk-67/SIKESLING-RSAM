@@ -64,11 +64,14 @@ import {
   parseWastewaterValue,
 } from '@/lib/wastewater-quality';
 
-const STORAGE_KEY_WASTEWATER = 'sikesling_rsam_wastewater_quality_2026_v2';
-
 export function WastewaterQualityMonitoringView() {
   const meta = resolveRouteMeta('/monitoring/limbah');
-  const { pushToast, addFinding } = useApp();
+  const {
+    pushToast,
+    addFinding,
+    wastewaterRows: rows,
+    updateWastewaterRows,
+  } = useApp();
 
   const [activeSheet, setActiveSheet] = useState<'sheet1' | 'sheet2'>('sheet1');
   const [selectedYear, setSelectedYear] = useState<number>(2026);
@@ -79,35 +82,8 @@ export function WastewaterQualityMonitoringView() {
   const [chartMetric, setChartMetric] = useState<'bod_cod' | 'coliform' | 'ph' | 'tss'>('bod_cod');
   const [chartType, setChartType] = useState<'bar' | 'line'>('bar');
 
-  const [rows, setRows] = useState<WastewaterRow[]>(() =>
-    createInitialWastewaterData(2026)
-  );
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      try {
-        const saved = window.localStorage.getItem(STORAGE_KEY_WASTEWATER);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setRows(parsed);
-          }
-        }
-      } catch {
-        // ignore storage errors
-      }
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, []);
-
   const saveRows = (updated: WastewaterRow[]) => {
-    setRows(updated);
-    try {
-      window.localStorage.setItem(STORAGE_KEY_WASTEWATER, JSON.stringify(updated));
-      window.dispatchEvent(new Event('sikesling-monitoring-updated'));
-    } catch {
-      // ignore storage errors
-    }
+    updateWastewaterRows(updated);
   };
 
   // Inline editing state
@@ -452,7 +428,7 @@ export function WastewaterQualityMonitoringView() {
                   onChange={(e) => {
                     const yr = Number(e.target.value);
                     setSelectedYear(yr);
-                    setRows((prev) => prev.map((r) => ({ ...r, year: yr })));
+                    saveRows(rows.map((r) => ({ ...r, year: yr })));
                   }}
                   aria-label="Tahun Pemantauan"
                   className="appearance-none pl-4 pr-8 py-2 rounded-full text-xs font-bold bg-white/95 dark:bg-[#001835] text-[#002147] dark:text-slate-100 border border-[#D2B48C]/70 dark:border-slate-700 shadow-sm hover:border-[#002147] focus:outline-none focus:ring-2 focus:ring-[#002147]/30 cursor-pointer transition-all"
@@ -1157,18 +1133,30 @@ export function WastewaterQualityMonitoringView() {
           <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white underline underline-offset-4 decoration-2 decoration-slate-900 dark:decoration-white">
             Rekomendasi :
           </h3>
-          <ol className="list-decimal pl-5 space-y-2 text-xs sm:text-[13.5px] text-slate-800 dark:text-slate-200 leading-relaxed">
-            <li>
-              Melakukan perawatan berkala (<em>preventive maintenance</em>) terhadap mesin blower aerasi, pompa transfer limbah, dan <em>dosing pump</em> klorinasi secara terjadwal untuk mencegah penurunan efisiensi pengolahan.
+          <ol className="list-none pl-1 space-y-2 text-xs sm:text-[13.5px] text-slate-800 dark:text-slate-200 leading-relaxed">
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">1.</span>
+              <span className="text-justify">
+                Melakukan perawatan berkala (<em>preventive maintenance</em>) terhadap mesin blower aerasi, pompa transfer limbah, dan <em>dosing pump</em> klorinasi secara terjadwal untuk mencegah penurunan efisiensi pengolahan.
+              </span>
             </li>
-            <li>
-              Menjaga kestabilan dosis bahan netralisasi dan disinfektan (kaporit/klorin) agar fluktuasi nilai pH dan angka Total Coliform pada outlet tetap konsisten memenuhi standar baku mutu.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">2.</span>
+              <span className="text-justify">
+                Menjaga kestabilan dosis bahan netralisasi dan disinfektan (kaporit/klorin) agar fluktuasi nilai pH dan angka Total Coliform pada outlet tetap konsisten memenuhi standar baku mutu.
+              </span>
             </li>
-            <li>
-              Melakukan pengurasan dan pengelolaan lumpur aktif (<em>sludge removal</em>) pada bak sedimentasi secara berkala guna mencegah akumulasi endapan padatan.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">3.</span>
+              <span className="text-justify">
+                Melakukan pengurasan dan pengelolaan lumpur aktif (<em>sludge removal</em>) pada bak sedimentasi secara berkala guna mencegah akumulasi endapan padatan.
+              </span>
             </li>
-            <li>
-              Melanjutkan kerja sama pemantauan dan uji sampel berkala dengan laboratorium lingkungan eksternal terakreditasi KAN setiap bulan secara konsisten.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">4.</span>
+              <span className="text-justify">
+                Melanjutkan kerja sama pemantauan dan uji sampel berkala dengan laboratorium lingkungan eksternal terakreditasi KAN setiap bulan secara konsisten.
+              </span>
             </li>
           </ol>
         </div>
@@ -1178,18 +1166,30 @@ export function WastewaterQualityMonitoringView() {
           <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white underline underline-offset-4 decoration-2 decoration-slate-900 dark:decoration-white">
             Rencana Tindak Lanjut :
           </h3>
-          <ol className="list-decimal pl-5 space-y-2 text-xs sm:text-[13.5px] text-slate-800 dark:text-slate-200 leading-relaxed">
-            <li>
-              Melaksanakan inspeksi supervisi harian terhadap operasional bak ekualisasi, clarifier, dan ruang dosing klorinasi oleh tim Sanitarian RSUD Al-Mulk.
+          <ol className="list-none pl-1 space-y-2 text-xs sm:text-[13.5px] text-slate-800 dark:text-slate-200 leading-relaxed">
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">1.</span>
+              <span className="text-justify">
+                Melaksanakan inspeksi supervisi harian terhadap operasional bak ekualisasi, <em>clarifier</em>, dan ruang <em>dosing</em> klorinasi oleh tim Sanitarian RSUD Al-Mulk.
+              </span>
             </li>
-            <li>
-              Melakukan kalibrasi berkala pada instrumen pH meter portabel dan sensor debit efluen setiap triwulan.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">2.</span>
+              <span className="text-justify">
+                Melakukan kalibrasi berkala pada instrumen pH meter portabel dan sensor debit efluen setiap triwulan.
+              </span>
             </li>
-            <li>
-              Mengagendakan desinfeksi berkala kompartemen kontak klorin dan pengurasan bak kontrol setiap 6 bulan sekali.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">3.</span>
+              <span className="text-justify">
+                Mengagendakan desinfeksi berkala kompartemen kontak klorin dan pengurasan bak kontrol setiap 6 bulan sekali.
+              </span>
             </li>
-            <li>
-              Menyusun dan menyampaikan pelaporan semesteran pemenuhan baku mutu limbah cair rumah sakit ke Dinas Lingkungan Hidup Kota Sukabumi serta penginputan pada sistem SIMPEL KLHK.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">4.</span>
+              <span className="text-justify">
+                Menyusun dan menyampaikan pelaporan semesteran pemenuhan baku mutu limbah cair rumah sakit ke Dinas Lingkungan Hidup Kota Sukabumi serta penginputan pada sistem SIMPEL KLHK.
+              </span>
             </li>
           </ol>
         </div>

@@ -9,6 +9,8 @@ import {
   BarChart3,
   Bug,
   Calendar,
+  CalendarDays,
+  CalendarRange,
   Check,
   ChevronDown,
   Droplets,
@@ -96,6 +98,13 @@ export function DashboardView() {
     supervisions,
     findings,
     schedules,
+    waterRows,
+    airItems,
+    wastewaterRows,
+    solidWasteRows,
+    vectorFindings,
+    vectorUnits,
+    foodRows,
   } = useApp();
 
   const [openAccordion, setOpenAccordion] = useState<string>('monitoring');
@@ -113,41 +122,47 @@ export function DashboardView() {
   // Bottom Interactive Monitoring Trend Card State
   const [selectedModule, setSelectedModule] = useState<DashboardMonitoringModuleKey>('air');
   const [hoveredPointIdx, setHoveredPointIdx] = useState<number | null>(null);
-  const [isClientMounted, setIsClientMounted] = useState<boolean>(false);
   const [currentHour, setCurrentHour] = useState<number>(9);
-  const [storageVersion, setStorageVersion] = useState<number>(0);
 
   useEffect(() => {
     const mountTimer = window.setTimeout(() => {
-      setIsClientMounted(true);
       setCurrentHour(new Date().getHours());
     }, 0);
     const clockInterval = window.setInterval(() => {
       setCurrentHour(new Date().getHours());
     }, 60_000);
-    const handleStorageOrFocus = () => {
-      setStorageVersion((v) => v + 1);
-    };
-    window.addEventListener('storage', handleStorageOrFocus);
-    window.addEventListener('focus', handleStorageOrFocus);
-    window.addEventListener('sikesling-monitoring-updated', handleStorageOrFocus);
     return () => {
       window.clearTimeout(mountTimer);
       window.clearInterval(clockInterval);
-      window.removeEventListener('storage', handleStorageOrFocus);
-      window.removeEventListener('focus', handleStorageOrFocus);
-      window.removeEventListener('sikesling-monitoring-updated', handleStorageOrFocus);
     };
   }, []);
 
   const realtimeDataset = useMemo(() => {
-    void storageVersion;
     return readRealtimeMonitoringDatasetFromStorage(
       selectedYear,
       activities,
-      isClientMounted
+      false,
+      {
+        waterRows,
+        airItems,
+        wastewaterRows,
+        solidWasteRows,
+        vectorFindings,
+        vectorUnitCount: vectorUnits.length,
+        foodRows,
+      }
     );
-  }, [selectedYear, activities, isClientMounted, storageVersion]);
+  }, [
+    selectedYear,
+    activities,
+    waterRows,
+    airItems,
+    wastewaterRows,
+    solidWasteRows,
+    vectorFindings,
+    vectorUnits.length,
+    foodRows,
+  ]);
 
   useEffect(() => {
     if (!timerRunning) return;
@@ -702,7 +717,43 @@ export function DashboardView() {
               )}
             </div>
 
-            {/* Row 2: Instrumen Supervisi */}
+            {/* Row 2: Program Kerja Kesling (Tahunan & Bulanan) */}
+            <div className="py-1.5">
+              <button
+                type="button"
+                onClick={() =>
+                  setOpenAccordion(openAccordion === 'program' ? '' : 'program')
+                }
+                className="w-full flex items-center justify-between text-left text-xs font-semibold text-[#002147] dark:text-slate-200 hover:text-[#002147] dark:hover:text-[#D2B48C] py-0.5 cursor-pointer"
+              >
+                <span>Program Kerja Kesling (2)</span>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-slate-400 transition-transform ${
+                    openAccordion === 'program' ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+              {openAccordion === 'program' && (
+                <div className="pt-1.5 pb-0.5 grid grid-cols-2 gap-1.5">
+                  <Link
+                    href="/program-kerja/tahunan"
+                    className="px-2.5 py-1.5 rounded-lg bg-[#F5EDE0] dark:bg-[#002147] text-[10px] font-bold text-[#002147] dark:text-[#D2B48C] hover:bg-[#EADBC8] truncate text-center flex items-center justify-center gap-1"
+                  >
+                    <CalendarRange className="w-3 h-3 shrink-0" />
+                    <span>Program Tahunan</span>
+                  </Link>
+                  <Link
+                    href="/program-kerja/bulanan"
+                    className="px-2.5 py-1.5 rounded-lg bg-[#F5EDE0] dark:bg-[#002147] text-[10px] font-bold text-[#002147] dark:text-[#D2B48C] hover:bg-[#EADBC8] truncate text-center flex items-center justify-center gap-1"
+                  >
+                    <CalendarDays className="w-3 h-3 shrink-0" />
+                    <span>Program Bulanan</span>
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Row 3: Instrumen Supervisi */}
             <div className="py-1.5">
               <button
                 type="button"
@@ -915,88 +966,56 @@ export function DashboardView() {
               </div>
             </div>
 
-            {/* Card 2B: Monitor Supervisi */}
-            <div className="h-[230px] xl:h-[245px] rounded-[26px] bg-gradient-to-br from-white/95 via-white/90 to-[#FAF6F0]/90 dark:from-[#001835]/95 dark:via-[#00152E]/90 dark:to-[#001835]/95 backdrop-blur-sm border-[1.5px] border-[#D2B48C]/45 dark:border-[#D2B48C]/20 shadow-[0_12px_32px_rgba(0,33,71,0.07),inset_0_1px_2px_rgba(255,255,255,0.95)] p-5 flex flex-col justify-between">
-              <div className="flex items-center justify-between gap-2">
-                <h2 className="text-base font-semibold text-[#002147] dark:text-white tracking-tight">
-                  Monitor Supervisi
+            {/* Card 2B: Program Kerja Kesling (Program Tahunan & Program Bulanan) */}
+            <div className="h-[230px] xl:h-[245px] rounded-[26px] bg-gradient-to-br from-white/95 via-white/90 to-[#FAF6F0]/90 dark:from-[#001835]/95 dark:via-[#00152E]/90 dark:to-[#001835]/95 backdrop-blur-sm border-[1.5px] border-[#D2B48C]/45 dark:border-[#D2B48C]/20 shadow-[0_12px_32px_rgba(0,33,71,0.07),inset_0_1px_2px_rgba(255,255,255,0.95)] p-4 xl:p-5 flex flex-col justify-between">
+              {/* Header: Clean Title with 'RSUD Al-Mulk' */}
+              <div>
+                <h2 className="text-base xl:text-lg font-extrabold text-[#002147] dark:text-white tracking-tight leading-tight">
+                  Program Kerja Kesling
                 </h2>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium block mt-0.5">
+                  RSUD Al-Mulk
+                </span>
+              </div>
+
+              {/* 2 Interactive Program Quick Access Cards with Hover Animation to Blue Theme & Cream Text */}
+              <div className="grid grid-cols-2 gap-3 my-auto">
+                {/* Program Tahunan Button Card */}
                 <Link
-                  href="/supervisi/dashboard"
-                  aria-label="Buka Dashboard Supervisi"
-                  className="w-8 h-8 rounded-full bg-[#F5EDE0] dark:bg-[#002147] border border-[#D2B48C]/60 dark:border-slate-700 flex items-center justify-center text-[#002147] dark:text-[#D2B48C] hover:bg-[#002147] hover:text-white transition-colors shadow-2xs shrink-0"
+                  href="/program-kerja/tahunan"
+                  className="group/card flex flex-col justify-between p-3.5 xl:p-4 rounded-2xl bg-white/80 dark:bg-[#001835]/80 border border-[#D2B48C]/50 hover:bg-[#002147] hover:border-[#002147] dark:hover:bg-[#002147] dark:hover:border-[#D2B48C] transition-all duration-300 ease-out shadow-2xs hover:shadow-md transform hover:-translate-y-0.5"
                 >
-                  <ArrowUpRight className="w-4 h-4" />
+                  <div className="text-xs xl:text-sm font-extrabold text-[#002147] dark:text-white group-hover/card:text-[#D2B48C] transition-colors leading-tight">
+                    Program Tahunan
+                  </div>
+                  <div className="mt-3 flex items-center justify-end">
+                    <span className="px-3 py-1 rounded-xl bg-[#002147] text-[#D2B48C] group-hover/card:bg-[#D2B48C] group-hover/card:text-[#002147] text-[10px] font-extrabold transition-all duration-300 shadow-2xs">
+                      Buka →
+                    </span>
+                  </div>
+                </Link>
+
+                {/* Program Bulanan Button Card */}
+                <Link
+                  href="/program-kerja/bulanan"
+                  className="group/card flex flex-col justify-between p-3.5 xl:p-4 rounded-2xl bg-white/80 dark:bg-[#001835]/80 border border-[#D2B48C]/50 hover:bg-[#002147] hover:border-[#002147] dark:hover:bg-[#002147] dark:hover:border-[#D2B48C] transition-all duration-300 ease-out shadow-2xs hover:shadow-md transform hover:-translate-y-0.5"
+                >
+                  <div className="text-xs xl:text-sm font-extrabold text-[#002147] dark:text-white group-hover/card:text-[#D2B48C] transition-colors leading-tight">
+                    Program Bulanan
+                  </div>
+                  <div className="mt-3 flex items-center justify-end">
+                    <span className="px-3 py-1 rounded-xl bg-[#002147] text-[#D2B48C] group-hover/card:bg-[#D2B48C] group-hover/card:text-[#002147] text-[10px] font-extrabold transition-all duration-300 shadow-2xs">
+                      Buka →
+                    </span>
+                  </div>
                 </Link>
               </div>
 
-              {/* Center Radial Tick Gauge */}
-              <div className="relative flex items-center justify-center my-auto">
-                <svg className="w-28 h-28 xl:w-32 xl:h-32 -rotate-90" viewBox="0 0 140 140">
-                  <circle
-                    cx="70"
-                    cy="70"
-                    r="52"
-                    fill="none"
-                    stroke="#D2B48C"
-                    strokeWidth="4"
-                    strokeDasharray="2 6"
-                  />
-                  <circle
-                    cx="70"
-                    cy="70"
-                    r="58"
-                    fill="none"
-                    stroke="#002147"
-                    strokeWidth="8"
-                    strokeLinecap="round"
-                    strokeDasharray="364"
-                    strokeDashoffset="110"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                  <span className="text-xl xl:text-2xl font-normal tracking-tight text-[#002147] dark:text-white font-mono tabular-nums">
-                    {formatTimer(timerSeconds)}
-                  </span>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400">
-                    Durasi Inspeksi
-                  </span>
-                </div>
-              </div>
-
-              {/* Bottom Controls: Play / Pause on Left, Oxford Action Circle on Right */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setTimerRunning(true)}
-                    aria-label="Mulai hitung waktu supervisi"
-                    className={`w-8 h-8 rounded-full flex items-center justify-center border transition-colors cursor-pointer ${
-                      timerRunning
-                        ? 'bg-[#002147] border-[#002147] text-[#D2B48C]'
-                        : 'bg-[#FAF6F0] dark:bg-slate-800 border-[#D2B48C]/60 dark:border-slate-700 text-[#002147] dark:text-slate-200 hover:bg-[#F5EDE0]'
-                    }`}
-                  >
-                    <Play className="w-3 h-3 fill-current ml-0.5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setTimerRunning(false)}
-                    aria-label="Jeda waktu supervisi"
-                    className="w-8 h-8 rounded-full bg-[#FAF6F0] dark:bg-slate-800 border border-[#D2B48C]/60 dark:border-slate-700 flex items-center justify-center text-[#002147] dark:text-slate-200 hover:bg-[#F5EDE0] transition-colors cursor-pointer"
-                  >
-                    <Pause className="w-3 h-3" />
-                  </button>
-                </div>
-
-                <Link
-                  href="/supervisi/baru"
-                  aria-label="Mulai Supervisi Baru"
-                  title="Buka Formulir Supervisi Lapangan"
-                  className="w-9 h-9 rounded-full bg-[#002147] text-[#D2B48C] flex items-center justify-center hover:bg-[#001630] transition-colors shadow-sm"
-                >
-                  <Timer className="w-4 h-4" />
-                </Link>
+              {/* Bottom Quick Footer */}
+              <div className="pt-1.5 border-t border-[#D2B48C]/25 dark:border-slate-800 text-[10.5px]">
+                <span className="text-slate-500 dark:text-slate-400 font-medium">
+                  Tahun Perencanaan: <strong className="text-[#002147] dark:text-[#D2B48C]">{selectedYear}</strong>
+                </span>
               </div>
             </div>
           </div>

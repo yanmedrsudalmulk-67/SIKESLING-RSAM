@@ -42,8 +42,48 @@ export const MAIN_NAVIGATION: MainMenuItem[] = [
     status: 'UI Ready',
   },
   {
-    id: 'operasional',
+    id: 'program-kerja',
     number: 2,
+    title: 'Program Kerja Kesling',
+    shortTitle: 'Program Kerja',
+    href: '/program-kerja/tahunan',
+    iconName: 'CalendarRange',
+    group: 'Operasional & Lapangan',
+    description:
+      'Perencanaan dan matriks program kerja kesehatan lingkungan tahunan dan bulanan UOBK RSUD Al-Mulk Kota Sukabumi berdasarkan Permenkes No 7/2019.',
+    status: 'Functional',
+    subItems: [
+      {
+        id: 'program-tahunan',
+        title: 'Program Tahunan',
+        href: '/program-kerja/tahunan',
+        description:
+          'Matriks program kerja tahunan 9 bidang kesehatan lingkungan (Air, Udara, Sarana, Limbah, Vektor, Pangan, Linen, Radiasi, Manajemen) dari Januari hingga Desember.',
+        status: 'Functional',
+        plannedFeatures: [
+          'Matriks 9 bidang utama penyehatan RS sesuai Permenkes No 7/2019',
+          'Filter kategori dan periode tahun',
+          'Status kepatuhan dan rincian parameter baku mutu',
+        ],
+      },
+      {
+        id: 'program-bulanan',
+        title: 'Program Bulanan & Mingguan',
+        href: '/program-kerja/bulanan',
+        description:
+          'Jadwal rincian mingguan (Minggu 1 s/d 4) pelaksanaan kegiatan penyehatan rumah sakit per bulan beserta hari rutin.',
+        status: 'Functional',
+        plannedFeatures: [
+          'Jadwal pelaksanaan minggu ke-1 sampai minggu ke-4 per bulan',
+          'Penjadwalan hari pelaksanaan (Senin, Rabu, Jumat, dan Sabtu)',
+          'Checklist interaktif penyelesaian tugas sanitarian',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'operasional',
+    number: 3,
     title: 'Kegiatan Operasional',
     shortTitle: 'Operasional',
     href: '/operasional',

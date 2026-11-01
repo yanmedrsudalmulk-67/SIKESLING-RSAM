@@ -57,11 +57,9 @@ import {
   WaterAIAnalysisResult,
 } from '@/lib/water-quality';
 
-const STORAGE_KEY_WATER_QUALITY = 'sikesling_rsam_water_quality_2026_v1';
-
 export function WaterQualityMonitoringView() {
   const meta = resolveRouteMeta('/monitoring/kualitas-air');
-  const { pushToast, addFinding } = useApp();
+  const { pushToast, addFinding, waterRows: rows, updateWaterRows } = useApp();
 
   const [selectedYear, setSelectedYear] = useState<number>(2026);
   const [selectedPeriod, setSelectedPeriod] = useState<WaterPeriodFilter>('FULL_YEAR');
@@ -70,36 +68,12 @@ export function WaterQualityMonitoringView() {
   const [selectedStatus, setSelectedStatus] = useState<WaterComplianceStatus | 'ALL'>('ALL');
   const [chartType, setChartType] = useState<'bar' | 'line'>('bar');
 
-  const [rows, setRows] = useState<WaterQualityRow[]>(() =>
-    createInitialWaterQualityData(2026)
+  const saveRows = useCallback(
+    (updated: WaterQualityRow[]) => {
+      updateWaterRows(updated);
+    },
+    [updateWaterRows]
   );
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      try {
-        const saved = window.localStorage.getItem(STORAGE_KEY_WATER_QUALITY);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setRows(parsed);
-          }
-        }
-      } catch {
-        // ignore storage errors
-      }
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  const saveRows = (updated: WaterQualityRow[]) => {
-    setRows(updated);
-    try {
-      window.localStorage.setItem(STORAGE_KEY_WATER_QUALITY, JSON.stringify(updated));
-      window.dispatchEvent(new Event('sikesling-monitoring-updated'));
-    } catch {
-      // ignore storage errors
-    }
-  };
 
   // Inline editing state
   const [editingRowId, setEditingRowId] = useState<string | null>(null);
@@ -373,7 +347,7 @@ export function WaterQualityMonitoringView() {
                   onChange={(e) => {
                     const yr = Number(e.target.value);
                     setSelectedYear(yr);
-                    setRows((prev) => prev.map((r) => ({ ...r, year: yr })));
+                    saveRows(rows.map((r) => ({ ...r, year: yr })));
                   }}
                   aria-label="Tahun Pemantauan"
                   className="appearance-none pl-4 pr-8 py-2 rounded-full text-xs font-bold bg-white/95 dark:bg-[#001835] text-[#002147] dark:text-slate-100 border border-[#D2B48C]/70 dark:border-slate-700 shadow-sm hover:border-[#002147] focus:outline-none focus:ring-2 focus:ring-[#002147]/30 cursor-pointer transition-all"
@@ -866,18 +840,30 @@ export function WaterQualityMonitoringView() {
           <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white underline underline-offset-4 decoration-2 decoration-slate-900 dark:decoration-white">
             Rekomendasi :
           </h3>
-          <ol className="list-decimal pl-5 space-y-2 text-xs sm:text-[13.5px] text-slate-800 dark:text-slate-200 leading-relaxed">
-            <li>
-              Melakukan pemantauan dan penjagaan residu klor aktif bebas secara ketat (0,2–0,5 mg/L) pada tandon penampungan utama (ground water tank) dan saluran distribusi terjauh.
+          <ol className="list-none pl-1 space-y-2 text-xs sm:text-[13.5px] text-slate-800 dark:text-slate-200 leading-relaxed">
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">1.</span>
+              <span className="text-justify">
+                Melakukan pemantauan dan penjagaan residu klor aktif bebas secara ketat (0,2–0,5 mg/L) pada tandon penampungan utama (<em>ground water tank</em>) dan saluran distribusi terjauh.
+              </span>
             </li>
-            <li>
-              Melakukan penggantian berkala cartridge filter spun (sedimen 1 & 5 mikron) serta pemeriksaan intensitas radiasi lampu UV sterilisasi pada unit RO Laboratorium dan Poli Gigi setiap 3 bulan sekali.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">2.</span>
+              <span className="text-justify">
+                Melakukan penggantian berkala <em>cartridge filter spun</em> (sedimen 1 &amp; 5 mikron) serta pemeriksaan intensitas radiasi lampu UV sterilisasi pada unit RO Laboratorium dan Poli Gigi setiap 3 bulan sekali.
+              </span>
             </li>
-            <li>
-              Melakukan pengurasan, pencucian, dan desinfeksi toren penampungan air secara periodik minimal 1 kali per semester guna mencegah terbentuknya lapisan biofilm.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">3.</span>
+              <span className="text-justify">
+                Melakukan pengurasan, pencucian, dan desinfeksi toren penampungan air secara periodik minimal 1 kali per semester guna mencegah terbentuknya lapisan <em>biofilm</em>.
+              </span>
             </li>
-            <li>
-              Melanjutkan kerja sama pemantauan dan pengujian laboratorium lingkungan eksternal terakreditasi KAN setiap bulan secara konsisten.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">4.</span>
+              <span className="text-justify">
+                Melanjutkan kerja sama pemantauan dan pengujian laboratorium lingkungan eksternal terakreditasi KAN setiap bulan secara konsisten.
+              </span>
             </li>
           </ol>
         </div>
@@ -887,18 +873,30 @@ export function WaterQualityMonitoringView() {
           <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white underline underline-offset-4 decoration-2 decoration-slate-900 dark:decoration-white">
             Rencana Tindak Lanjut :
           </h3>
-          <ol className="list-decimal pl-5 space-y-2 text-xs sm:text-[13.5px] text-slate-800 dark:text-slate-200 leading-relaxed">
-            <li>
-              Melakukan inspeksi sanitasi lingkungan radius 15 meter di sekeliling titik sumur bor artesis untuk memastikan bebas genangan dan bebas resapan limbah cair domestik.
+          <ol className="list-none pl-1 space-y-2 text-xs sm:text-[13.5px] text-slate-800 dark:text-slate-200 leading-relaxed">
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">1.</span>
+              <span className="text-justify">
+                Melakukan inspeksi sanitasi lingkungan radius 15 meter di sekeliling titik sumur bor artesis untuk memastikan bebas genangan dan bebas resapan limbah cair domestik.
+              </span>
             </li>
-            <li>
-              Melaksanakan pengurasan menyeluruh dan desinfeksi klorinasi pada tandon penampungan air bersih pada awal semester berjalan.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">2.</span>
+              <span className="text-justify">
+                Melaksanakan pengurasan menyeluruh dan desinfeksi klorinasi pada tandon penampungan air bersih pada awal semester berjalan.
+              </span>
             </li>
-            <li>
-              Mengagendakan uji petik mandiri (resampling) pada titik kran terjauh 24 jam setelah klorinasi jika ditemukan angka Total Coliform &gt; 0/100 ml.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">3.</span>
+              <span className="text-justify">
+                Mengagendakan uji petik mandiri (<em>resampling</em>) pada titik kran terjauh 24 jam setelah klorinasi jika ditemukan angka Total Coliform &gt; 0/100 ml.
+              </span>
             </li>
-            <li>
-              Mendokumentasikan kartu kontrol pemeliharaan unit filter RO dan melampirkan hasil uji laboratorium pada laporan pemantauan sanitasi rumah sakit triwulanan.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">4.</span>
+              <span className="text-justify">
+                Mendokumentasikan kartu kontrol pemeliharaan unit filter RO dan melampirkan hasil uji laboratorium pada laporan pemantauan sanitasi rumah sakit triwulanan.
+              </span>
             </li>
           </ol>
         </div>

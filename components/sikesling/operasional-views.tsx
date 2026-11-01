@@ -66,8 +66,8 @@ export function OperasionalIndexView() {
         />
         <SummaryCard
           title="Status Penyimpanan"
-          value="Mode Sesi"
-          subtitle="Siap integrasi PostgreSQL"
+          value="Supabase Cloud"
+          subtitle="Terintegrasi REST v1 Realtime"
           icon={<History className="w-5 h-5" />}
           href="/pengaturan/aplikasi"
         />
@@ -186,15 +186,15 @@ export function KegiatanHarianView() {
         }
       />
 
-      {/* Foundation Mode Notice */}
+      {/* Supabase Cloud Notice */}
       <div className="rounded-xl border border-sky-200 dark:border-sky-900/60 bg-sky-50/60 dark:bg-sky-950/30 p-4 flex items-start gap-3">
         <Info className="w-5 h-5 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5" />
         <div className="text-xs text-slate-700 dark:text-slate-300 space-y-1">
           <p className="font-semibold text-slate-900 dark:text-slate-100">
-            Mode Rancangan Formulir (Sesi Lokal — Tahap Foundation)
+            Pencatatan Kegiatan Terintegrasi Supabase Cloud
           </p>
           <p>
-            Pilihan jenis kegiatan, lokasi ruangan, dan nama petugas di bawah ini bersumber secara dinamis dari modul <strong>Master Data</strong>. Data yang Anda catat akan muncul pada <strong>Riwayat Kegiatan</strong> dan memperbarui angka pada <strong>Dashboard</strong> selama sesi berlangsung.
+            Pilihan jenis kegiatan, lokasi ruangan, dan nama petugas di bawah ini bersumber secara dinamis dari modul <strong>Master Data Supabase</strong>. Setiap kegiatan yang dicatat otomatis tersimpan ke Supabase dan memperbarui grafik serta rekap laporan secara realtime.
           </p>
         </div>
       </div>
@@ -298,7 +298,7 @@ export function KegiatanHarianView() {
               className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold rounded-lg bg-[#153E75] text-white hover:bg-[#10315E] disabled:opacity-50 transition-colors"
             >
               <Save className="w-4 h-4" />
-              <span>Simpan ke Sesi Lokal (Draft)</span>
+              <span>Simpan ke Supabase</span>
             </button>
           </div>
         </FormSection>

@@ -87,8 +87,6 @@ export interface AirQualityItem {
   overallScore: number;
 }
 
-const STORAGE_KEY = 'sikesling_air_quality_items';
-
 const DEFAULT_GROUPS = [
   'IGD',
   'RAWAT JALAN',
@@ -99,44 +97,19 @@ const DEFAULT_GROUPS = [
 
 export function AirQualityView() {
   const meta = resolveRouteMeta('/monitoring/kualitas-udara');
-  const { pushToast } = useApp();
+  const { pushToast, airItems, updateAirItems } = useApp();
 
   const [selectedYear, setSelectedYear] = useState<number>(2026);
   const [selectedPeriod, setSelectedPeriod] = useState<AirPeriodFilter>('FULL_YEAR');
   const [activeSheet, setActiveSheet] = useState<'sheet1' | 'sheet2'>('sheet1');
 
-  // Data items tanpa data dummy (mulai dari kosong atau data yang ditambahkan pengguna)
-  const [items, setItems] = useState<AirQualityItem[]>([]);
-  const [storageHydrated, setStorageHydrated] = useState(false);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed)) {
-            setItems(parsed);
-          }
-        }
-      } catch {
-        // ignore error
-      }
-      setStorageHydrated(true);
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  // Simpan perubahan ke localStorage
-  useEffect(() => {
-    if (!storageHydrated) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-      window.dispatchEvent(new Event('sikesling-monitoring-updated'));
-    } catch {
-      // ignore
-    }
-  }, [items, storageHydrated]);
+  const items = airItems as AirQualityItem[];
+  const setItems = (
+    updater: AirQualityItem[] | ((prev: AirQualityItem[]) => AirQualityItem[])
+  ) => {
+    const next = typeof updater === 'function' ? updater(items) : updater;
+    updateAirItems(next);
+  };
 
   // State untuk inline edit nilai hasil ukur
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -1145,18 +1118,30 @@ export function AirQualityView() {
           <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white underline underline-offset-4 decoration-2 decoration-slate-900 dark:decoration-white">
             Rekomendasi :
           </h3>
-          <ol className="list-decimal pl-5 space-y-2 text-xs sm:text-[13.5px] text-slate-800 dark:text-slate-200 leading-relaxed">
-            <li>
-              Melakukan pembersihan berkala filter pendingin ruangan (AC split/central) serta penambahan unit <em>dehumidifier</em> portabel pada ruang penyimpanan berkas rekam medis dan depo obat farmasi untuk menekan kelembaban di bawah 60% RH.
+          <ol className="list-none pl-1 space-y-2 text-xs sm:text-[13.5px] text-slate-800 dark:text-slate-200 leading-relaxed">
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">1.</span>
+              <span className="text-justify">
+                Melakukan pembersihan berkala filter pendingin ruangan (AC split/central) serta penambahan unit <em>dehumidifier</em> portabel pada ruang penyimpanan berkas rekam medis dan depo obat farmasi untuk menekan kelembaban di bawah 60% RH.
+              </span>
             </li>
-            <li>
-              Menata dan menambah armatur lampu LED hemat energi dengan intensitas cahaya minimal 200 LUX pada ruang poli rawat jalan anak, kebidanan, dan umum yang saat ini masih di bawah standar pencahayaan.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">2.</span>
+              <span className="text-justify">
+                Menata dan menambah armatur lampu LED hemat energi dengan intensitas cahaya minimal 200 LUX pada ruang poli rawat jalan anak, kebidanan, dan umum yang saat ini masih di bawah standar pencahayaan.
+              </span>
             </li>
-            <li>
-              Memasang material peredam getaran (<em>vibration isolator</em>) pada unit kompresor/mesin operasional serta menerapkan tata tertib zona tenang dan pembatasan jumlah pengunjung di ruang rawat inap.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">3.</span>
+              <span className="text-justify">
+                Memasang material peredam getaran (<em>vibration isolator</em>) pada unit kompresor/mesin operasional serta menerapkan tata tertib zona tenang dan pembatasan jumlah pengunjung di ruang rawat inap.
+              </span>
             </li>
-            <li>
-              Melanjutkan kerja sama pemantauan dan uji sampel mikrobiologi udara (angka kuman udara dan jamur) dengan laboratorium kesehatan lingkungan terakreditasi KAN secara periodik setiap semester.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">4.</span>
+              <span className="text-justify">
+                Melanjutkan kerja sama pemantauan dan uji sampel mikrobiologi udara (angka kuman udara dan jamur) dengan laboratorium kesehatan lingkungan terakreditasi KAN secara periodik setiap semester.
+              </span>
             </li>
           </ol>
         </div>
@@ -1166,18 +1151,30 @@ export function AirQualityView() {
           <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white underline underline-offset-4 decoration-2 decoration-slate-900 dark:decoration-white">
             Rencana Tindak Lanjut :
           </h3>
-          <ol className="list-decimal pl-5 space-y-2 text-xs sm:text-[13.5px] text-slate-800 dark:text-slate-200 leading-relaxed">
-            <li>
-              Menjadwalkan pemeriksaan suhu dan kelembaban harian oleh petugas Sanitarian menggunakan thermo-hygrometer terkalibrasi di ruang-ruang kritis (IBS, ICU, Isolasi, dan Farmasi).
+          <ol className="list-none pl-1 space-y-2 text-xs sm:text-[13.5px] text-slate-800 dark:text-slate-200 leading-relaxed">
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">1.</span>
+              <span className="text-justify">
+                Menjadwalkan pemeriksaan suhu dan kelembaban harian oleh petugas Sanitarian menggunakan <em>thermo-hygrometer</em> terkalibrasi di ruang-ruang kritis (IBS, ICU, Isolasi, dan Farmasi).
+              </span>
             </li>
-            <li>
-              Melakukan kalibrasi tahunan terhadap alat ukur sound level meter dan lux meter oleh Balai Pengamanan Fasilitas Kesehatan (BPFK).
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">2.</span>
+              <span className="text-justify">
+                Melakukan kalibrasi tahunan terhadap alat ukur <em>sound level meter</em> dan <em>lux meter</em> oleh Balai Pengamanan Fasilitas Kesehatan (BPFK).
+              </span>
             </li>
-            <li>
-              Mengagendakan supervisi gabungan bersama Instalasi Pemeliharaan Sarana Rumah Sakit (IPSRS) untuk pemeliharaan sistem tata udara (AHU/HEPA filter) di ruang operasi dan isolasi bertekanan negatif.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">3.</span>
+              <span className="text-justify">
+                Mengagendakan supervisi gabungan bersama Instalasi Pemeliharaan Sarana Rumah Sakit (IPSRS) untuk pemeliharaan sistem tata udara (AHU/HEPA filter) di ruang operasi dan isolasi bertekanan negatif.
+              </span>
             </li>
-            <li>
-              Menyusun dan menyampaikan rekapitulasi laporan triwulanan pemantauan kualitas lingkungan fisik rumah sakit kepada pimpinan manajemen dan Dinas Kesehatan Kota Sukabumi.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">4.</span>
+              <span className="text-justify">
+                Menyusun dan menyampaikan rekapitulasi laporan triwulanan pemantauan kualitas lingkungan fisik rumah sakit kepada pimpinan manajemen dan Dinas Kesehatan Kota Sukabumi.
+              </span>
             </li>
           </ol>
         </div>

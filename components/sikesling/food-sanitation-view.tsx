@@ -157,16 +157,11 @@ type PeriodFilter =
   | 'M_11'
   | 'M_12';
 
-const STORAGE_KEY = 'sikesling_food_sanitation_penghidangan_v1';
-
 export function FoodSanitationView() {
-  const { pushToast } = useApp();
+  const { pushToast, foodRows, updateFoodRows } = useApp();
   const meta = resolveRouteMeta('/monitoring/sanitasi-pangan');
 
-  const [rows, setRows] = useState<FoodSanitationMonthRow[]>(
-    INITIAL_FOOD_SANITATION_DATA
-  );
-  const [storageHydrated, setStorageHydrated] = useState(false);
+  const rows = foodRows as FoodSanitationMonthRow[];
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>('ALL');
   const [selectedYear, setSelectedYear] = useState<number>(2026);
 
@@ -177,37 +172,8 @@ export function FoodSanitationView() {
   } | null>(null);
   const [editValue, setEditValue] = useState<string>('');
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length === 12) {
-            setRows(parsed);
-          }
-        }
-      } catch {
-        // Ignore storage errors
-      }
-      setStorageHydrated(true);
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  // Persist state to localStorage
-  useEffect(() => {
-    if (!storageHydrated) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
-      window.dispatchEvent(new Event('sikesling-monitoring-updated'));
-    } catch {
-      // Ignore storage errors
-    }
-  }, [rows, storageHydrated]);
-
   const saveRows = (updated: FoodSanitationMonthRow[]) => {
-    setRows(updated);
+    updateFoodRows(updated);
   };
 
   // Filter rows by selected period
@@ -893,42 +859,66 @@ export function FoodSanitationView() {
 
         {/* Rekomendasi */}
         <div className="space-y-2.5">
-          <h3 className="text-sm sm:text-base font-black underline underline-offset-4 decoration-2 text-slate-950 dark:text-white">
+          <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white underline underline-offset-4 decoration-2 decoration-slate-900 dark:decoration-white">
             Rekomendasi :
           </h3>
-          <ol className="list-decimal list-inside space-y-1.5 text-xs sm:text-sm leading-relaxed text-slate-800 dark:text-slate-200 pl-2">
-            <li>
-              Menindaklanjuti item-item temuan pada instrumen Inspeksi Kesehatan Lingkungan (IKL) Jasa Boga Golongan B agar status hasil IKL dapat meningkat dari <em>belum memenuhi syarat</em> menjadi <em>memenuhi syarat</em> sepenuhnya sesuai standar Permenkes No. 2 Tahun 2023.
+          <ol className="list-none pl-1 space-y-2 text-xs sm:text-[13.5px] text-slate-800 dark:text-slate-200 leading-relaxed">
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">1.</span>
+              <span className="text-justify">
+                Menindaklanjuti item-item temuan pada instrumen Inspeksi Kesehatan Lingkungan (IKL) Jasa Boga Golongan B agar status hasil IKL dapat meningkat dari <em>belum memenuhi syarat</em> menjadi <em>memenuhi syarat</em> sepenuhnya sesuai standar Permenkes No. 2 Tahun 2023.
+              </span>
             </li>
-            <li>
-              Mempertahankan dan meningkatkan kualitas penerapan 6 prinsip higiene sanitasi pangan di Instalasi Gizi, mulai dari pemilihan bahan baku, penyimpanan bahan makanan (suhu <em>chiller</em>/<em>freezer</em>), pengolahan, penyimpanan makanan matang, pengangkutan, hingga proses penghidangan ke ruang rawat inap.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">2.</span>
+              <span className="text-justify">
+                Mempertahankan dan meningkatkan kualitas penerapan 6 prinsip higiene sanitasi pangan di Instalasi Gizi, mulai dari pemilihan bahan baku, penyimpanan bahan makanan (suhu <em>chiller</em>/<em>freezer</em>), pengolahan, penyimpanan makanan matang, pengangkutan, hingga proses penghidangan ke ruang rawat inap.
+              </span>
             </li>
-            <li>
-              Memastikan seluruh penjamah makanan (pramusaji dan juru masak) disiplin menggunakan Alat Pelindung Diri (APD) lengkap seperti celemek, penutup kepala (<em>hairnet</em>), masker, dan sarung tangan <em>food grade</em> saat proses pemorsian dan distribusi makanan pasien.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">3.</span>
+              <span className="text-justify">
+                Memastikan seluruh penjamah makanan (pramusaji dan juru masak) disiplin menggunakan Alat Pelindung Diri (APD) lengkap seperti celemek, penutup kepala (<em>hairnet</em>), masker, dan sarung tangan <em>food grade</em> saat proses pemorsian dan distribusi makanan pasien.
+              </span>
             </li>
-            <li>
-              Melakukan pemeliharaan fasilitas fisik ruang pengolahan dan ruang penghidangan makanan, termasuk kelengkapan kawat kasa anti-serangga, fungsi <em>exhaust hood</em>, pencahayaan ruangan, serta sarana pencucian peralatan makan dengan air hangat dan desinfektan.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">4.</span>
+              <span className="text-justify">
+                Melakukan pemeliharaan fasilitas fisik ruang pengolahan dan ruang penghidangan makanan, termasuk kelengkapan kawat kasa anti-serangga, fungsi <em>exhaust hood</em>, pencahayaan ruangan, serta sarana pencucian peralatan makan dengan air hangat dan desinfektan.
+              </span>
             </li>
           </ol>
         </div>
 
         {/* Rencana Tindak Lanjut */}
         <div className="space-y-2.5">
-          <h3 className="text-sm sm:text-base font-black underline underline-offset-4 decoration-2 text-slate-950 dark:text-white">
+          <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white underline underline-offset-4 decoration-2 decoration-slate-900 dark:decoration-white">
             Rencana Tindak Lanjut :
           </h3>
-          <ol className="list-decimal list-inside space-y-1.5 text-xs sm:text-sm leading-relaxed text-slate-800 dark:text-slate-200 pl-2">
-            <li>
-              Melaksanakan inspeksi sanitasi dapur dan proses penghidangan secara rutin setiap bulan bersama Kepala Instalasi Gizi menggunakan formulir baku IKL Jasa Boga Golongan B untuk mengevaluasi perbaikan item temuan.
+          <ol className="list-none pl-1 space-y-2 text-xs sm:text-[13.5px] text-slate-800 dark:text-slate-200 leading-relaxed">
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">1.</span>
+              <span className="text-justify">
+                Melaksanakan inspeksi sanitasi dapur dan proses penghidangan secara rutin setiap bulan bersama Kepala Instalasi Gizi menggunakan formulir baku IKL Jasa Boga Golongan B untuk mengevaluasi perbaikan item temuan.
+              </span>
             </li>
-            <li>
-              Melakukan pengambilan dan pengujian sampel makanan (<em>food bank sample</em> 2 x 24 jam), uji kualitas mikrobiologi makanan jadi, serta pemeriksaan usap alat makan (<em>rectal swab</em> penjamah dan <em>swab</em> alat makan) secara berkala.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">2.</span>
+              <span className="text-justify">
+                Melakukan pengambilan dan pengujian sampel makanan (<em>food bank sample</em> 2 x 24 jam), uji kualitas mikrobiologi makanan jadi, serta pemeriksaan usap alat makan (<em>rectal swab</em> penjamah dan <em>swab</em> alat makan) secara berkala.
+              </span>
             </li>
-            <li>
-              Melakukan monitoring harian terhadap kebersihan kereta makan tertutup (<em>food trolley</em>) dan ketepatan suhu penghidangan makanan pasien sebelum didistribusikan ke ruang perawatan.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">3.</span>
+              <span className="text-justify">
+                Melakukan monitoring harian terhadap kebersihan kereta makan tertutup (<em>food trolley</em>) dan ketepatan suhu penghidangan makanan pasien sebelum didistribusikan ke ruang perawatan.
+              </span>
             </li>
-            <li>
-              Mengajukan pembaruan verifikasi lapangan IKL Jasa Boga Golongan B bersama Dinas Kesehatan Kota Sukabumi setelah seluruh item perbaikan sarana fisik Instalasi Gizi terpenuhi 100%.
+            <li className="grid grid-cols-[1.5rem_1fr] items-baseline">
+              <span className="font-semibold tabular-nums select-none">4.</span>
+              <span className="text-justify">
+                Mengajukan pembaruan verifikasi lapangan IKL Jasa Boga Golongan B bersama Dinas Kesehatan Kota Sukabumi setelah seluruh item perbaikan sarana fisik Instalasi Gizi terpenuhi 100%.
+              </span>
             </li>
           </ol>
         </div>

@@ -70,7 +70,7 @@ export function SupervisiDashboardView({
         <SummaryCard
           title="Total Supervisi Tercatat"
           value={supervisions.length}
-          subtitle="Sesi lokal aktif"
+          subtitle="Tersinkronisasi di Supabase"
           icon={<ShieldCheck className="w-5 h-5" />}
           href="/supervisi/riwayat"
         />
@@ -218,15 +218,15 @@ export function MulaiSupervisiView() {
         }
       />
 
-      {/* Explicit Draft Form Mode Notice (Section 7 Menu 4 requirement) */}
+      {/* Supabase Cloud Supervision Notice */}
       <div className="rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-[#EEF4FF]/60 dark:bg-slate-800/30 p-4 flex items-start gap-3">
         <Info className="w-5 h-5 text-[#1D7AFC] dark:text-[#60A5FA] shrink-0 mt-0.5" />
         <div className="text-xs text-slate-700 dark:text-slate-300 space-y-1">
           <p className="font-semibold text-slate-900 dark:text-slate-100">
-            Mode Rancangan Formulir Supervisi Generik (Tahap 1 — Foundation)
+            Formulir Supervisi Lapangan Terintegrasi Supabase Cloud
           </p>
           <p>
-            Formulir ini dirancang ramah smartphone/tablet untuk uji alur kerja supervisi lapangan. Apabila kolom <strong>Temuan</strong> diisi, sistem otomatis membuat tiket pada modul <strong>Tindak Lanjut Temuan</strong> dalam sesi lokal. Pengambilan lokasi (geotag) otomatis sengaja dinonaktifkan demi privasi dan keamanan.
+            Formulir ini dirancang ramah smartphone/tablet untuk supervisi lapangan. Apabila kolom <strong>Temuan</strong> diisi, sistem otomatis membuat tiket pada modul <strong>Tindak Lanjut Temuan</strong> dan menyinkronkannya ke Supabase secara realtime.
           </p>
         </div>
       </div>
@@ -370,7 +370,7 @@ export function MulaiSupervisiView() {
               className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold rounded-lg bg-[#153E75] text-white hover:bg-[#10315E] disabled:opacity-50 transition-colors"
             >
               <Save className="w-4 h-4" />
-              <span>Simpan Rancangan Supervisi (Sesi Lokal)</span>
+              <span>Simpan Supervisi ke Supabase</span>
             </button>
           </div>
         </FormSection>

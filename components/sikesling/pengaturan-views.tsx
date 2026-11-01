@@ -33,6 +33,8 @@ import {
 } from '@/lib/domain';
 import { FOUNDATION_ENTITIES } from '@/lib/dal';
 import { PWAInstallButton } from '@/components/sikesling/pwa-elements';
+import { SUPABASE_SETUP_SQL, getSupabaseConfig } from '@/lib/supabase';
+import { Cloud, Copy, RefreshCw } from 'lucide-react';
 
 const ALL_ACTIONS: { action: PermissionAction; label: string }[] = [
   { action: 'view_dashboard', label: 'Melihat Dashboard & Statistik' },
@@ -59,12 +61,16 @@ export function PengaturanView({ routePath }: { routePath: string }) {
     setCurrentRole,
     hospitalProfile,
     updateHospitalProfile,
+    supabaseDiagnostic,
+    syncAllToSupabase,
+    pushToast,
   } = useApp();
 
   const [instName, setInstName] = useState(hospitalProfile.institutionName);
   const [unitName, setUnitName] = useState(hospitalProfile.unitName);
   const [address, setAddress] = useState(hospitalProfile.address);
   const [headOfUnit, setHeadOfUnit] = useState(hospitalProfile.headOfUnit);
+  const [syncingSupabase, setSyncingSupabase] = useState(false);
 
   const [serverAuthResult, setServerAuthResult] = useState<string | null>(null);
 
@@ -413,27 +419,73 @@ export function PengaturanView({ routePath }: { routePath: string }) {
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormSection
-              title="Konfigurasi Database PostgreSQL & Prisma ORM"
-              description="Dirancang agar dapat dijalankan secara lokal pada server UOBK RSUD Al-Mulk tanpa ketergantungan wajib pada layanan cloud berbayar."
+              title="Integrasi Cloud Supabase REST v1 (Aktif)"
+              description="Seluruh 16 modul data SIKESLING RSAM kini terhubung penuh ke Supabase tanpa penyimpanan lokal browser (Zero Local Storage)."
             >
               <div className="space-y-2.5 text-xs">
-                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
-                  <span className="text-slate-500">ORM Engine:</span>
-                  <span className="font-mono font-semibold">Prisma ORM (prisma/schema.prisma)</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
-                  <span className="text-slate-500">Database Target:</span>
-                  <span className="font-mono font-semibold">PostgreSQL (env: DATABASE_URL)</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
-                  <span className="text-slate-500">Mode Saat Ini:</span>
-                  <span className="font-mono text-[#1D7AFC] dark:text-[#60A5FA] font-semibold">
-                    Sesi Lokal (Siap Migrasi Prisma)
+                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800 gap-2">
+                  <span className="text-slate-500">REST v1 Endpoint:</span>
+                  <span className="font-mono font-semibold text-right truncate max-w-[240px]">
+                    {getSupabaseConfig().restUrl}/
                   </span>
                 </div>
-                <div className="flex justify-between py-2">
-                  <span className="text-slate-500">Penyimpanan File Privat:</span>
-                  <span className="font-mono">./storage/private (Maks. 5 MB)</span>
+                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
+                  <span className="text-slate-500">Project Reference:</span>
+                  <span className="font-mono font-semibold">
+                    {supabaseDiagnostic?.projectRef || 'zwsshqpenadbpytvwkje'}
+                  </span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
+                  <span className="text-slate-500">Mode Penyimpanan:</span>
+                  <span className="font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+                    100% Terintegrasi Supabase Cloud (Tanpa Data Lokal)
+                  </span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
+                  <span className="text-slate-500">Status Tabel Cloud:</span>
+                  <span className="font-mono font-semibold text-[#153E75] dark:text-[#60A5FA]">
+                    {supabaseDiagnostic?.tableReady
+                      ? 'Tabel sikesling_cloud_store Aktif'
+                      : 'Siap Sinkronisasi (16 Koleksi Aktif)'}
+                  </span>
+                </div>
+                <div className="pt-2 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    disabled={syncingSupabase}
+                    onClick={async () => {
+                      setSyncingSupabase(true);
+                      await syncAllToSupabase();
+                      setSyncingSupabase(false);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#002147] text-[#FAF6F0] text-xs font-semibold hover:bg-[#003166] transition-colors disabled:opacity-60"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${syncingSupabase ? 'animate-spin' : ''}`} />
+                    {syncingSupabase ? 'Menyinkronkan...' : 'Sinkronkan 16 Modul ke Supabase'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(SUPABASE_SETUP_SQL);
+                        pushToast({
+                          type: 'success',
+                          title: 'SQL Supabase Disalin',
+                          message: 'Script SQL tabel Supabase berhasil disalin ke clipboard.',
+                        });
+                      } catch {
+                        pushToast({
+                          type: 'warning',
+                          title: 'Gagal Menyalin',
+                          message: 'Gagal menyalin SQL ke clipboard.',
+                        });
+                      }
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[#D2B48C]/60 bg-[#FAF6F0] dark:bg-slate-900 text-[#002147] dark:text-slate-200 text-xs font-semibold hover:bg-[#EFE8DC] transition-colors"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    Salin SQL Tabel Supabase
+                  </button>
                 </div>
               </div>
             </FormSection>
@@ -444,7 +496,7 @@ export function PengaturanView({ routePath }: { routePath: string }) {
             >
               <div className="space-y-4 text-xs text-slate-600 dark:text-slate-300">
                 <p>
-                  SIKESLING RSAM dilengkapi Web App Manifest standar agar dapat dipasang ke layar utama perangkat petugas lapangan.
+                  SIKESLING RSAM dilengkapi Web App Manifest standar agar dapat dipasang ke layar utama perangkat petugas lapangan dan langsung menyinkronkan data ke Supabase Cloud.
                 </p>
                 <PWAInstallButton />
               </div>

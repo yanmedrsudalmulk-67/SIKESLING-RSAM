@@ -274,98 +274,49 @@ export function formatThousandsDot(val: number): string {
 export function readRealtimeMonitoringDatasetFromStorage(
   year = 2026,
   activities: DailyActivityRecord[] = [],
-  allowBrowserStorage = true
+  _allowBrowserStorage = false,
+  cloudOverrides?: Partial<RealtimeMonitoringDataset>
 ): RealtimeMonitoringDataset {
   const defaults = createDefaultMonitoringDataset(year, activities);
-  if (!allowBrowserStorage || typeof window === 'undefined') {
+  if (!cloudOverrides) {
     return defaults;
   }
 
-  try {
-    const rawWater = window.localStorage.getItem(MONITORING_STORAGE_KEYS.water);
-    if (rawWater) {
-      const parsed = JSON.parse(rawWater);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        defaults.waterRows = parsed;
-      }
-    }
-  } catch {
-    // fallback to default
-  }
-
-  try {
-    const rawAir = window.localStorage.getItem(MONITORING_STORAGE_KEYS.air);
-    if (rawAir) {
-      const parsed = JSON.parse(rawAir);
-      if (Array.isArray(parsed)) {
-        defaults.airItems = parsed;
-      }
-    }
-  } catch {
-    // fallback to default
-  }
-
-  try {
-    const rawWastewater = window.localStorage.getItem(MONITORING_STORAGE_KEYS.wastewater);
-    if (rawWastewater) {
-      const parsed = JSON.parse(rawWastewater);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        defaults.wastewaterRows = parsed;
-      }
-    }
-  } catch {
-    // fallback to default
-  }
-
-  try {
-    const rawSolid = window.localStorage.getItem(MONITORING_STORAGE_KEYS.solidWaste);
-    if (rawSolid) {
-      const parsed = JSON.parse(rawSolid);
-      if (Array.isArray(parsed) && parsed.length === 12) {
-        defaults.solidWasteRows = parsed;
-      }
-    }
-  } catch {
-    // fallback to default
-  }
-
-  try {
-    const rawVectorFindings = window.localStorage.getItem(MONITORING_STORAGE_KEYS.vectorFindings);
-    if (rawVectorFindings) {
-      const parsed = JSON.parse(rawVectorFindings);
-      if (parsed && typeof parsed === 'object') {
-        defaults.vectorFindings = parsed;
-      }
-    }
-  } catch {
-    // fallback to default
-  }
-
-  try {
-    const rawVectorUnits = window.localStorage.getItem(MONITORING_STORAGE_KEYS.vectorUnits);
-    if (rawVectorUnits) {
-      const parsed = JSON.parse(rawVectorUnits);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        defaults.vectorUnitCount = parsed.length;
-      }
-    }
-  } catch {
-    // fallback to default
-  }
-
-  try {
-    const rawFood = window.localStorage.getItem(MONITORING_STORAGE_KEYS.food);
-    if (rawFood) {
-      const parsed = JSON.parse(rawFood);
-      if (Array.isArray(parsed) && parsed.length === 12) {
-        defaults.foodRows = parsed;
-      }
-    }
-  } catch {
-    // fallback to default
-  }
-
-  return defaults;
+  return {
+    waterRows:
+      Array.isArray(cloudOverrides.waterRows) && cloudOverrides.waterRows.length > 0
+        ? cloudOverrides.waterRows
+        : defaults.waterRows,
+    airItems: Array.isArray(cloudOverrides.airItems)
+      ? cloudOverrides.airItems
+      : defaults.airItems,
+    wastewaterRows:
+      Array.isArray(cloudOverrides.wastewaterRows) &&
+      cloudOverrides.wastewaterRows.length > 0
+        ? cloudOverrides.wastewaterRows
+        : defaults.wastewaterRows,
+    solidWasteRows:
+      Array.isArray(cloudOverrides.solidWasteRows) &&
+      cloudOverrides.solidWasteRows.length === 12
+        ? cloudOverrides.solidWasteRows
+        : defaults.solidWasteRows,
+    vectorFindings:
+      cloudOverrides.vectorFindings &&
+      typeof cloudOverrides.vectorFindings === 'object'
+        ? cloudOverrides.vectorFindings
+        : defaults.vectorFindings,
+    vectorUnitCount:
+      typeof cloudOverrides.vectorUnitCount === 'number' &&
+      cloudOverrides.vectorUnitCount > 0
+        ? cloudOverrides.vectorUnitCount
+        : defaults.vectorUnitCount,
+    foodRows:
+      Array.isArray(cloudOverrides.foodRows) &&
+      cloudOverrides.foodRows.length === 12
+        ? cloudOverrides.foodRows
+        : defaults.foodRows,
+    activities,
+  };
 }
 
 export function getActiveMonthsForPeriod(config: DashboardPeriodConfig): number[] {
