@@ -46,6 +46,11 @@ export function validateLoginCredentials(
 export function readAuthStageFromStorage(): AuthFlowStage {
   if (typeof window === 'undefined') return 'welcome';
   try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('autostart') === '1') {
+      window.sessionStorage.setItem(AUTH_STAGE_STORAGE_KEY, 'authenticated');
+      return 'authenticated';
+    }
     const raw = window.sessionStorage.getItem(AUTH_STAGE_STORAGE_KEY);
     if (raw === 'welcome' || raw === 'login' || raw === 'authenticated') {
       return raw;

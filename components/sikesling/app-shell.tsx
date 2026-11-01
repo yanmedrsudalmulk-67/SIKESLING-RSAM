@@ -262,15 +262,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     />
                     <span className="text-xs font-semibold truncate">{sub.title}</span>
                   </div>
-                  <p
-                    className={`text-[11px] line-clamp-1 mt-0.5 pl-3.5 ${
-                      subActive
-                        ? 'text-[#EADBC8]'
-                        : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300'
-                    }`}
-                  >
-                    {sub.description}
-                  </p>
+                  {sub.description ? (
+                    <p
+                      className={`text-[11px] line-clamp-1 mt-0.5 pl-3.5 ${
+                        subActive
+                          ? 'text-[#EADBC8]'
+                          : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300'
+                      }`}
+                    >
+                      {sub.description}
+                    </p>
+                  ) : null}
                 </div>
                 <span
                   className={`text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 mt-0.5 ${
@@ -591,7 +593,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {
             id: 'supervisi',
             label: 'Supervisi',
-            href: '/supervisi/baru',
+            href: '/supervisi/dashboard',
             hasPopup: true,
             isRouteActive: pathname.startsWith('/supervisi'),
             Icon: ShieldCheck,
@@ -741,15 +743,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                                   {sub.title}
                                 </span>
                               </div>
-                              <p
-                                className={`text-[11px] line-clamp-1 mt-0.5 pl-4 ${
-                                  subActive
-                                    ? 'text-[#EADBC8]'
-                                    : 'text-slate-600 dark:text-slate-300'
-                                }`}
-                              >
-                                {sub.description}
-                              </p>
+                              {sub.description ? (
+                                <p
+                                  className={`text-[11px] line-clamp-1 mt-0.5 pl-4 ${
+                                    subActive
+                                      ? 'text-[#EADBC8]'
+                                      : 'text-slate-600 dark:text-slate-300'
+                                  }`}
+                                >
+                                  {sub.description}
+                                </p>
+                              ) : null}
                             </div>
                             <div
                               className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors ${

@@ -265,37 +265,22 @@ export const MAIN_NAVIGATION: MainMenuItem[] = [
     number: 4,
     title: 'Supervisi Lingkungan',
     shortTitle: 'Supervisi',
-    href: '/supervisi',
+    href: '/supervisi/dashboard',
     iconName: 'ShieldCheck',
     group: 'Operasional & Lapangan',
-    description:
-      'Modul Supervisi Ruangan & Kesling (10 Card Ruangan: Rawat Jalan, IGD, Ranap ICU & IBS, Ranap Usman, Ranap Aisyah, Ranap Fatimah, Ranap Khadijah, Manajemen, Halaman, dan Supervisi) beserta Form Input dan Tabel Rekap Supervisi.',
+    description: '',
     status: 'Functional',
     subItems: [
       {
         id: 'supervisi-dashboard',
         title: 'Dashboard Supervisi',
         href: '/supervisi/dashboard',
-        description:
-          'Pilih salah satu dari 10 card ruangan (Rawat Jalan, IGD, Ranap ICU dan IBS, Ranap Usman, Ranap Aisyah, Ranap Fatimah, Ranap Khadijah, Manajemen, Halaman, atau Supervisi) untuk membuka form penginputan data supervisi.',
+        description: '',
         status: 'Functional',
         plannedFeatures: [
           '10 Card pilihan ruangan dan modul supervisi dengan ilustrasi 3D',
-          'Form penginputan berurut ke bawah (Tanggal, Supervisor, Unit, Nama Petugas, Kerapihan, Prosedur, Alat & Bahan, K3, Sikap & Perilaku, Skor 1-4, Temuan, Rekomendasi, Dokumentasi Foto, & Tanda Tangan)',
+          'Form penginputan berurut ke bawah khusus untuk ruangan yang dipilih',
           'Integrasi otomatis penyimpanan data ke Tabel Rekap Supervisi',
-        ],
-      },
-      {
-        id: 'supervisi-evaluasi',
-        title: 'Input Data Supervisi',
-        href: '/supervisi/evaluasi',
-        description:
-          'Form penginputan data supervisi berurut ke bawah beserta penilaian skor 1–4, dokumentasi foto temuan/perbaikan, dan tanda tangan.',
-        status: 'Functional',
-        plannedFeatures: [
-          'Input Tanggal, Supervisor, Unit, dan Nama Petugas',
-          'Penilaian Kerapihan, Prosedur, Alat & Bahan, K3, dan Sikap & Perilaku (Skor 1-4)',
-          'Input Temuan, Rekomendasi, Dokumentasi Foto, dan Tanda Tangan',
         ],
       },
       {

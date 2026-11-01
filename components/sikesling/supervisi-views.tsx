@@ -33,8 +33,7 @@ export function SupervisiDashboardView({
   return (
     <PageContainer>
       <PageHeader
-        title={meta.title}
-        description={meta.description}
+        title="Dashboard Supervisi"
         status="Functional"
         breadcrumbs={meta.breadcrumbs}
       />
@@ -44,14 +43,17 @@ export function SupervisiDashboardView({
 }
 
 export function MulaiSupervisiView({
-  initialModule = 'SUPERVISI',
+  initialModule,
   initialTab = 'input',
 }: {
   initialModule?: AplicleanModuleId;
   initialTab?: 'input' | 'matrix' | 'gallery';
 } = {}) {
-  const cardId = mapAplicleanModuleToCardId(initialModule);
-  const mode = initialTab === 'matrix' ? 'table' : 'form';
+  const cardId = initialModule
+    ? mapAplicleanModuleToCardId(initialModule)
+    : 'SUPERVISI';
+  const mode =
+    initialTab === 'matrix' ? 'table' : initialModule ? 'form' : 'cards';
 
   return (
     <PageContainer>
