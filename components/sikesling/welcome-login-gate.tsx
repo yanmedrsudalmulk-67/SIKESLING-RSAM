@@ -197,7 +197,7 @@ export function WelcomeLoginGate({
               <div className="relative w-full aspect-video sm:aspect-auto sm:w-full sm:h-full sm:flex-1 rounded-[18px] sm:rounded-[26px] lg:rounded-[30px] overflow-hidden border-2 border-[#D2B48C]/85 ring-1 ring-white/15 shadow-[0_16px_38px_rgba(0,0,0,0.55)] sm:shadow-[0_24px_70px_rgba(0,0,0,0.6)] bg-[#082747]">
                 <video
                   ref={videoRef}
-                  src="/assets/aistudio/gemini_generated_video_e1082990_b7aa5ae6.mp4"
+                  src="/assets/aistudio/gemini_generated_video_d24d733d_3d063e8d.mp4"
                   preload="auto"
                   autoPlay
                   loop
@@ -591,7 +591,7 @@ export function WelcomeLoginGate({
                   </defs>
                 </svg>
                 <Image
-                  src="/assets/aistudio/fitria_mirrored_cutout.png"
+                  src="/assets/aistudio/fitria_rsam_uniform_cutout.png"
                   alt="Fitria Wulandari, A.M.KL - Sanitarian RSUD Al-Mulk"
                   width={340}
                   height={370}

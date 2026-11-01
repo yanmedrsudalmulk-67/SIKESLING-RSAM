@@ -620,7 +620,7 @@ export function DashboardView() {
               <div className="pointer-events-none absolute inset-x-0 bottom-0 -top-7 rounded-b-[25px] overflow-hidden z-10 flex items-end justify-center">
                 <div className="relative w-[90%] h-full transition-transform duration-300 ease-out group-hover:-translate-y-1 group-hover:scale-[1.02]">
                   <Image
-                    src="/assets/aistudio/fitria_mirrored_cutout.png"
+                    src="/assets/aistudio/fitria_rsam_uniform_cutout.png"
                     alt="Profil Fitria Wulandari, A.M.KL - Sanitarian RSAM"
                     fill
                     priority

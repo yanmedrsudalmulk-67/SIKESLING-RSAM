@@ -27,7 +27,7 @@ test('navigation structure includes all 11 main menus and required routes', () =
   assert.ok(allRoutes.includes('/operasional/kegiatan-harian'));
   assert.ok(allRoutes.includes('/monitoring/kualitas-air'));
   assert.ok(allRoutes.includes('/monitoring/ipal'));
-  assert.ok(allRoutes.includes('/supervisi/baru'));
+  assert.ok(allRoutes.includes('/supervisi/dashboard'));
   assert.ok(allRoutes.includes('/tindak-lanjut/temuan'));
   assert.ok(allRoutes.includes('/analisis/kegiatan'));
   assert.ok(allRoutes.includes('/laporan/bulanan'));
@@ -36,8 +36,8 @@ test('navigation structure includes all 11 main menus and required routes', () =
   assert.ok(allRoutes.includes('/master-data/standar'));
   assert.ok(allRoutes.includes('/pengaturan/hak-akses'));
 
-  const resolved = resolveRouteMeta('/supervisi/baru');
-  assert.equal(resolved.title, 'Mulai Supervisi');
+  const resolved = resolveRouteMeta('/supervisi/riwayat');
+  assert.equal(resolved.title, 'Tabel Rekap Supervisi');
   assert.equal(resolved.breadcrumbs.length, 3);
 });
 
