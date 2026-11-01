@@ -1,13 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  DEFAULT_PETUGAS_LIST,
   SUPERVISI_CARDS,
+  addPetugasName,
   buildTimestampFromParts,
   calculateRoomChecklistProgress,
   calculateSupervisiScores,
   createDefaultTaskEntriesForCard,
   createInitialRoomChecklistRecords,
   createInitialSupervisiAuditRecords,
+  deletePetugasName,
+  editPetugasName,
   getHariFromDateInput,
   parseTimestampToParts,
   scaleCanvasCoordinates,
@@ -125,4 +129,30 @@ test('scaleCanvasCoordinates maps CSS layout coordinates to internal canvas bitm
   assert.equal(pt.x, 300);
   assert.equal(pt.y, 104);
 });
+
+test('addPetugasName, editPetugasName, and deletePetugasName manage customizable officer list cleanly without dummy names', () => {
+  assert.ok(!DEFAULT_PETUGAS_LIST.includes('HENDRA GUNAWAN'));
+  assert.ok(!DEFAULT_PETUGAS_LIST.includes('AHMAD FAUZI'));
+  assert.ok(!DEFAULT_PETUGAS_LIST.includes('DEDI SUPRIADI'));
+
+  const initial = [...DEFAULT_PETUGAS_LIST];
+  const withAdded = addPetugasName(initial, '  BUDI SANTOSO  ');
+  assert.equal(withAdded.length, initial.length + 1);
+  assert.equal(withAdded[withAdded.length - 1], 'BUDI SANTOSO');
+
+  // Duplicate case-insensitive add should be ignored
+  const duplicateAdd = addPetugasName(withAdded, 'budi santoso');
+  assert.equal(duplicateAdd.length, withAdded.length);
+
+  // Edit existing officer name
+  const withEdited = editPetugasName(withAdded, 'BUDI SANTOSO', 'BUDI RAHARJO');
+  assert.ok(withEdited.includes('BUDI RAHARJO'));
+  assert.ok(!withEdited.includes('BUDI SANTOSO'));
+
+  // Delete officer name
+  const withDeleted = deletePetugasName(withEdited, 'BUDI RAHARJO');
+  assert.ok(!withDeleted.includes('BUDI RAHARJO'));
+  assert.equal(withDeleted.length, initial.length);
+});
+
 

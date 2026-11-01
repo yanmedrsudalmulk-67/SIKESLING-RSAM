@@ -20,15 +20,16 @@ import {
   LayoutGrid,
   Lock,
   LockOpen,
+  Pencil,
   Plus,
   Search,
   Sparkles,
   Trash2,
-  UserCheck,
   X,
 } from 'lucide-react';
 import {
   CRITERIA_QUICK_OPTIONS,
+  DEFAULT_PETUGAS_LIST,
   HARI_OPTIONS,
   HariValue,
   RoomChecklistRecord,
@@ -40,16 +41,21 @@ import {
   SupervisiCardConfig,
   SupervisiCardId,
   TaskStatusValue,
+  addPetugasName,
   buildTimestampFromParts,
   calculateRoomChecklistProgress,
   calculateSupervisiScores,
   createDefaultTaskEntriesForCard,
   createInitialRoomChecklistRecords,
   createInitialSupervisiAuditRecords,
+  deletePetugasName,
+  editPetugasName,
   getHariFromDateInput,
+  loadCustomPetugasList,
   loadRoomChecklistRecords,
   loadSupervisiAuditRecords,
   parseTimestampToParts,
+  saveCustomPetugasList,
   saveRoomChecklistRecords,
   saveSupervisiAuditRecords,
   scaleCanvasCoordinates,
@@ -122,6 +128,288 @@ function getCurrentHariIndonesia(): HariValue {
   return map[dayIdx] || 'SENIN';
 }
 
+interface CustomizablePetugasFieldProps {
+  id: string;
+  label: string;
+  placeholder: string;
+  value: string;
+  onChange: (nextVal: string) => void;
+  petugasList: string[];
+  onAddPetugas: (name: string) => void;
+  onEditPetugas: (oldName: string, newName: string) => void;
+  onDeletePetugas: (name: string) => void;
+}
+
+function CustomizablePetugasField({
+  id,
+  label,
+  placeholder,
+  value,
+  onChange,
+  petugasList,
+  onAddPetugas,
+  onEditPetugas,
+  onDeletePetugas,
+}: CustomizablePetugasFieldProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [newOfficerName, setNewOfficerName] = useState('');
+  const [activeOfficer, setActiveOfficer] = useState<string | null>(null);
+  const [editingOfficer, setEditingOfficer] = useState<string | null>(null);
+  const [editingValue, setEditingValue] = useState('');
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (ev: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(ev.target as Node)
+      ) {
+        setIsOpen(false);
+        setActiveOfficer(null);
+        setEditingOfficer(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleConfirmAdd = () => {
+    const trimmed = newOfficerName.trim();
+    if (!trimmed) return;
+    onAddPetugas(trimmed);
+    onChange(trimmed);
+    setNewOfficerName('');
+    setIsAdding(false);
+    setIsOpen(true);
+    setActiveOfficer(trimmed);
+  };
+
+  const handleConfirmEdit = (oldName: string) => {
+    const trimmed = editingValue.trim();
+    if (!trimmed) return;
+    onEditPetugas(oldName, trimmed);
+    setEditingOfficer(null);
+    setEditingValue('');
+    setActiveOfficer(trimmed);
+  };
+
+  return (
+    <div ref={containerRef} className="space-y-2 relative">
+      {/* Header row with label on the left and + icon button on the right */}
+      <div className="flex items-center justify-between gap-2">
+        <label
+          htmlFor={id}
+          className="block text-xs font-extrabold uppercase tracking-wider text-[#002147] dark:text-slate-200"
+        >
+          {label}
+        </label>
+        <button
+          type="button"
+          onClick={() => {
+            setIsAdding((prev) => !prev);
+            setNewOfficerName('');
+            setEditingOfficer(null);
+          }}
+          aria-label="Tambah Nama Petugas"
+          title="Tambah Nama Petugas"
+          className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-[#002147] text-[#D2B48C] hover:bg-[#082B54] transition-colors cursor-pointer shadow-2xs"
+        >
+          <Plus className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Inline input when + icon is clicked */}
+      {isAdding && (
+        <div className="flex items-center gap-2 p-2.5 rounded-xl bg-[#FAF6F0] dark:bg-slate-900 border border-[#D2B48C] shadow-xs">
+          <input
+            type="text"
+            value={newOfficerName}
+            onChange={(e) => setNewOfficerName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleConfirmAdd();
+              } else if (e.key === 'Escape') {
+                setIsAdding(false);
+              }
+            }}
+            placeholder="Ketik nama petugas baru..."
+            aria-label="Ketik nama petugas baru"
+            autoFocus
+            className="flex-1 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs sm:text-sm font-semibold text-[#002147] dark:text-white focus:outline-none focus:border-[#002147]"
+          />
+          <button
+            type="button"
+            onClick={handleConfirmAdd}
+            aria-label="Simpan Nama Petugas Baru"
+            className="px-3 py-2 rounded-lg bg-[#002147] text-[#D2B48C] hover:bg-[#082B54] text-xs font-extrabold cursor-pointer inline-flex items-center gap-1"
+          >
+            <Check className="w-3.5 h-3.5" />
+            <span>Simpan</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsAdding(false)}
+            aria-label="Batal Tambah Petugas"
+            className="p-2 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 cursor-pointer"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
+      {/* Custom Dropdown Trigger */}
+      <div className="relative">
+        <button
+          id={id}
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded={isOpen}
+          onClick={() => {
+            setIsOpen((prev) => !prev);
+            setActiveOfficer(null);
+            setEditingOfficer(null);
+          }}
+          className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-[#FAF6F0]/50 dark:bg-slate-900 text-sm font-semibold text-[#002147] dark:text-white focus:outline-none focus:border-[#002147] flex items-center justify-between cursor-pointer text-left"
+        >
+          <span className="truncate">{value || placeholder}</span>
+          <ChevronDown
+            className={`w-4 h-4 text-slate-600 shrink-0 transition-transform ${
+              isOpen ? 'rotate-180' : ''
+            }`}
+          />
+        </button>
+
+        {/* Dropdown Menu List */}
+        {isOpen && (
+          <div
+            role="listbox"
+            aria-label={label}
+            onMouseLeave={() => setActiveOfficer(null)}
+            className="mt-1.5 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl overflow-hidden z-30 divide-y divide-slate-100 dark:divide-slate-800"
+          >
+            {petugasList.length === 0 ? (
+              <div className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
+                Belum ada nama petugas. Klik tombol + di atas untuk menambah nama petugas.
+              </div>
+            ) : (
+              petugasList.map((officerName) => {
+                const isEditingThis = editingOfficer === officerName;
+                const isSelected = value === officerName;
+                const showActions = activeOfficer === officerName;
+
+                if (isEditingThis) {
+                  return (
+                    <div
+                      key={officerName}
+                      className="flex items-center gap-2 px-3 py-2 bg-[#FAF6F0] dark:bg-slate-800"
+                    >
+                      <input
+                        type="text"
+                        value={editingValue}
+                        onChange={(e) => setEditingValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleConfirmEdit(officerName);
+                          } else if (e.key === 'Escape') {
+                            setEditingOfficer(null);
+                          }
+                        }}
+                        aria-label={`Edit nama ${officerName}`}
+                        autoFocus
+                        className="flex-1 px-2.5 py-1.5 rounded-lg border border-[#002147] bg-white dark:bg-slate-900 text-xs sm:text-sm font-bold text-[#002147] dark:text-white focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleConfirmEdit(officerName)}
+                        aria-label={`Simpan perubahan ${officerName}`}
+                        title="Simpan"
+                        className="p-1.5 rounded-lg bg-[#002147] text-[#D2B48C] hover:bg-[#082B54] cursor-pointer"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditingOfficer(null)}
+                        aria-label="Batal edit nama"
+                        title="Batal"
+                        className="p-1.5 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div
+                    key={officerName}
+                    role="option"
+                    aria-selected={isSelected}
+                    onMouseEnter={() => setActiveOfficer(officerName)}
+                    onClick={() => {
+                      onChange(officerName);
+                      if (activeOfficer === officerName && isSelected) {
+                        setIsOpen(false);
+                      } else {
+                        setActiveOfficer(officerName);
+                      }
+                    }}
+                    className={`flex items-center justify-between gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold transition-colors cursor-pointer select-none ${
+                      isSelected || showActions
+                        ? 'bg-[#FAF6F0] dark:bg-slate-800 text-[#002147] dark:text-[#D2B48C]'
+                        : 'text-[#002147] dark:text-slate-200 hover:bg-[#FAF6F0]/70 dark:hover:bg-slate-800/60'
+                    }`}
+                  >
+                    <span className="truncate">{officerName}</span>
+
+                    {/* Edit (Pencil) & Delete (Trash) buttons — only visible when name is touched or hovered */}
+                    <div
+                      className={`flex items-center gap-1.5 shrink-0 transition-opacity duration-150 ${
+                        showActions
+                          ? 'opacity-100 pointer-events-auto'
+                          : 'opacity-0 pointer-events-none'
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingOfficer(officerName);
+                          setEditingValue(officerName);
+                        }}
+                        aria-label={`Edit nama ${officerName}`}
+                        title={`Edit ${officerName}`}
+                        className="p-1.5 rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-[#002147] dark:text-[#D2B48C] hover:bg-[#002147] hover:text-[#D2B48C] transition-colors cursor-pointer"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeletePetugas(officerName);
+                        }}
+                        aria-label={`Hapus nama ${officerName}`}
+                        title={`Hapus ${officerName}`}
+                        className="p-1.5 rounded-lg bg-white dark:bg-slate-700 border border-rose-200 dark:border-rose-800 text-rose-600 hover:bg-rose-600 hover:text-white transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function SupervisiHubWorkspace({
   initialMode = 'cards',
   initialCardId = 'SUPERVISI',
@@ -168,6 +456,9 @@ export function SupervisiHubWorkspace({
     )
   );
   const [roomPetugas, setRoomPetugas] = useState<string>('');
+  const [customPetugasList, setCustomPetugasList] = useState<string[]>(() => [
+    ...DEFAULT_PETUGAS_LIST,
+  ]);
   const [roomEvaluasi, setRoomEvaluasi] = useState<string>('');
   const [roomSignatures, setRoomSignatures] = useState<string[]>(['']);
   const [activeRoomSigSlot, setActiveRoomSigSlot] = useState<number>(0);
@@ -187,6 +478,7 @@ export function SupervisiHubWorkspace({
   // STATE FOR SUPERVISI AUDIT FORM (10TH CARD: SUPERVISI)
   // =========================================================================
   const [tanggal, setTanggal] = useState<string>('01/11/2026 16:55:01');
+  const [auditHari, setAuditHari] = useState<HariValue>('SENIN');
   const [supervisor, setSupervisor] = useState<string>('');
   const [unit, setUnit] = useState<string>('');
   const [namaPetugas, setNamaPetugas] = useState<string>('');
@@ -228,11 +520,50 @@ export function SupervisiHubWorkspace({
   useEffect(() => {
     setRoomRecords(loadRoomChecklistRecords());
     setAuditRecords(loadSupervisiAuditRecords());
+    setCustomPetugasList(loadCustomPetugasList());
     const nowStr = formatNowTimestamp();
+    const currentHari = getCurrentHariIndonesia();
     setTanggal(nowStr);
+    setAuditHari(currentHari);
     setRoomTanggal(nowStr);
-    setRoomHari(getCurrentHariIndonesia());
+    setRoomHari(currentHari);
   }, []);
+
+  const handleAddCustomPetugas = (name: string) => {
+    setCustomPetugasList((prev) => {
+      const next = addPetugasName(prev, name);
+      saveCustomPetugasList(next);
+      return next;
+    });
+  };
+
+  const handleEditCustomPetugas = (oldName: string, newName: string) => {
+    setCustomPetugasList((prev) => {
+      const next = editPetugasName(prev, oldName, newName);
+      saveCustomPetugasList(next);
+      return next;
+    });
+    if (roomPetugas === oldName) {
+      setRoomPetugas(newName.trim());
+    }
+    if (namaPetugas === oldName) {
+      setNamaPetugas(newName.trim());
+    }
+  };
+
+  const handleDeleteCustomPetugas = (targetName: string) => {
+    setCustomPetugasList((prev) => {
+      const next = deletePetugasName(prev, targetName);
+      saveCustomPetugasList(next);
+      return next;
+    });
+    if (roomPetugas === targetName) {
+      setRoomPetugas('');
+    }
+    if (namaPetugas === targetName) {
+      setNamaPetugas('');
+    }
+  };
 
   const computedScoreSummary = useMemo(() => {
     return calculateSupervisiScores({
@@ -259,12 +590,13 @@ export function SupervisiHubWorkspace({
       SUPERVISI_CARDS.find((c) => c.id === cardId) ||
       SUPERVISI_CARDS[SUPERVISI_CARDS.length - 1];
     const nowStr = formatNowTimestamp();
+    const currentHari = getCurrentHariIndonesia();
 
     // Reset Room Checklist form state
     setRoomTanggal(nowStr);
-    setRoomHari(getCurrentHariIndonesia());
+    setRoomHari(currentHari);
     setRoomTaskEntries(createDefaultTaskEntriesForCard(cfg, false));
-    setRoomPetugas(cfg.featuredOfficers?.[0] || '');
+    setRoomPetugas('');
     setRoomEvaluasi('');
     setRoomSignatures(cfg.signatureSlotLabels.map(() => ''));
     setActiveRoomSigSlot(0);
@@ -281,6 +613,7 @@ export function SupervisiHubWorkspace({
 
     // Reset Supervisi Audit form state
     setTanggal(nowStr);
+    setAuditHari(currentHari);
     setSupervisor('');
     setUnit(cardId === 'SUPERVISI' ? '' : cfg.defaultUnit);
     setNamaPetugas('');
@@ -979,34 +1312,20 @@ export function SupervisiHubWorkspace({
                   </div>
                 </div>
 
-                {/* TANGGAL & JAM Interactive Selector */}
+                {/* TANGGAL, WAKTU & HARI (3 Clean Columns: Pilih Tanggal, Pilih Waktu, Dropdown Hari) */}
                 {(() => {
                   const roomParts = parseTimestampToParts(roomTanggal);
                   return (
                     <div className="space-y-2.5">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <label
-                          htmlFor="room-tanggal"
-                          className="block text-xs font-extrabold uppercase tracking-wider text-[#002147] dark:text-slate-200"
-                        >
-                          TANGGAL &amp; JAM <span className="text-rose-600">*</span>
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const nowTs = formatNowTimestamp();
-                            setRoomTanggal(nowTs);
-                            setRoomHari(getCurrentHariIndonesia());
-                          }}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#002147] text-[#D2B48C] hover:bg-[#082B54] text-[11px] font-bold transition-colors cursor-pointer"
-                        >
-                          <Clock className="w-3.5 h-3.5" />
-                          <span>Set Waktu Sekarang</span>
-                        </button>
-                      </div>
+                      <label
+                        htmlFor="room-tanggal-date"
+                        className="block text-xs font-extrabold uppercase tracking-wider text-[#002147] dark:text-slate-200"
+                      >
+                        TANGGAL &amp; WAKTU <span className="text-rose-600">*</span>
+                      </label>
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                        {/* Date Picker */}
+                        {/* 1. Pilih Tanggal */}
                         <div className="space-y-1">
                           <label
                             htmlFor="room-tanggal-date"
@@ -1036,20 +1355,20 @@ export function SupervisiHubWorkspace({
                           </div>
                         </div>
 
-                        {/* Time Picker */}
+                        {/* 2. Pilih Waktu */}
                         <div className="space-y-1">
                           <label
                             htmlFor="room-tanggal-time"
                             className="block text-[11px] font-bold text-slate-600 dark:text-slate-300"
                           >
-                            Pilih Jam (WIB)
+                            Pilih Waktu
                           </label>
                           <div className="relative">
                             <input
                               id="room-tanggal-time"
                               type="time"
                               step="1"
-                              aria-label="Pilih Jam"
+                              aria-label="Pilih Waktu"
                               value={roomParts.timeInput}
                               onChange={(e) => {
                                 const newTime = e.target.value;
@@ -1066,66 +1385,37 @@ export function SupervisiHubWorkspace({
                           </div>
                         </div>
 
-                        {/* Formatted Timestamp Value (Editable) */}
+                        {/* 3. Dropdown Hari (Senin - Minggu) */}
                         <div className="space-y-1">
                           <label
-                            htmlFor="room-tanggal"
+                            htmlFor="room-hari"
                             className="block text-[11px] font-bold text-slate-600 dark:text-slate-300"
                           >
-                            Format Rekap (DD/MM/YYYY HH:mm:ss)
+                            Hari (Senin - Minggu)
                           </label>
-                          <input
-                            id="room-tanggal"
-                            type="text"
-                            value={roomTanggal}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setRoomTanggal(val);
-                              const parsed = parseTimestampToParts(val);
-                              if (parsed.dateInput) {
-                                setRoomHari(
-                                  getHariFromDateInput(parsed.dateInput)
-                                );
+                          <div className="relative">
+                            <select
+                              id="room-hari"
+                              aria-label="Pilih Hari"
+                              value={roomHari}
+                              onChange={(e) =>
+                                setRoomHari(e.target.value as HariValue)
                               }
-                            }}
-                            required
-                            placeholder="DD/MM/YYYY HH:mm:ss"
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-[#FAF6F0]/60 dark:bg-slate-900 text-xs sm:text-sm font-bold text-[#002147] dark:text-white tabular-nums focus:outline-none focus:border-[#002147] focus:ring-2 focus:ring-[#002147]/20"
-                          />
+                              className="w-full appearance-none px-3.5 py-2.5 pr-9 rounded-xl border border-slate-300 dark:border-slate-600 bg-[#FAF6F0]/60 dark:bg-slate-900 text-xs sm:text-sm font-bold text-[#002147] dark:text-white focus:outline-none focus:border-[#002147] focus:ring-2 focus:ring-[#002147]/20 cursor-pointer"
+                            >
+                              {HARI_OPTIONS.map((h) => (
+                                <option key={h} value={h}>
+                                  {h}
+                                </option>
+                              ))}
+                            </select>
+                            <ChevronDown className="w-4 h-4 text-slate-600 pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" />
+                          </div>
                         </div>
                       </div>
                     </div>
                   );
                 })()}
-
-                {/* HARI Selector (Quick 7-Day Buttons + Dropdown compatibility) */}
-                <div className="space-y-2">
-                  <label
-                    htmlFor="room-hari"
-                    className="block text-xs font-extrabold uppercase tracking-wider text-[#002147] dark:text-slate-200"
-                  >
-                    HARI
-                  </label>
-                  <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
-                    {HARI_OPTIONS.map((h) => {
-                      const active = roomHari === h;
-                      return (
-                        <button
-                          key={h}
-                          type="button"
-                          onClick={() => setRoomHari(h)}
-                          className={`py-2.5 px-2 rounded-xl text-xs font-extrabold border transition-all cursor-pointer whitespace-nowrap ${
-                            active
-                              ? 'bg-[#002147] text-[#D2B48C] border-[#002147] shadow-xs'
-                              : 'bg-[#FAF6F0]/60 dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:border-[#002147]'
-                          }`}
-                        >
-                          {h}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
               </div>
 
               {/* Section 2: Sequential Room Tasks (Matches exact AppSheet tasks & photo slots) */}
@@ -1357,54 +1647,18 @@ export function SupervisiHubWorkspace({
                   03. Identitas Petugas, Evaluasi & Pengesahan Tanda Tangan
                 </h4>
 
-                {/* PETUGAS */}
-                <div className="space-y-2.5">
-                  <label
-                    htmlFor="room-petugas"
-                    className="block text-xs font-extrabold uppercase tracking-wider text-[#002147] dark:text-slate-200"
-                  >
-                    PETUGAS
-                  </label>
-
-                  {/* Featured Officer Quick Buttons (Matches AppSheet e.g. ABU HANIFAH, MIRNAWATI / DEVI SURYADI, DONI ALAMSYAH) */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    {activeCardConfig.officerOptions.map((off) => {
-                      const isSelected = roomPetugas === off;
-                      return (
-                        <button
-                          key={off}
-                          type="button"
-                          onClick={() => setRoomPetugas(off)}
-                          className={`inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
-                            isSelected
-                              ? 'bg-[#002147] text-[#D2B48C] border-[#002147] shadow-xs'
-                              : 'bg-[#FAF6F0]/70 dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:border-[#002147]'
-                          }`}
-                        >
-                          <UserCheck className="w-3.5 h-3.5" />
-                          <span>{off}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <div className="relative">
-                    <select
-                      id="room-petugas"
-                      value={roomPetugas}
-                      onChange={(e) => setRoomPetugas(e.target.value)}
-                      className="w-full appearance-none px-4 py-3 pr-10 rounded-xl border border-slate-300 dark:border-slate-600 bg-[#FAF6F0]/50 dark:bg-slate-900 text-sm font-semibold text-[#002147] dark:text-white focus:outline-none focus:border-[#002147] cursor-pointer"
-                    >
-                      <option value="">-- Pilih Nama Petugas Kebersihan --</option>
-                      {activeCardConfig.officerOptions.map((opt) => (
-                        <option key={opt} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="w-4 h-4 text-slate-600 pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2" />
-                  </div>
-                </div>
+                {/* PETUGAS (Customizable Dropdown with + Add Icon and Touch/Hover Edit & Delete) */}
+                <CustomizablePetugasField
+                  id="room-petugas"
+                  label="PETUGAS"
+                  placeholder="-- Pilih Nama Petugas Kebersihan --"
+                  value={roomPetugas}
+                  onChange={setRoomPetugas}
+                  petugasList={customPetugasList}
+                  onAddPetugas={handleAddCustomPetugas}
+                  onEditPetugas={handleEditCustomPetugas}
+                  onDeletePetugas={handleDeleteCustomPetugas}
+                />
 
                 {/* EVALUASI SUPERVISOR (If applicable for this card) */}
                 {activeCardConfig.hasEvaluasiSupervisor && (
@@ -1423,18 +1677,6 @@ export function SupervisiHubWorkspace({
                       placeholder="Ketik catatan evaluasi supervisor untuk ruangan ini..."
                       className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-[#FAF6F0]/50 dark:bg-slate-900 text-sm text-[#002147] dark:text-white focus:outline-none focus:border-[#002147]"
                     />
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {EVALUASI_QUICK_TEMPLATES.map((tpl, idx) => (
-                        <button
-                          key={tpl}
-                          type="button"
-                          onClick={() => setRoomEvaluasi(tpl)}
-                          className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 text-[11px] font-semibold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 cursor-pointer"
-                        >
-                          Template Evaluasi {idx + 1}
-                        </button>
-                      ))}
-                    </div>
                   </div>
                 )}
 
@@ -1650,28 +1892,18 @@ export function SupervisiHubWorkspace({
                 </h4>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* 1. TANGGAL & JAM * (Interactive Date + Time Picker) */}
+                  {/* 1. TANGGAL & WAKTU * (Pilih Tanggal, Pilih Waktu, Dropdown Hari) */}
                   {(() => {
                     const auditParts = parseTimestampToParts(tanggal);
                     return (
                       <div className="space-y-2 sm:col-span-2">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <label
-                            htmlFor="supervisi-tanggal"
-                            className="block text-xs font-extrabold uppercase tracking-wide text-[#002147] dark:text-slate-200"
-                          >
-                            TANGGAL &amp; JAM
-                            <span className="text-sky-600 ml-0.5">*</span>
-                          </label>
-                          <button
-                            type="button"
-                            onClick={() => setTanggal(formatNowTimestamp())}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#002147] text-[#D2B48C] hover:bg-[#082B54] text-[11px] font-bold transition-colors cursor-pointer"
-                          >
-                            <Clock className="w-3.5 h-3.5" />
-                            <span>Set Waktu Sekarang</span>
-                          </button>
-                        </div>
+                        <label
+                          htmlFor="supervisi-tanggal-date"
+                          className="block text-xs font-extrabold uppercase tracking-wide text-[#002147] dark:text-slate-200"
+                        >
+                          TANGGAL &amp; WAKTU
+                          <span className="text-sky-600 ml-0.5">*</span>
+                        </label>
 
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 items-end">
                           <div className="space-y-1">
@@ -1695,6 +1927,7 @@ export function SupervisiHubWorkspace({
                                     auditParts.timeInput
                                   )
                                 );
+                                setAuditHari(getHariFromDateInput(newDate));
                               }}
                               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-[#FAF6F0]/60 dark:bg-slate-900 text-xs sm:text-sm font-bold text-[#002147] dark:text-white tabular-nums focus:outline-none focus:border-[#002147] cursor-pointer"
                             />
@@ -1705,13 +1938,13 @@ export function SupervisiHubWorkspace({
                               htmlFor="supervisi-tanggal-time"
                               className="block text-[11px] font-bold text-slate-600 dark:text-slate-300"
                             >
-                              Pilih Jam (WIB)
+                              Pilih Waktu
                             </label>
                             <input
                               id="supervisi-tanggal-time"
                               type="time"
                               step="1"
-                              aria-label="Pilih Jam Supervisi"
+                              aria-label="Pilih Waktu Supervisi"
                               value={auditParts.timeInput}
                               onChange={(e) => {
                                 const newTime = e.target.value;
@@ -1729,20 +1962,29 @@ export function SupervisiHubWorkspace({
 
                           <div className="space-y-1">
                             <label
-                              htmlFor="supervisi-tanggal"
+                              htmlFor="supervisi-hari"
                               className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 truncate"
                             >
-                              Hasil Waktu Rekap
+                              Hari (Senin - Minggu)
                             </label>
-                            <input
-                              id="supervisi-tanggal"
-                              type="text"
-                              value={tanggal}
-                              onChange={(e) => setTanggal(e.target.value)}
-                              required
-                              placeholder="DD/MM/YYYY HH:mm:ss"
-                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-[#FAF6F0]/60 dark:bg-slate-900 text-xs sm:text-sm font-bold text-[#002147] dark:text-white tabular-nums focus:outline-none focus:border-[#002147]"
-                            />
+                            <div className="relative">
+                              <select
+                                id="supervisi-hari"
+                                aria-label="Pilih Hari Supervisi"
+                                value={auditHari}
+                                onChange={(e) =>
+                                  setAuditHari(e.target.value as HariValue)
+                                }
+                                className="w-full appearance-none px-3.5 py-2.5 pr-9 rounded-xl border border-slate-300 dark:border-slate-600 bg-[#FAF6F0]/60 dark:bg-slate-900 text-xs sm:text-sm font-bold text-[#002147] dark:text-white focus:outline-none focus:border-[#002147] cursor-pointer"
+                              >
+                                {HARI_OPTIONS.map((h) => (
+                                  <option key={h} value={h}>
+                                    {h}
+                                  </option>
+                                ))}
+                              </select>
+                              <ChevronDown className="w-4 h-4 text-slate-600 pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" />
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1802,29 +2044,18 @@ export function SupervisiHubWorkspace({
                   </div>
 
                   {/* 4. NAMA PETUGAS */}
-                  <div className="space-y-1.5">
-                    <label
-                      htmlFor="supervisi-petugas"
-                      className="block text-xs font-extrabold uppercase tracking-wide text-[#002147] dark:text-slate-200"
-                    >
-                      NAMA PETUGAS
-                    </label>
-                    <div className="relative">
-                      <select
-                        id="supervisi-petugas"
-                        value={namaPetugas}
-                        onChange={(e) => setNamaPetugas(e.target.value)}
-                        className="w-full appearance-none px-3.5 py-3 pr-10 rounded-xl border border-slate-300 dark:border-slate-600 bg-[#FAF6F0]/50 dark:bg-slate-900 text-sm font-semibold text-[#002147] dark:text-white focus:outline-none focus:border-[#002147] cursor-pointer"
-                      >
-                        <option value="">-- Pilih Nama Petugas --</option>
-                        {activeCardConfig.officerOptions.map((opt) => (
-                          <option key={opt} value={opt}>
-                            {opt}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="w-4 h-4 text-slate-600 pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2" />
-                    </div>
+                  <div className="sm:col-span-2">
+                    <CustomizablePetugasField
+                      id="supervisi-petugas"
+                      label="NAMA PETUGAS"
+                      placeholder="-- Pilih Nama Petugas Kebersihan --"
+                      value={namaPetugas}
+                      onChange={setNamaPetugas}
+                      petugasList={customPetugasList}
+                      onAddPetugas={handleAddCustomPetugas}
+                      onEditPetugas={handleEditCustomPetugas}
+                      onDeletePetugas={handleDeleteCustomPetugas}
+                    />
                   </div>
                 </div>
               </div>

@@ -1483,3 +1483,73 @@ export function scaleCanvasCoordinates(
   };
 }
 
+export const CUSTOM_PETUGAS_STORAGE_KEY = 'sikesling_custom_petugas_v1';
+
+export const DEFAULT_PETUGAS_LIST: string[] = [
+  'ABU HANIFAH',
+  'MIRNAWATI',
+  'DEVI SURYADI',
+  'DONI ALAMSYAH',
+];
+
+export function addPetugasName(list: string[], rawName: string): string[] {
+  const trimmed = (rawName || '').trim();
+  if (!trimmed) return list;
+  const exists = list.some(
+    (item) => item.toLowerCase() === trimmed.toLowerCase()
+  );
+  if (exists) return list;
+  return [...list, trimmed];
+}
+
+export function editPetugasName(
+  list: string[],
+  oldName: string,
+  rawNewName: string
+): string[] {
+  const trimmed = (rawNewName || '').trim();
+  if (!trimmed) return list;
+  if (oldName.toLowerCase() !== trimmed.toLowerCase()) {
+    const duplicate = list.some(
+      (item) => item.toLowerCase() === trimmed.toLowerCase()
+    );
+    if (duplicate) return list;
+  }
+  return list.map((item) => (item === oldName ? trimmed : item));
+}
+
+export function deletePetugasName(
+  list: string[],
+  targetName: string
+): string[] {
+  return list.filter((item) => item !== targetName);
+}
+
+export function loadCustomPetugasList(): string[] {
+  if (typeof window === 'undefined') return [...DEFAULT_PETUGAS_LIST];
+  try {
+    const raw = window.localStorage.getItem(CUSTOM_PETUGAS_STORAGE_KEY);
+    if (!raw) return [...DEFAULT_PETUGAS_LIST];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [...DEFAULT_PETUGAS_LIST];
+    return parsed.filter(
+      (item): item is string => typeof item === 'string' && item.trim().length > 0
+    );
+  } catch {
+    return [...DEFAULT_PETUGAS_LIST];
+  }
+}
+
+export function saveCustomPetugasList(list: string[]): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(
+      CUSTOM_PETUGAS_STORAGE_KEY,
+      JSON.stringify(list)
+    );
+  } catch {
+    // ignore storage errors
+  }
+}
+
+
