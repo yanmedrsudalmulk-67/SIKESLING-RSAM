@@ -88,6 +88,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   // Persistent click-triggered dropdown state for top navigation items
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [mobilePopupMenuId, setMobilePopupMenuId] = useState<string | null>(null);
+  const [mobileBounceTick, setMobileBounceTick] = useState(0);
   const [mobileLaporanTab, setMobileLaporanTab] = useState<'laporan' | 'analisis'>('laporan');
   const [expandedMobileMenus, setExpandedMobileMenus] = useState<Record<string, boolean>>({
     operasional: true,
@@ -98,7 +99,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showRoleMenu, setShowRoleMenu] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileBounceTick, setMobileBounceTick] = useState(0);
   const [authStage, setAuthStage] = useState<AuthFlowStage>('welcome');
 
   useEffect(() => {

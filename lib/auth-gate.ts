@@ -49,11 +49,16 @@ export function readAuthStageFromStorage(): AuthFlowStage {
     const params = new URLSearchParams(window.location.search);
     if (params.get('autostart') === '1') {
       window.sessionStorage.setItem(AUTH_STAGE_STORAGE_KEY, 'authenticated');
+      window.localStorage.setItem(AUTH_STAGE_STORAGE_KEY, 'authenticated');
       return 'authenticated';
     }
-    const raw = window.sessionStorage.getItem(AUTH_STAGE_STORAGE_KEY);
-    if (raw === 'welcome' || raw === 'login' || raw === 'authenticated') {
-      return raw;
+    const sessionVal = window.sessionStorage.getItem(AUTH_STAGE_STORAGE_KEY);
+    if (sessionVal === 'welcome' || sessionVal === 'login' || sessionVal === 'authenticated') {
+      return sessionVal;
+    }
+    const localVal = window.localStorage.getItem(AUTH_STAGE_STORAGE_KEY);
+    if (localVal === 'welcome' || localVal === 'login' || localVal === 'authenticated') {
+      return localVal;
     }
     return 'welcome';
   } catch {
@@ -65,6 +70,7 @@ export function writeAuthStageToStorage(stage: AuthFlowStage): void {
   if (typeof window === 'undefined') return;
   try {
     window.sessionStorage.setItem(AUTH_STAGE_STORAGE_KEY, stage);
+    window.localStorage.setItem(AUTH_STAGE_STORAGE_KEY, stage);
   } catch {
     // ignore storage errors
   }

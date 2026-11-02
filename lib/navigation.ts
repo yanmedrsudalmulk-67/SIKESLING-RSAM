@@ -499,11 +499,12 @@ export const MAIN_NAVIGATION: MainMenuItem[] = [
         title: 'Laporan Tahunan',
         href: '/laporan/tahunan',
         description:
-          'Rekapitulasi komprehensif tahunan penyelenggaraan kesehatan lingkungan UOBK RSUD Al-Mulk.',
-        status: 'UI Ready',
+          'Laporan Tahunan Kesehatan Lingkungan UOBK RSUD Al-Mulk (Ukuran Resmi F4) yang terintegrasi realtime dengan Menu Monitoring, Analisa & Rekomendasi KRIS, serta unduhan Microsoft Word (.doc) Editable.',
+        status: 'Functional',
         plannedFeatures: [
-          'Agregasi penuh seluruh kegiatan, supervisi, dan tindak lanjut selama 1 tahun',
-          'Perbandingan tren antar triwulan dan semester',
+          'Narasi lengkap 165 halaman (Kata Pengantar, BAB I–IV, Lampiran 1–6 & Dokumentasi)',
+          'Integrasi realtime tabel & grafik dari 6 modul Monitoring & Tindak Lanjut Temuan',
+          'Ekspor dokumen Microsoft Word (.doc) ukuran F4 (21,59 x 33,02 cm) yang dapat diedit kapan saja',
         ],
       },
       {

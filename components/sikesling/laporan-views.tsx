@@ -19,6 +19,7 @@ import {
   FilterToolbar,
   EmptyState,
 } from '@/components/sikesling/ui-system';
+import { AnnualReportF4View } from '@/components/sikesling/annual-report-f4-view';
 
 export function LaporanView({ routePath }: { routePath: string }) {
   const meta = resolveRouteMeta(routePath);
@@ -38,6 +39,14 @@ export function LaporanView({ routePath }: { routePath: string }) {
   const [reportCategory, setReportCategory] = useState('Semua Kategori');
   const [selectedUnit, setSelectedUnit] = useState('Semua Unit / Ruangan');
   const [previewGenerated, setPreviewGenerated] = useState(true);
+
+  if (routePath === '/laporan/tahunan') {
+    return (
+      <PageContainer>
+        <AnnualReportF4View />
+      </PageContainer>
+    );
+  }
 
   const filteredActivities = activities.filter(
     (a) =>
