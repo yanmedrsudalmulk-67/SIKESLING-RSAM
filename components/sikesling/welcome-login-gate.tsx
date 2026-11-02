@@ -236,77 +236,79 @@ export function WelcomeLoginGate({
             </div>
 
             {/* Overlay CTA Button:
-                - Portrait / Mobile: Bottom-center in the lower cream area, Navy Blue background with Cream text
+                - Portrait / Mobile: Wide full-pill button at bottom-center with "MASUK APLIKASI", right arrow with horizontal motion, and smooth vertical floating animation in Cream on Navy Blue
                 - Landscape / Desktop: Bottom-left over navy area, Cream background with Navy Blue text */}
-            <div
-              className={`absolute z-20 flex ${
-                isPortrait
-                  ? 'inset-x-0 bottom-[5%] sm:bottom-[6%] items-center justify-center px-4'
-                  : 'left-[6.5%] bottom-[19.5%] md:bottom-[20%] flex-col items-start'
-              }`}
-            >
-              <motion.button
-                type="button"
-                data-testid="welcome-enter-menu-btn"
-                onClick={onEnterLogin}
-                animate={{ y: [0, -6, 0] }}
-                transition={{
-                  duration: 2.5,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.97 }}
-                className={`group relative inline-flex items-center rounded-full transition-shadow cursor-pointer ${
-                  isPortrait
-                    ? 'gap-3.5 px-6 py-2.5 bg-gradient-to-r from-[#001835] via-[#002147] to-[#082E5E] text-[#FAF6F0] border-2 border-[#D2B48C]/90 shadow-[0_14px_32px_rgba(0,33,71,0.45),0_0_20px_rgba(0,33,71,0.2)]'
-                    : 'gap-3 sm:gap-4 px-5 py-2.5 sm:px-7 sm:py-3 md:px-8 md:py-3.5 bg-gradient-to-r from-[#FAF6F0] via-[#F2E3CE] to-[#D2B48C] text-[#002147] border-2 border-white/95 shadow-[0_14px_34px_rgba(0,0,0,0.52),0_0_24px_rgba(210,180,140,0.5)]'
-                }`}
-              >
-                <div className="text-left select-none">
-                  <div
-                    className={`font-extrabold uppercase tracking-widest leading-none ${
-                      isPortrait
-                        ? 'text-[9.5px] text-[#D2B48C]'
-                        : 'text-[10px] sm:text-[11px] md:text-[12px] text-[#6E502B]'
-                    }`}
-                  >
-                    PORTAL UTAMA
-                  </div>
-                  <div
-                    className={`font-extrabold tracking-tight leading-tight mt-0.5 ${
-                      isPortrait
-                        ? 'text-[15px] text-[#FAF6F0]'
-                        : 'text-[14px] sm:text-[16px] md:text-[18px] text-[#002147]'
-                    }`}
-                  >
-                    Masuk Menu
-                  </div>
-                </div>
-
-                <motion.span
-                  animate={{ x: [0, 5, 0] }}
+            {isPortrait ? (
+              <div className="absolute inset-x-0 bottom-[4.5%] sm:bottom-[5.5%] z-20 flex items-center justify-center px-5 sm:px-7">
+                <motion.button
+                  type="button"
+                  data-testid="welcome-enter-menu-btn"
+                  onClick={onEnterLogin}
+                  animate={{ y: [0, -6, 0] }}
                   transition={{
-                    duration: 1.35,
+                    duration: 2.5,
                     repeat: Infinity,
                     ease: 'easeInOut',
                   }}
-                  className={`inline-flex items-center justify-center rounded-full shadow-xs shrink-0 ${
-                    isPortrait
-                      ? 'w-8 h-8 bg-gradient-to-br from-[#FAF6F0] to-[#D2B48C] text-[#002147]'
-                      : 'w-7.5 h-7.5 sm:w-8.5 sm:h-8.5 md:w-9 md:h-9 bg-[#002147] text-[#D2B48C]'
-                  }`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full max-w-[400px] h-[56px] sm:h-[60px] rounded-full bg-gradient-to-r from-[#001B3A] via-[#083366] to-[#002147] hover:from-[#002147] hover:via-[#0B3C78] hover:to-[#002855] text-[#FAF6F0] border-[1.5px] border-[#D2B48C]/85 ring-1 ring-white/15 shadow-[0_14px_32px_rgba(0,33,71,0.42),inset_0_1px_1px_rgba(255,255,255,0.18)] flex items-center justify-center gap-3 transition-shadow cursor-pointer select-none"
                 >
-                  <ArrowRight
-                    className={
-                      isPortrait
-                        ? 'w-4 h-4 stroke-[2.5]'
-                        : 'w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 stroke-[2.5]'
-                    }
-                  />
-                </motion.span>
-              </motion.button>
-            </div>
+                  <span className="text-[16px] sm:text-[17px] font-extrabold tracking-[0.1em] text-[#FAF6F0]">
+                    MASUK APLIKASI
+                  </span>
+                  <motion.span
+                    animate={{ x: [0, 6, 0] }}
+                    transition={{
+                      duration: 1.4,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                    }}
+                    className="inline-flex items-center justify-center text-[#D2B48C]"
+                  >
+                    <ArrowRight className="w-5 h-5 stroke-[2.75]" />
+                  </motion.span>
+                </motion.button>
+              </div>
+            ) : (
+              <div className="absolute left-[6.5%] bottom-[19.5%] md:bottom-[20%] z-20 flex flex-col items-start">
+                <motion.button
+                  type="button"
+                  data-testid="welcome-enter-menu-btn"
+                  onClick={onEnterLogin}
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{
+                    duration: 2.5,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="group relative inline-flex items-center gap-3 sm:gap-4 px-5 py-2.5 sm:px-7 sm:py-3 md:px-8 md:py-3.5 rounded-full bg-gradient-to-r from-[#FAF6F0] via-[#F2E3CE] to-[#D2B48C] text-[#002147] border-2 border-white/95 shadow-[0_14px_34px_rgba(0,0,0,0.52),0_0_24px_rgba(210,180,140,0.5)] transition-shadow cursor-pointer"
+                >
+                  <div className="text-left select-none">
+                    <div className="text-[10px] sm:text-[11px] md:text-[12px] font-extrabold uppercase tracking-widest text-[#6E502B] leading-none">
+                      PORTAL UTAMA
+                    </div>
+                    <div className="text-[14px] sm:text-[16px] md:text-[18px] font-extrabold tracking-tight text-[#002147] leading-tight mt-0.5">
+                      Masuk Menu
+                    </div>
+                  </div>
+
+                  <motion.span
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{
+                      duration: 1.35,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                    }}
+                    className="inline-flex items-center justify-center w-7.5 h-7.5 sm:w-8.5 sm:h-8.5 md:w-9 md:h-9 rounded-full bg-[#002147] text-[#D2B48C] shadow-xs shrink-0"
+                  >
+                    <ArrowRight className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 stroke-[2.5]" />
+                  </motion.span>
+                </motion.button>
+              </div>
+            )}
 
             {/* Top-Left Official Hospital Logo & Header in Glassmorphism Blur Translucent Card */}
             <div
