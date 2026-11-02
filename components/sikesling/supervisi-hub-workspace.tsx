@@ -42,6 +42,7 @@ import {
   SupervisiCardId,
   TaskStatusValue,
   addPetugasName,
+  buildAuditFindingFromRoomChecklist,
   buildTimestampFromParts,
   calculateRoomChecklistProgress,
   calculateSupervisiScores,
@@ -527,6 +528,13 @@ export function SupervisiHubWorkspace({
     setAuditHari(currentHari);
     setRoomTanggal(nowStr);
     setRoomHari(currentHari);
+
+    const handleSync = () => {
+      setAuditRecords(loadSupervisiAuditRecords());
+    };
+    window.addEventListener('sikesling-supervisi-updated', handleSync);
+    return () =>
+      window.removeEventListener('sikesling-supervisi-updated', handleSync);
   }, []);
 
   const handleAddCustomPetugas = (name: string) => {
@@ -1042,6 +1050,19 @@ export function SupervisiHubWorkspace({
       const updated = [newRoomRec, ...roomRecords];
       setRoomRecords(updated);
       saveRoomChecklistRecords(updated);
+
+      const syncedFinding = buildAuditFindingFromRoomChecklist(
+        activeCardConfig,
+        newRoomRec,
+        roomEvaluasi,
+        roomTaskEntries
+      );
+      if (syncedFinding) {
+        const updatedAudit = [syncedFinding, ...auditRecords];
+        setAuditRecords(updatedAudit);
+        saveSupervisiAuditRecords(updatedAudit);
+      }
+
       setMode('table');
       setToastMessage(
         `Data Ceklist ${activeCardConfig.title} berhasil disimpan ke Tabel Rekap!`
@@ -1078,6 +1099,9 @@ export function SupervisiHubWorkspace({
       dokumentasiPerbaikanUrl,
       tandaTanganUrl:
         tandaTanganUrl || '/assets/aistudio/supervisi-temuan/ttd-1.png',
+      prosesPerbaikan: '',
+      tanggalPerbaikan: '',
+      tandaTanganPerbaikanUrl: '',
     };
 
     const updated = [newAuditRec, ...auditRecords];
@@ -1085,7 +1109,7 @@ export function SupervisiHubWorkspace({
     saveSupervisiAuditRecords(updated);
     setMode('table');
     setToastMessage(
-      `Data ${activeCardConfig.title} berhasil disimpan ke Tabel Rekap Supervisi!`
+      `Data ${activeCardConfig.title} berhasil disimpan ke Tabel Rekap Supervisi & Daftar Temuan!`
     );
     setTimeout(() => setToastMessage(null), 4500);
   };
@@ -1303,7 +1327,7 @@ export function SupervisiHubWorkspace({
                         Progres Ceklist
                       </div>
                       <div className="text-xs sm:text-sm font-extrabold text-[#002147] dark:text-[#D2B48C] tabular-nums">
-                        {roomProgress.completedTasks} / {roomProgress.totalTasks} Tugas ({roomProgress.percentage}%)
+                        {roomProgress.completedTasks} / {roomProgress.totalTasks} Tugas
                       </div>
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-[#002147] text-[#D2B48C] flex items-center justify-center font-extrabold text-xs tabular-nums">
@@ -1601,33 +1625,6 @@ export function SupervisiHubWorkspace({
                                           Ambil / Unggah Foto
                                         </span>
                                       </div>
-                                    )}
-                                  </div>
-
-                                  {/* 1-Click Sample Photo Button for Fast Field Simulation */}
-                                  <div className="flex items-center gap-1.5 flex-wrap">
-                                    {SAMPLE_TEMUAN_PHOTOS.slice(0, 3).map(
-                                      (sample, sIdx) => (
-                                        <button
-                                          key={sample.url}
-                                          type="button"
-                                          onClick={() =>
-                                            setTaskPhotoAtSlot(
-                                              task.id,
-                                              slotIdx,
-                                              sample.url,
-                                              task.photoSlotLabels.length
-                                            )
-                                          }
-                                          className={`px-2 py-1 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
-                                            currentPhoto === sample.url
-                                              ? 'bg-[#002147] text-[#D2B48C] border-[#002147]'
-                                              : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
-                                          }`}
-                                        >
-                                          Contoh Foto {sIdx + 1}
-                                        </button>
-                                      )
                                     )}
                                   </div>
                                 </div>
@@ -2123,8 +2120,8 @@ export function SupervisiHubWorkspace({
                   )}
 
                   <div className="pt-1 space-y-1">
-                    <span className="block text-[11px] font-bold uppercase tracking-wide text-slate-500">
-                      SKOR
+                    <span className="block text-[11px] font-bold tracking-wide text-slate-500">
+                      Skor
                     </span>
                     <div className="grid grid-cols-4 gap-2">
                       {([1, 2, 3, 4] as const).map((val) => (
@@ -2196,8 +2193,8 @@ export function SupervisiHubWorkspace({
                   )}
 
                   <div className="pt-1 space-y-1">
-                    <span className="block text-[11px] font-bold uppercase tracking-wide text-slate-500">
-                      SKOR_8
+                    <span className="block text-[11px] font-bold tracking-wide text-slate-500">
+                      Skor
                     </span>
                     <div className="grid grid-cols-4 gap-2">
                       {([1, 2, 3, 4] as const).map((val) => (
@@ -2271,8 +2268,8 @@ export function SupervisiHubWorkspace({
                   )}
 
                   <div className="pt-1 space-y-1">
-                    <span className="block text-[11px] font-bold uppercase tracking-wide text-slate-500">
-                      SKOR_10
+                    <span className="block text-[11px] font-bold tracking-wide text-slate-500">
+                      Skor
                     </span>
                     <div className="grid grid-cols-4 gap-2">
                       {([1, 2, 3, 4] as const).map((val) => (
@@ -2344,8 +2341,8 @@ export function SupervisiHubWorkspace({
                   )}
 
                   <div className="pt-1 space-y-1">
-                    <span className="block text-[11px] font-bold uppercase tracking-wide text-slate-500">
-                      SKOR_12
+                    <span className="block text-[11px] font-bold tracking-wide text-slate-500">
+                      Skor
                     </span>
                     <div className="grid grid-cols-4 gap-2">
                       {([1, 2, 3, 4] as const).map((val) => (
@@ -2417,8 +2414,8 @@ export function SupervisiHubWorkspace({
                   )}
 
                   <div className="pt-1 space-y-1">
-                    <span className="block text-[11px] font-bold uppercase tracking-wide text-slate-500">
-                      SKOR_14
+                    <span className="block text-[11px] font-bold tracking-wide text-slate-500">
+                      Skor
                     </span>
                     <div className="grid grid-cols-4 gap-2">
                       {([1, 2, 3, 4] as const).map((val) => (
@@ -2534,22 +2531,6 @@ export function SupervisiHubWorkspace({
                           </span>
                         </div>
                       )}
-                    </div>
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {SAMPLE_TEMUAN_PHOTOS.map((p, idx) => (
-                        <button
-                          key={p.url}
-                          type="button"
-                          onClick={() => setDokumentasiTemuanUrl(p.url)}
-                          className={`px-2 py-1 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
-                            dokumentasiTemuanUrl === p.url
-                              ? 'bg-[#002147] text-[#D2B48C] border-[#002147]'
-                              : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
-                          }`}
-                        >
-                          Contoh {idx + 1}
-                        </button>
-                      ))}
                     </div>
                   </div>
 

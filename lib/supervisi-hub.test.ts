@@ -4,6 +4,7 @@ import {
   DEFAULT_PETUGAS_LIST,
   SUPERVISI_CARDS,
   addPetugasName,
+  buildAuditFindingFromRoomChecklist,
   buildTimestampFromParts,
   calculateRoomChecklistProgress,
   calculateSupervisiScores,
@@ -11,10 +12,12 @@ import {
   createInitialRoomChecklistRecords,
   createInitialSupervisiAuditRecords,
   deletePetugasName,
+  deriveTemuanWorkflowStatus,
   editPetugasName,
   getHariFromDateInput,
   parseTimestampToParts,
   scaleCanvasCoordinates,
+  updateSupervisiFindingFollowUp,
 } from './supervisi-hub';
 
 test('SUPERVISI_CARDS defines all 10 AppSheet APLICLEAN cards with exact task schemas', () => {
@@ -154,5 +157,45 @@ test('addPetugasName, editPetugasName, and deletePetugasName manage customizable
   assert.ok(!withDeleted.includes('BUDI RAHARJO'));
   assert.equal(withDeleted.length, initial.length);
 });
+
+test('deriveTemuanWorkflowStatus, updateSupervisiFindingFollowUp, and buildAuditFindingFromRoomChecklist integrate Supervisi with Daftar Temuan', () => {
+  const initialAudit = createInitialSupervisiAuditRecords();
+  // First record has prosesPerbaikan, dokumentasiPerbaikanUrl, and tandaTanganPerbaikanUrl
+  assert.equal(
+    deriveTemuanWorkflowStatus(initialAudit[0]),
+    'Selesai Terverifikasi'
+  );
+  // 6th record has prosesPerbaikan only
+  assert.equal(deriveTemuanWorkflowStatus(initialAudit[5]), 'Dalam Proses');
+  // 7th record is brand new finding
+  assert.equal(deriveTemuanWorkflowStatus(initialAudit[6]), 'Temuan Baru');
+
+  const updated = updateSupervisiFindingFollowUp(initialAudit, 'sup-feb-7', {
+    prosesPerbaikan: 'Atap kaca ranap dan plafon telah dibersihkan',
+    tanggalPerbaikan: '05/03/2026 11:00:00',
+    dokumentasiPerbaikanUrl: '/assets/aistudio/supervisi-temuan/temuan-2.png',
+    tandaTanganPerbaikanUrl: '/assets/aistudio/supervisi-temuan/ttd-2.png',
+  });
+  const target = updated.find((r) => r.id === 'sup-feb-7')!;
+  assert.equal(deriveTemuanWorkflowStatus(target), 'Selesai Terverifikasi');
+  assert.equal(target.tanggalPerbaikan, '05/03/2026 11:00:00');
+
+  const igdCard = SUPERVISI_CARDS.find((c) => c.id === 'IGD')!;
+  const rawEntries = createDefaultTaskEntriesForCard(igdCard, false);
+  rawEntries.wc = { status: 'TIDAK', photos: [''] };
+  const roomRec = createInitialRoomChecklistRecords()[0];
+  const syncedFinding = buildAuditFindingFromRoomChecklist(
+    igdCard,
+    roomRec,
+    'Kamar mandi pasien perlu desinfeksi ulang',
+    rawEntries
+  );
+  assert.ok(syncedFinding !== null);
+  assert.equal(syncedFinding!.unit, 'IGD');
+  assert.ok(
+    syncedFinding!.temuan.includes('Kamar mandi pasien perlu desinfeksi ulang')
+  );
+});
+
 
 

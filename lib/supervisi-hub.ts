@@ -744,6 +744,9 @@ export interface SupervisiAuditRecord {
   dokumentasiTemuanUrl: string;
   dokumentasiPerbaikanUrl: string;
   tandaTanganUrl: string;
+  prosesPerbaikan?: string;
+  tanggalPerbaikan?: string;
+  tandaTanganPerbaikanUrl?: string;
 }
 
 export const SUPERVISOR_OPTIONS = [
@@ -1139,8 +1142,12 @@ export function createInitialSupervisiAuditRecords(): SupervisiAuditRecord[] {
       rekomendasi:
         'koordinasi dengan IPSRS untuk di tutup lubangnya dengan rapih',
       dokumentasiTemuanUrl: '/assets/aistudio/supervisi-temuan/temuan-1.png',
-      dokumentasiPerbaikanUrl: '',
+      dokumentasiPerbaikanUrl: '/assets/aistudio/supervisi-temuan/temuan-1.png',
       tandaTanganUrl: '/assets/aistudio/supervisi-temuan/ttd-1.png',
+      prosesPerbaikan:
+        'Lubang pipa paralon pada dinding CSSD telah ditutup rapat dengan sealant dan semen putih bersama tim IPSRS',
+      tanggalPerbaikan: '04/03/2026 14:15:00',
+      tandaTanganPerbaikanUrl: '/assets/aistudio/supervisi-temuan/ttd-1.png',
     },
     {
       id: 'sup-feb-2',
@@ -1164,8 +1171,12 @@ export function createInitialSupervisiAuditRecords(): SupervisiAuditRecord[] {
       temuan: 'dinding CSSD berjamur',
       rekomendasi: 'koordinasi dengan IPSRS untuk pembersihan dan pengecatan anti-jamur',
       dokumentasiTemuanUrl: '/assets/aistudio/supervisi-temuan/temuan-2.png',
-      dokumentasiPerbaikanUrl: '',
+      dokumentasiPerbaikanUrl: '/assets/aistudio/supervisi-temuan/temuan-2.png',
       tandaTanganUrl: '/assets/aistudio/supervisi-temuan/ttd-2.png',
+      prosesPerbaikan:
+        'Pengerokan jamur dinding, aplikasi cairan fungisida, dan pengecatan ulang anti-lembab oleh IPSRS',
+      tanggalPerbaikan: '05/03/2026 11:20:00',
+      tandaTanganPerbaikanUrl: '/assets/aistudio/supervisi-temuan/ttd-2.png',
     },
     {
       id: 'sup-feb-3',
@@ -1189,8 +1200,12 @@ export function createInitialSupervisiAuditRecords(): SupervisiAuditRecord[] {
       temuan: 'dinding CSSD lembab',
       rekomendasi: 'koordinasi dengan IPSRS',
       dokumentasiTemuanUrl: '/assets/aistudio/supervisi-temuan/temuan-3.png',
-      dokumentasiPerbaikanUrl: '',
+      dokumentasiPerbaikanUrl: '/assets/aistudio/supervisi-temuan/temuan-3.png',
       tandaTanganUrl: '/assets/aistudio/supervisi-temuan/ttd-3.png',
+      prosesPerbaikan:
+        'Perbaikan rembesan pipa belakang dinding dan pemasangan lapisan waterproofing bersama IPSRS',
+      tanggalPerbaikan: '06/03/2026 15:00:00',
+      tandaTanganPerbaikanUrl: '/assets/aistudio/supervisi-temuan/ttd-3.png',
     },
     {
       id: 'sup-feb-4',
@@ -1215,8 +1230,12 @@ export function createInitialSupervisiAuditRecords(): SupervisiAuditRecord[] {
         'lorong antar poli, lampu mati dan sirkulasi udara kurang sehingga menimbulkan bau lembab',
       rekomendasi: 'perbaiki lampu, dan pengajuan pembuatan exhause',
       dokumentasiTemuanUrl: '/assets/aistudio/supervisi-temuan/temuan-4.png',
-      dokumentasiPerbaikanUrl: '',
+      dokumentasiPerbaikanUrl: '/assets/aistudio/supervisi-temuan/temuan-4.png',
       tandaTanganUrl: '/assets/aistudio/supervisi-temuan/ttd-4.png',
+      prosesPerbaikan:
+        'Penggantian lampu LED lorong poli dan instalasi exhaust fan telah selesai dikerjakan teknisi IPSRS',
+      tanggalPerbaikan: '06/03/2026 10:30:00',
+      tandaTanganPerbaikanUrl: '/assets/aistudio/supervisi-temuan/ttd-4.png',
     },
     {
       id: 'sup-feb-5',
@@ -1241,8 +1260,12 @@ export function createInitialSupervisiAuditRecords(): SupervisiAuditRecord[] {
       rekomendasi:
         'diperbaiki saluran yg menimbulkan rembes air ke dinding, dibersihkan dan di cat ulang',
       dokumentasiTemuanUrl: '/assets/aistudio/supervisi-temuan/temuan-5.png',
-      dokumentasiPerbaikanUrl: '',
+      dokumentasiPerbaikanUrl: '/assets/aistudio/supervisi-temuan/temuan-5.png',
       tandaTanganUrl: '/assets/aistudio/supervisi-temuan/ttd-5.png',
+      prosesPerbaikan:
+        'Perbaikan sambungan pipa pembuangan wastafel ICU dan pengecatan ulang area dinding bawah wastafel',
+      tanggalPerbaikan: '07/03/2026 13:10:00',
+      tandaTanganPerbaikanUrl: '/assets/aistudio/supervisi-temuan/ttd-5.png',
     },
     {
       id: 'sup-feb-6',
@@ -1268,6 +1291,10 @@ export function createInitialSupervisiAuditRecords(): SupervisiAuditRecord[] {
       dokumentasiTemuanUrl: '/assets/aistudio/supervisi-temuan/temuan-3.png',
       dokumentasiPerbaikanUrl: '',
       tandaTanganUrl: '/assets/aistudio/supervisi-temuan/ttd-3.png',
+      prosesPerbaikan:
+        'Sedang dalam pengerjaan pelapisan waterproofing dak toilet lantai atas oleh tim IPSRS',
+      tanggalPerbaikan: '08/03/2026 09:45:00',
+      tandaTanganPerbaikanUrl: '',
     },
     {
       id: 'sup-feb-7',
@@ -1293,6 +1320,9 @@ export function createInitialSupervisiAuditRecords(): SupervisiAuditRecord[] {
       dokumentasiTemuanUrl: '/assets/aistudio/supervisi-temuan/temuan-2.png',
       dokumentasiPerbaikanUrl: '',
       tandaTanganUrl: '/assets/aistudio/supervisi-temuan/ttd-2.png',
+      prosesPerbaikan: '',
+      tanggalPerbaikan: '',
+      tandaTanganPerbaikanUrl: '',
     },
   ];
 }
@@ -1308,8 +1338,22 @@ export function loadSupervisiAuditRecords(): SupervisiAuditRecord[] {
     if (!raw) return initial;
     const parsed = JSON.parse(raw) as SupervisiAuditRecord[];
     if (!Array.isArray(parsed) || parsed.length === 0) return initial;
+    const initialMap = new Map(initial.map((item) => [item.id, item]));
     const existingIds = new Set(parsed.map((r) => r.id));
-    const merged = [...parsed];
+    const merged = parsed.map((r) => {
+      const seed = initialMap.get(r.id);
+      if (!seed) return r;
+      return {
+        ...seed,
+        ...r,
+        prosesPerbaikan: r.prosesPerbaikan ?? seed.prosesPerbaikan ?? '',
+        tanggalPerbaikan: r.tanggalPerbaikan ?? seed.tanggalPerbaikan ?? '',
+        dokumentasiPerbaikanUrl:
+          r.dokumentasiPerbaikanUrl || seed.dokumentasiPerbaikanUrl || '',
+        tandaTanganPerbaikanUrl:
+          r.tandaTanganPerbaikanUrl ?? seed.tandaTanganPerbaikanUrl ?? '',
+      };
+    });
     for (const item of initial) {
       if (!existingIds.has(item.id)) {
         merged.push(item);
@@ -1328,6 +1372,7 @@ export function saveSupervisiAuditRecords(records: SupervisiAuditRecord[]): void
       SUPERVISI_AUDIT_STORAGE_KEY,
       JSON.stringify(records)
     );
+    window.dispatchEvent(new Event('sikesling-supervisi-updated'));
   } catch {
     // ignore storage quota errors
   }
@@ -1551,5 +1596,123 @@ export function saveCustomPetugasList(list: string[]): void {
     // ignore storage errors
   }
 }
+
+export type TemuanWorkflowStatus =
+  | 'Temuan Baru'
+  | 'Dalam Proses'
+  | 'Menunggu Verifikasi'
+  | 'Selesai Terverifikasi';
+
+export function deriveTemuanWorkflowStatus(
+  record: SupervisiAuditRecord
+): TemuanWorkflowStatus {
+  const hasProses = Boolean(record.prosesPerbaikan?.trim());
+  const hasDokPerbaikan = Boolean(record.dokumentasiPerbaikanUrl?.trim());
+  const hasTtdPerbaikan = Boolean(record.tandaTanganPerbaikanUrl?.trim());
+
+  if (hasProses && hasDokPerbaikan && hasTtdPerbaikan) {
+    return 'Selesai Terverifikasi';
+  }
+  if (hasDokPerbaikan) {
+    return 'Menunggu Verifikasi';
+  }
+  if (hasProses) {
+    return 'Dalam Proses';
+  }
+  return 'Temuan Baru';
+}
+
+export function updateSupervisiFindingFollowUp(
+  records: SupervisiAuditRecord[],
+  id: string,
+  followUp: {
+    prosesPerbaikan: string;
+    tanggalPerbaikan: string;
+    dokumentasiPerbaikanUrl: string;
+    tandaTanganPerbaikanUrl: string;
+  }
+): SupervisiAuditRecord[] {
+  return records.map((rec) => {
+    if (rec.id !== id) return rec;
+    return {
+      ...rec,
+      prosesPerbaikan: followUp.prosesPerbaikan.trim(),
+      tanggalPerbaikan: followUp.tanggalPerbaikan.trim(),
+      dokumentasiPerbaikanUrl: followUp.dokumentasiPerbaikanUrl.trim(),
+      tandaTanganPerbaikanUrl: followUp.tandaTanganPerbaikanUrl.trim(),
+    };
+  });
+}
+
+export function buildAuditFindingFromRoomChecklist(
+  cardConfig: SupervisiCardConfig,
+  roomRecord: RoomChecklistRecord,
+  customEvaluasiInput: string,
+  rawTaskEntries: Record<string, RoomChecklistTaskEntry>
+): SupervisiAuditRecord | null {
+  const negativeTaskLabels = cardConfig.tasks
+    .filter((t) => rawTaskEntries[t.id]?.status === 'TIDAK')
+    .map((t) => t.label);
+
+  const trimmedEvaluasi = customEvaluasiInput.trim();
+  if (negativeTaskLabels.length === 0 && !trimmedEvaluasi) {
+    return null;
+  }
+
+  let firstPhoto = '';
+  for (const t of cardConfig.tasks) {
+    const photos = roomRecord.taskEntries[t.id]?.photos || [];
+    const found = photos.find((p) => Boolean(p));
+    if (found) {
+      firstPhoto = found;
+      break;
+    }
+  }
+
+  const temuanText = trimmedEvaluasi
+    ? negativeTaskLabels.length > 0
+      ? `${trimmedEvaluasi} (Item belum dilaksanakan: ${negativeTaskLabels.join(', ')})`
+      : trimmedEvaluasi
+    : `Tugas ceklist belum dilaksanakan di ${cardConfig.title}: ${negativeTaskLabels.join(', ')}`;
+
+  return {
+    id: `sup-rc-${roomRecord.id}`,
+    cardId: 'SUPERVISI',
+    tanggal: roomRecord.tanggal,
+    supervisor: 'Fitria Wulandari, A.M.KL',
+    unit: cardConfig.title,
+    namaPetugas: roomRecord.petugas,
+    kerapihan: 'Sesuai hasil ceklist kebersihan ruangan',
+    skorKerapihan: 4,
+    prosedur:
+      negativeTaskLabels.length > 0
+        ? 'Perlu pembersihan ulang pada item ceklist yang belum dilaksanakan'
+        : 'Pembersihan ruangan dilaksanakan sesuai jadwal',
+    skorProsedur: negativeTaskLabels.length > 0 ? 3 : 4,
+    alatDanBahan: 'Alat dan bahan kebersihan tersedia di ruangan',
+    skorAlatDanBahan: 4,
+    k3: 'Menggunakan APD sesuai standar Kesling',
+    skorK3: 4,
+    sikapDanPerilaku: 'Kooperatif terhadap evaluasi supervisor',
+    skorSikapDanPerilaku: 4,
+    totalSkor: negativeTaskLabels.length > 0 ? 19 : 20,
+    kategori: 'SANGAT BAIK',
+    temuan: temuanText,
+    rekomendasi:
+      negativeTaskLabels.length > 0
+        ? `Segera laksanakan pembersihan ulang pada item ${negativeTaskLabels.join(', ')} dan verifikasi bersama supervisor`
+        : 'Tindak lanjuti catatan evaluasi supervisor sesuai SPO Kesling',
+    dokumentasiTemuanUrl:
+      firstPhoto || '/assets/aistudio/supervisi-temuan/temuan-1.png',
+    dokumentasiPerbaikanUrl: '',
+    tandaTanganUrl:
+      roomRecord.signatures?.[0] ||
+      '/assets/aistudio/supervisi-temuan/ttd-1.png',
+    prosesPerbaikan: '',
+    tanggalPerbaikan: '',
+    tandaTanganPerbaikanUrl: '',
+  };
+}
+
 
 
