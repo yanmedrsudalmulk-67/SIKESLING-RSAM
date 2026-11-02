@@ -208,6 +208,18 @@ export const MAIN_NAVIGATION: MainMenuItem[] = [
         ],
       },
       {
+        id: 'log-book-limbah-medis',
+        title: 'Log Book Limbah Medis',
+        href: '/monitoring/logbook-limbah-medis',
+        description: '',
+        status: 'Functional',
+        plannedFeatures: [
+          'Tabel Log Book Limbah Medis interaktif dengan seluruh sel dan kolom yang dapat diedit saat diklik',
+          'Pilihan kalender untuk Tanggal Masuk & Tanggal Keluar Limbah serta input manual Berat & No.Manifest',
+          'Manajemen tambah/hapus baris sumber ruangan dan tambah/hapus kolom kustom beserta visualisasi grafik',
+        ],
+      },
+      {
         id: 'vektor',
         title: 'Pengendalian Vektor & Binatang',
         href: '/monitoring/vektor',

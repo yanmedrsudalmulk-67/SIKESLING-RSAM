@@ -43,6 +43,10 @@ import {
   SikeslingCloudState,
   SupabaseSyncDiagnostic,
 } from '@/lib/supabase';
+import {
+  MedicalWasteLogRow,
+  createRealtimeInitialMedicalWasteLogbook,
+} from '@/lib/medical-waste-logbook';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -139,6 +143,8 @@ interface AppContextValue {
   updateWastewaterRows: (rows: WastewaterRow[]) => void;
   solidWasteRows: SolidWasteSnapshotRow[];
   updateSolidWasteRows: (rows: SolidWasteSnapshotRow[]) => void;
+  medicalWasteLogbookRows: MedicalWasteLogRow[];
+  saveMedicalWasteLogbookRows: (rows: MedicalWasteLogRow[]) => Promise<boolean>;
   vectorFindings: VectorFindingsSnapshotMap;
   updateVectorFindings: (findings: VectorFindingsSnapshotMap) => void;
   vectorUnits: string[];
@@ -201,6 +207,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [solidWasteRows, setSolidWasteRows] = useState<SolidWasteSnapshotRow[]>(
     initialMonitoringDefaults.solidWasteRows
   );
+  const [medicalWasteLogbookRows, setMedicalWasteLogbookRows] = useState<
+    MedicalWasteLogRow[]
+  >(() => createRealtimeInitialMedicalWasteLogbook());
   const [vectorFindings, setVectorFindings] =
     useState<VectorFindingsSnapshotMap>(
       initialMonitoringDefaults.vectorFindings
@@ -251,6 +260,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       cloud.solid_waste_b3.length === 12
     ) {
       setSolidWasteRows(cloud.solid_waste_b3);
+    }
+    if (
+      Array.isArray(cloud.medical_waste_logbook) &&
+      cloud.medical_waste_logbook.length > 0
+    ) {
+      setMedicalWasteLogbookRows(cloud.medical_waste_logbook);
     }
     if (cloud.vector_findings && typeof cloud.vector_findings === 'object') {
       setVectorFindings(cloud.vector_findings);
@@ -440,6 +455,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     (rows: SolidWasteSnapshotRow[]) => {
       setSolidWasteRows(rows);
       void persistCollectionToSupabase('solid_waste_b3', rows);
+    },
+    [persistCollectionToSupabase]
+  );
+
+  const saveMedicalWasteLogbookRows = useCallback(
+    async (rows: MedicalWasteLogRow[]): Promise<boolean> => {
+      setMedicalWasteLogbookRows(rows);
+      await persistCollectionToSupabase('medical_waste_logbook', rows);
+      return true;
     },
     [persistCollectionToSupabase]
   );
@@ -763,6 +787,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         updateWastewaterRows,
         solidWasteRows,
         updateSolidWasteRows,
+        medicalWasteLogbookRows,
+        saveMedicalWasteLogbookRows,
         vectorFindings,
         updateVectorFindings,
         vectorUnits,

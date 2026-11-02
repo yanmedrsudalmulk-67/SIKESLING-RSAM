@@ -310,8 +310,12 @@ export function compileAnnualKeslingReport(
     monthIndex: number,
     pdfDefault: string
   ): string => {
+    if (year === 2025 || pdfDefault === '') {
+      return pdfDefault;
+    }
     const found = waterRows.find(
       (r) =>
+        r.year === year &&
         r.sourceName === sourceName &&
         r.indicator === indicator &&
         r.monthIndex === monthIndex
@@ -551,7 +555,7 @@ export function compileAnnualKeslingReport(
     },
     {
       sourceLabel: 'RO POLI GIGI',
-      indicator: 'Bau',
+      indicator: 'bau',
       normalValue: 'Tidak berbau',
       monthlyValues: ['', '', '', '', '', 'Tidak berbau', '', '', '', '', '', 'Tidak berbau'],
     },
@@ -640,7 +644,7 @@ export function compileAnnualKeslingReport(
     {
       sourceLabel: 'RO LAB',
       indicator: 'Bau',
-      normalValue: 'Tidak berbau',
+      normalValue: '',
       monthlyValues: ['', '', '', '', '', 'Tidak berbau', '', '', '', '', '', 'Tidak berbau'],
     },
     {
@@ -1317,96 +1321,101 @@ export function generateAnnualReportWordF4Html(
   <!-- HALAMAN 2: KATA PENGANTAR -->
   <div class="f4-page">
     <h2 style="text-align:center;font-size:13pt;font-weight:bold;margin-bottom:14pt;">KATA PENGANTAR</h2>
-    <p style="text-align:justify;text-indent:28pt;line-height:1.5;">
-      Puji syukur saya panjatkan kepada Allah SWT dengan selesainya Laporan Tahunan Kesehatan Lingkungan UOBK RSUD Al-Mulk Kota Sukabumi. Laporan Tahunan ini berisi data-data dan laporan Indikator Kinerja dan Mutu Unit kesehatan lingkungan di tahun ${report.year}.
+    <p style="text-align:justify;text-indent:28pt;line-height:1.6;">
+      Puji syukur saya panjatkan kepadsa Allah SWT dengan selesainya Laporan Tahunan Kesehatam Lingkungan UOBK RSUD Al-Mulk Kota Sukabumi. Laporan Tahuan ini berisi data-data dan laporan Indikator Kinerja dan Mutu Unit kesehatan lingkungan di tahun ${report.year}.
     </p>
-    <p style="text-align:justify;text-indent:28pt;line-height:1.5;">
+    <p style="text-align:justify;text-indent:28pt;line-height:1.6;">
       Laporan Tahunan Kesehatan Lingkungan RSUD Al-Mulk Kota Sukabumi ini disusun sebagai bentuk akuntabilitas dan transparansi pelaksanaan pengelolaan lingkungan rumah sakit dalam periode Januari–Desember ${report.year}. Laporan ini mencerminkan komitmen RSUD Al-Mulk untuk memenuhi standar kesehatan lingkungan, menjamin keselamatan pasien dan tenaga kesehatan, serta mendukung pencapaian standar pelayanan nasional termasuk implementasi <i>Kelas Rawat Inap Standar</i> (KRIS).
     </p>
-    <p style="text-align:justify;text-indent:28pt;line-height:1.5;">
+    <p style="text-align:justify;text-indent:28pt;line-height:1.6;">
       Jenis Indikator Kegiatan Unit Kesling diantaranya : Melaksanakan Pengawasan Kesehatan Air Rumah Sakit, Pemeriksaan Kesehatan Udara Rumah Sakit, Melaksanakan pengawasan Kesehatan Sarana dan Bangunan, Melaksanakan pengawasan kebersihan, Monitoring penanganan limbah cair infeksius, Monitoring pengelolaan limbah padat, Monitoring pemeriksaan pangan siap saji, Monitoring Pemeriksaan Penyelenggaraan Linen, Monitoring Pemeriksaan Pengamanan Radiasi, Pengendalian vector dan binatang pengganggu.
     </p>
-    <p style="text-align:justify;text-indent:28pt;line-height:1.5;">
-      Laporan Kinerja RSUD AL-Mulk diuraikan dalam laporan ini, sehingga pelaksanaan tugas pokok dan fungsi serta tujuan dan sasaran kegiatan selama tahun ${report.year} dapat digambarkan pencapaiannya serta masalah dan kendala-kendala yang dihadapi. Laporan ini diharapkan dapat menjadi dasar pertimbangan dalam pengambilan kebijakan di tahun mendatang dan saya berharap Laporan Tahunan ini dapat dijadikan sebagai informasi kesehatan lingkungan di UOBK RSUD Al-Mulk, dan dapat bermanfaat bagi semua pembaca baik untuk Petugas Kesehatan maupun Unit-Unit lain yang membutuhkan.
+    <p style="text-align:justify;text-indent:28pt;line-height:1.6;">
+      Laporan Kinerja RSUD AL-Mulk diuraikan dalam laporan ini, sehingga pelaksanaan tugas pokok dan fungsi serta tujuan dan sasaran kegiatan selama tahun ${report.year} dapat digambarkan pencapaiannya serta masalah dan kendala-kendala yang dihadapi. Laporan ini diharapkan dapat menjadi dasar pertimbangan dalam pengambilan kebijakan di tahun mendatang dan saya berharap Laporan Tahunan ini dapat dijadikan sebagai informasi kesehatan lingkungan di UOBK RSUD Al-Mulk, dan dapat bermafaat bagi semua pembaca baik untuk Petugas Kesehatan maupun Unit-Unit lain yang membutuhkan.
     </p>
-    <p style="text-align:justify;text-indent:28pt;line-height:1.5;">
-      Laporan Tahunan ini disusun tentu saja jauh dari kesempurnaan, oleh karena itu penyusun berharap mendapatkan saran dan kritik agar dapat disempurnakan menjadi lebih baik pada penyusunan Laporan Tahunan berikutnya, Terimakasih di sampaikan kepada semua pihak yang telah mendukung penyusunan laporan tahunan ini. Semoga bermanfaat untuk kita semua. Aamiin
+    <p style="text-align:justify;text-indent:28pt;line-height:1.6;">
+      Laporan Tahunan ini disusun tentu saja jauh dari kesempurnaan, oleh karena itu penyusun berharap mendapatkan saran dan kritik agar dapat disempurnakan menjadi lebih baik pada punyusunan Laporan Tahunan berikutnya, Terimakasih di sampaikan kepada semua pihak yang telah mendukung penyusunan laporan tahunan ini. Semoga bermanfaat untuk kita semua. Aamiin
     </p>
-    <div style="margin-top:28pt;text-align:right;padding-right:24pt;">
-      <p style="margin:0;">Penyusun,</p>
-      <p style="margin-top:10pt;font-weight:bold;">Instalasi Kesehatan Lingkungan</p>
-      <p style="margin:0;font-weight:bold;">UOBK RSUD Al-Mulk Kota Sukabumi</p>
+    <div style="margin-top:20pt;text-align:right;padding-right:24pt;">
+      <p style="margin:0 0 8pt 0;">Penyusun,</p>
+      <p style="margin:0;">Instalasi Kesehatan Lingkungan</p>
+      <p style="margin:0;">UOBK RSUD Al-Mulk Kota Sukabumi</p>
     </div>
   </div>
   <br clear="all" style="page-break-before:always;mso-break-type:section-break" />
 
-  <!-- HALAMAN 3-4: DAFTAR ISI -->
+  <!-- HALAMAN 3: DAFTAR ISI -->
   <div class="f4-page">
     <h2 style="text-align:center;font-size:13pt;font-weight:bold;margin-bottom:14pt;">DAFTAR ISI</h2>
-    <table style="width:100%;border-collapse:collapse;font-size:11pt;line-height:1.6;">
+    <table style="width:100%;border-collapse:collapse;font-size:11pt;line-height:1.7;">
       <tr><td>HALAMAN JUDUL</td><td style="text-align:right;">1</td></tr>
       <tr><td>KATA PENGANTAR</td><td style="text-align:right;">2</td></tr>
       <tr><td>DAFTAR ISI</td><td style="text-align:right;">3</td></tr>
-      <tr><td colspan="2" style="padding-top:8pt;font-weight:bold;">BAB I PENDAHULUAN</td></tr>
+      <tr><td colspan="2" style="padding-top:10pt;">BAB I PENDAHULUAN</td></tr>
       <tr><td>1.1 LATAR BELAKANG</td><td style="text-align:right;">5</td></tr>
-      <tr><td>1.2 TUJUAN</td><td style="text-align:right;">6</td></tr>
-      <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;1.2.1 Tujuan Umum</td><td style="text-align:right;">6</td></tr>
-      <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;1.2.2 Tujuan Khusus</td><td style="text-align:right;">6</td></tr>
-      <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;1.2.3 Ruang Lingkup Penyehatan Lingkungan Rumah Sakit</td><td style="text-align:right;">7</td></tr>
-      <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;1.2.4 Isi dan Metoda Penyusunan</td><td style="text-align:right;">7</td></tr>
-      <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;1.2.5 Jumlah dan Komposisi Personil</td><td style="text-align:right;">7</td></tr>
-      <tr><td colspan="2" style="padding-top:8pt;font-weight:bold;">BAB II GAMBARAN UMUM</td></tr>
-      <tr><td>2.1 Visi dan Misi UOBK RSUD AL-MULK</td><td style="text-align:right;">8</td></tr>
-      <tr><td>2.2 Kondisi Geografi dan Wilayah Administrasi</td><td style="text-align:right;">8</td></tr>
-      <tr><td colspan="2" style="padding-top:8pt;font-weight:bold;">BAB III PELAKSANAAN KEGIATAN</td></tr>
+      <tr><td>1.2 &nbsp;TUJUAN</td><td style="text-align:right;">6</td></tr>
+      <tr><td>1.2.2 &nbsp;&nbsp;Tujuan Umum</td><td style="text-align:right;">6</td></tr>
+      <tr><td>1.2.2 Tujuan Khusus</td><td style="text-align:right;">6</td></tr>
+      <tr><td>1.2.3 Ruang Lingkup Penyehatan Lingkungan Rumah Sakit</td><td style="text-align:right;">7</td></tr>
+      <tr><td>1.2.4 Isi dan Metoda Penyusunan</td><td style="text-align:right;">7</td></tr>
+      <tr><td>1.2.5 Jumlah dan Komposisi Personil</td><td style="text-align:right;">7</td></tr>
+      <tr><td colspan="2" style="padding-top:10pt;">BAB II GAMBARAN UMUM</td></tr>
+      <tr><td>2.1 &nbsp;&nbsp;&nbsp;&nbsp;Visi dan Misi UOBK RSUD AL-MULK</td><td style="text-align:right;">8</td></tr>
+      <tr><td>2.2 &nbsp;&nbsp;&nbsp;&nbsp;Kondisi Geografi dan Wilayah Administrasi</td><td style="text-align:right;">8</td></tr>
+      <tr><td colspan="2" style="padding-top:10pt;">BAB III PELAKSANAAN KEGIATAN</td></tr>
       <tr><td>3.1 Penyelenggaraan Penyehatan Air</td><td style="text-align:right;">10</td></tr>
       <tr><td>3.2 Penyelenggaraan Penyehatan Udara, Kebisingan dan Pencahayaan</td><td style="text-align:right;">14</td></tr>
       <tr><td>3.3 Penyelenggaraan Penyehatan Pangan Siap Saji</td><td style="text-align:right;">16</td></tr>
-      <tr><td>3.4 Penyelenggaraan Penyehatan Sarana dan Bangunan</td><td style="text-align:right;">16</td></tr>
+      <tr><td>3.4 &nbsp;Penyelenggaraan Penyehat Sarana dan Bangunan</td><td style="text-align:right;">16</td></tr>
       <tr><td>3.5 Penyelenggaraan Pengamanan Limbah dan Radiasi</td><td style="text-align:right;">21</td></tr>
-      <tr><td>3.6 Penyelenggaraan Pengamanan Limbah Cair</td><td style="text-align:right;">23</td></tr>
+      <tr><td>3.6 Penyelenggaraan Pengamanan Limbah Cair..........</td><td style="text-align:right;">23</td></tr>
       <tr><td>3.7 Penyelenggaraan Pengamanan Limbah Radiasi</td><td style="text-align:right;">27</td></tr>
-      <tr><td>3.8 Penyelenggaraan Pengendalian Vektor dan Binatang Pembawa Penyakit</td><td style="text-align:right;">29</td></tr>
-      <tr><td>3.9 Penyelenggaraan Pengawasan Linen / Laundry</td><td style="text-align:right;">30</td></tr>
-      <tr><td>3.10 Penyelenggaraan Pengawasan Dekontaminasi Melalui Disinfeksi dan Sterilisasi</td><td style="text-align:right;">32</td></tr>
-      <tr><td>3.11 Penanggungjawab Pelaksana</td><td style="text-align:right;">32</td></tr>
-      <tr><td>3.12 Evaluasi Kegiatan</td><td style="text-align:right;">32</td></tr>
-      <tr><td colspan="2" style="padding-top:8pt;font-weight:bold;">BAB IV PENUTUP</td></tr>
-      <tr><td colspan="2" style="padding-top:8pt;font-weight:bold;">LAMPIRAN DAN DOKUMENTASI</td></tr>
+      <tr><td>3.6 Penyelenggaraan Pengendalian Vektor dan Binatang Pembawa Penyakit</td><td style="text-align:right;">29</td></tr>
+      <tr><td>3.7 Penyelenggaraan Pengawasan Linen / Laundry</td><td style="text-align:right;">30</td></tr>
+      <tr><td>3.8 Penyelenggaraan Pengawasan Dekontaminasi Melalui Disinfeksi dan Sterilisasi</td><td style="text-align:right;">32</td></tr>
+      <tr><td>3.9 Penanggungjawab Pelaksana</td><td style="text-align:right;">32</td></tr>
+      <tr><td>3.10 Evaluasi Kegiatan</td><td style="text-align:right;">32</td></tr>
     </table>
   </div>
   <br clear="all" style="page-break-before:always;mso-break-type:section-break" />
 
-  <!-- HALAMAN 5-7: BAB I PENDAHULUAN -->
+  <!-- HALAMAN 4: DAFTAR ISI (LANJUTAN) -->
+  <div class="f4-page" style="padding-top:36pt;">
+    <p style="font-size:11pt;margin-bottom:14pt;">BAB IV PENUTUP</p>
+    <p style="font-size:11pt;">LAMPIRAN DAN DOKUMENTASI</p>
+  </div>
+  <br clear="all" style="page-break-before:always;mso-break-type:section-break" />
+
+  <!-- HALAMAN 5: BAB 1 PENDAHULUAN -->
   <div class="f4-page">
     <h2 style="text-align:center;font-size:13pt;font-weight:bold;margin-bottom:4pt;">BAB 1</h2>
     <h2 style="text-align:center;font-size:13pt;font-weight:bold;margin-top:0;margin-bottom:14pt;">PENDAHULUAN</h2>
-    <h3 style="font-size:11pt;font-weight:bold;">1.1 Latar Belakang</h3>
-    <p style="text-align:justify;text-indent:28pt;line-height:1.5;">
+    <p style="font-size:11pt;margin-bottom:8pt;">1.1 &nbsp;&nbsp;&nbsp;Latar Belakang</p>
+    <p style="text-align:justify;text-indent:28pt;line-height:1.6;">
       Rumah Sakit UOBK RSUD AL-Mulk memiliki Visi menjadi Rumah Sakit dengan pelayanan kesehatan yang berkwalitas menuju kota Sukabumi yang sehat dan sejahtra dan misi sebagai berikut;
     </p>
-    <ol style="line-height:1.5;text-align:justify;">
+    <ol style="line-height:1.6;text-align:justify;">
       <li>memberikan pelayanan secara komperehensif dan holistic mengacu kepada peningkatan mutu pelayanan dan keselamatan pasien</li>
       <li>menciptakan suasana kerja yang harmonis dan meningkatkan kualitas SDM yang professional</li>
       <li>meningkatkan teknologi pelayanan sesuai dengan pekembangan ilmu pengetahuan yang terjangkau oleh masyarakat</li>
       <li>menciptakan suasana rumah sakit yang aman dan nyaman.</li>
     </ol>
-    <p style="text-align:justify;text-indent:28pt;line-height:1.5;">
+    <p style="text-align:justify;text-indent:28pt;line-height:1.6;">
       Sehingga untuk mengacu pada Visi Misi UOBK RSUD Al-Mulk, dalam pelaksanaannya, rumah sakit harus memiliki lingkungan yang sehat dan bebas dari segala faktor yang dapat menimbulkan ketidaknyamanan dan gangguan kesehatan baik untuk pasien, pengunjung maupun pegawai.
     </p>
-    <p style="text-align:justify;text-indent:28pt;line-height:1.5;">
+    <p style="text-align:justify;text-indent:28pt;line-height:1.6;">
       Rumah Sakit Umum Daerah (RSUD) Al-Mulk Kota Sukabumi sebagai fasilitas pelayanan kesehatan rujukan milik pemerintah daerah memiliki peran penting dalam memberikan pelayanan kesehatan yang aman, bermutu, dan berorientasi pada keselamatan pasien. Dalam penyelenggaraan pelayanan tersebut, aspek <b>kesehatan lingkungan rumah sakit</b> merupakan salah satu pilar utama yang menentukan kualitas layanan dan pencegahan risiko penularan penyakit.
     </p>
-    <p style="text-align:justify;text-indent:28pt;line-height:1.5;">
+    <p style="text-align:justify;text-indent:28pt;line-height:1.6;">
       Kesehatan lingkungan rumah sakit meliputi upaya pengelolaan faktor lingkungan fisik, kimia, biologi, dan sosial di lingkungan rumah sakit agar tidak menimbulkan dampak negatif terhadap pasien, tenaga kesehatan, pengunjung, maupun masyarakat sekitar. Pengelolaan ini mencakup sanitasi, penyediaan air bersih, pengelolaan limbah medis dan nonmedis, pengendalian vektor, kebersihan ruangan, serta kualitas udara dan bangunan.
     </p>
-    <p style="text-align:justify;text-indent:28pt;line-height:1.5;">
+    <p style="text-align:justify;text-indent:28pt;line-height:1.6;">
       Sejalan dengan perkembangan kebijakan nasional, pemerintah menetapkan penerapan <b>Kelas Rawat Inap Standar (KRIS)</b> dalam Program Jaminan Kesehatan Nasional sebagaimana diatur dalam <b>Peraturan Presiden Nomor 59 Tahun 2024</b>, yang menekankan pemerataan mutu layanan rawat inap melalui pemenuhan standar fasilitas dan lingkungan perawatan. Implementasi KRIS berdampak langsung terhadap pengelolaan kesehatan lingkungan, khususnya pada aspek bangunan, ventilasi, kepadatan tempat tidur, sanitasi ruangan, pencahayaan, serta kenyamanan dan keselamatan pasien.
     </p>
-    <p style="text-align:justify;text-indent:28pt;line-height:1.5;">
+    <p style="text-align:justify;text-indent:28pt;line-height:1.6;">
       Selain itu, pengelolaan kesehatan lingkungan rumah sakit juga mengacu pada <b>Peraturan Menteri Kesehatan Nomor 7 Tahun 2019 tentang Kesehatan Lingkungan Rumah Sakit</b>, serta standar akreditasi rumah sakit yang menempatkan manajemen fasilitas dan keselamatan sebagai komponen penting dalam penilaian mutu layanan.
     </p>
-    <p style="text-align:justify;text-indent:28pt;line-height:1.5;">
+    <p style="text-align:justify;text-indent:28pt;line-height:1.6;">
       Oleh karena itu, RSUD Al-Mulk Kota Sukabumi menyusun Laporan Tahunan Kesehatan Lingkungan sebagai bentuk akuntabilitas kinerja, sarana evaluasi pelaksanaan program, serta dasar perencanaan peningkatan mutu pengelolaan lingkungan rumah sakit secara berkelanjutan, sekaligus mendukung kesiapan penerapan KRIS secara optimal.
     </p>
 

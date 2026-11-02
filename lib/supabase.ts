@@ -22,6 +22,10 @@ import {
   VectorFindingsSnapshotMap,
   createDefaultMonitoringDataset,
 } from './dashboard-monitoring-trends';
+import {
+  MedicalWasteLogRow,
+  createRealtimeInitialMedicalWasteLogbook,
+} from './medical-waste-logbook';
 
 export const DEFAULT_SUPABASE_RAW_URL =
   'https://zwsshqpenadbpytvwkje.supabase.co/rest/v1/';
@@ -140,6 +144,7 @@ export interface SikeslingCloudState {
   air_quality_items: AirQualitySnapshotItem[];
   wastewater_quality_2026: WastewaterRow[];
   solid_waste_b3: SolidWasteSnapshotRow[];
+  medical_waste_logbook: MedicalWasteLogRow[];
   vector_findings: VectorFindingsSnapshotMap;
   vector_units: string[];
   food_sanitation: FoodSanitationSnapshotRow[];
@@ -296,6 +301,7 @@ export function createInitialSikeslingCloudState(): SikeslingCloudState {
     air_quality_items: defaultMonitoring.airItems,
     wastewater_quality_2026: createInitialWastewaterData(2026),
     solid_waste_b3: defaultMonitoring.solidWasteRows,
+    medical_waste_logbook: createRealtimeInitialMedicalWasteLogbook(),
     vector_findings: defaultMonitoring.vectorFindings,
     vector_units: [...INITIAL_VECTOR_UNITS],
     food_sanitation: defaultMonitoring.foodRows,
@@ -330,6 +336,10 @@ export const CLOUD_COLLECTION_META: Record<
   solid_waste_b3: {
     category: 'MONITORING',
     title: 'Monitoring Limbah Padat Medis B3, Tajam & Obat Kadaluarsa',
+  },
+  medical_waste_logbook: {
+    category: 'MONITORING',
+    title: 'Log Book Limbah Medis Harian per Sumber Ruangan',
   },
   vector_findings: {
     category: 'MONITORING',
