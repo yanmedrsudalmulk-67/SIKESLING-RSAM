@@ -69,3 +69,21 @@ export function writeAuthStageToStorage(stage: AuthFlowStage): void {
     // ignore storage errors
   }
 }
+
+export const WELCOME_VIDEO_LANDSCAPE_SRC =
+  '/assets/aistudio/gemini_generated_video_d24d733d_3d063e8d.mp4';
+
+export const WELCOME_VIDEO_PORTRAIT_SRC =
+  '/assets/aistudio/gemini_generated_video_4eb3b858_7592732a.mp4';
+
+export function isPortraitViewport(width: number, height: number): boolean {
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+    return false;
+  }
+  return height > width;
+}
+
+export function getWelcomeVideoSrc(isPortrait: boolean): string {
+  return isPortrait ? WELCOME_VIDEO_PORTRAIT_SRC : WELCOME_VIDEO_LANDSCAPE_SRC;
+}
+

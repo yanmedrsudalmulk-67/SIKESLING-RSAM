@@ -4,18 +4,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'motion/react';
 import {
-  Activity,
   ArrowLeft,
   ArrowRight,
   BarChart3,
-  CheckCircle2,
-  ClipboardCheck,
   Clock,
   Eye,
   EyeOff,
   Lock,
   ShieldCheck,
-  Sparkles,
   TrendingUp,
   User,
   Volume2,
@@ -23,6 +19,8 @@ import {
 } from 'lucide-react';
 import {
   AuthFlowStage,
+  getWelcomeVideoSrc,
+  isPortraitViewport,
   validateLoginCredentials,
 } from '@/lib/auth-gate';
 
@@ -41,6 +39,7 @@ export function WelcomeLoginGate({
 }: WelcomeLoginGateProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isMuted, setIsMuted] = useState<boolean>(true);
+  const [isPortrait, setIsPortrait] = useState<boolean>(false);
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -52,6 +51,19 @@ export function WelcomeLoginGate({
     time: '08:00:00',
     date: 'WIB • Live',
   });
+
+  useEffect(() => {
+    const updateOrientation = () => {
+      setIsPortrait(isPortraitViewport(window.innerWidth, window.innerHeight));
+    };
+    updateOrientation();
+    window.addEventListener('resize', updateOrientation);
+    window.addEventListener('orientationchange', updateOrientation);
+    return () => {
+      window.removeEventListener('resize', updateOrientation);
+      window.removeEventListener('orientationchange', updateOrientation);
+    };
+  }, []);
 
   useEffect(() => {
     const updateClock = () => {
@@ -84,18 +96,19 @@ export function WelcomeLoginGate({
     return () => clearInterval(timer);
   }, []);
 
+  const activeVideoSrc = getWelcomeVideoSrc(isPortrait);
+
   useEffect(() => {
     if (stage !== 'welcome') return;
     const vid = videoRef.current;
     if (!vid) return;
 
-    vid.muted = true;
-    setIsMuted(true);
+    vid.muted = isMuted;
     vid.currentTime = 0;
     vid.play().catch(() => {
       // Autoplay fallback handled silently
     });
-  }, [stage]);
+  }, [stage, activeVideoSrc]);
 
   const toggleAudio = () => {
     const vid = videoRef.current;
@@ -138,8 +151,9 @@ export function WelcomeLoginGate({
 
       {/* =====================================================================
           STAGE 1: WELCOME SCREEN
-          - Mobile / Portrait: Unified Full-Viewport Executive Split Card (Navy Media Stage + Warm Ivory Summary Sheet)
-          - Tablet / Desktop: Framed Full-Canvas Video Card with Compact Edge Margin & Animated CTA
+          - Portrait / Mobile: Full-Canvas Portrait Video (/assets/aistudio/gemini_generated_video_4eb3b858_7592732a.mp4)
+          - Landscape / Desktop: Full-Canvas Landscape Video (/assets/aistudio/gemini_generated_video_d24d733d_3d063e8d.mp4)
+          - Both feature Top-Left Hospital Logo Badge & Responsive "Masuk Menu" CTA Button
          ===================================================================== */}
       {stage === 'welcome' && (
         <motion.div
@@ -147,247 +161,136 @@ export function WelcomeLoginGate({
           initial={false}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
-          className="relative z-10 w-full h-full max-h-[calc(100dvh-0.75rem)] sm:max-h-none rounded-[26px] sm:rounded-none border-2 sm:border-0 border-white/95 bg-gradient-to-b from-[#082B54] via-[#002147] to-[#00152E] sm:bg-none shadow-[0_28px_80px_rgba(0,0,0,0.55)] sm:shadow-none overflow-hidden flex flex-col justify-between"
+          className="relative z-10 w-full h-full max-h-[calc(100dvh-0.75rem)] sm:max-h-none flex flex-col justify-between"
         >
-          {/* Portrait / Mobile Upper Navy Header & Media Wrapper */}
-          <div className="w-full sm:h-full sm:flex-1 flex flex-col shrink-0 min-h-0">
-            {/* Mobile Institutional Top Bar (Only on Mobile Portrait) */}
-            <div className="flex sm:hidden w-full items-center justify-between px-3.5 pt-3 pb-2 border-b border-white/10 shrink-0">
-              <div className="flex items-center gap-2.5">
-                <div className="relative w-8 h-8 shrink-0 flex items-center justify-center">
-                  <Image
-                    src="/assets/aistudio/logo-1_06649eb7.png"
-                    alt="Logo RSUD Al-Mulk"
-                    width={32}
-                    height={32}
-                    className="object-contain drop-shadow-sm"
-                    referrerPolicy="no-referrer"
-                    priority
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[12.5px] font-extrabold uppercase tracking-wide text-[#FAF6F0] leading-tight font-sans">
-                    UOBK RSUD AL-MULK
-                  </span>
-                  <span className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-[#D2B48C] leading-none mt-0.5 font-sans">
-                    KOTA SUKABUMI
-                  </span>
-                </div>
-              </div>
+          <div className="relative w-full h-full flex-1 rounded-[22px] sm:rounded-[26px] lg:rounded-[30px] overflow-hidden border-2 border-[#D2B48C]/85 ring-1 ring-white/15 shadow-[0_24px_70px_rgba(0,0,0,0.6)] bg-[#082747]">
+            <video
+              ref={videoRef}
+              key={activeVideoSrc}
+              src={activeVideoSrc}
+              data-testid="welcome-screen-video"
+              data-orientation={isPortrait ? 'portrait' : 'landscape'}
+              preload="auto"
+              autoPlay
+              loop
+              muted={isMuted}
+              playsInline
+              className="w-full h-full object-fill"
+            />
 
-              <div className="flex items-center">
-                <button
-                  type="button"
-                  onClick={toggleAudio}
-                  aria-label={isMuted ? 'Nyalakan Suara Video' : 'Matikan Suara Video'}
-                  title={isMuted ? 'Nyalakan Suara Video' : 'Matikan Suara Video'}
-                  className="p-2 rounded-full bg-[#002147] hover:bg-[#082B54] border border-[#D2B48C]/70 text-[#FAF6F0] shadow-sm transition-colors cursor-pointer"
-                >
-                  {isMuted ? (
-                    <VolumeX className="w-4 h-4 text-[#D2B48C]/65" />
-                  ) : (
-                    <Volume2 className="w-4 h-4 text-[#D2B48C]" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Video Stage — Framed Showcase on Mobile Portrait, Full Framed Card on Tablet/Desktop */}
-            <div className="px-3.5 pt-3 pb-2 sm:p-0 w-full sm:h-full sm:flex-1 flex flex-col min-h-0">
-              <div className="relative w-full aspect-video sm:aspect-auto sm:w-full sm:h-full sm:flex-1 rounded-[18px] sm:rounded-[26px] lg:rounded-[30px] overflow-hidden border-2 border-[#D2B48C]/85 ring-1 ring-white/15 shadow-[0_16px_38px_rgba(0,0,0,0.55)] sm:shadow-[0_24px_70px_rgba(0,0,0,0.6)] bg-[#082747]">
-                <video
-                  ref={videoRef}
-                  src="/assets/aistudio/gemini_generated_video_d24d733d_3d063e8d.mp4"
-                  preload="auto"
-                  autoPlay
-                  loop
-                  muted={isMuted}
-                  playsInline
-                  onClick={onEnterLogin}
-                  className="w-full h-full object-cover sm:object-fill cursor-pointer sm:cursor-default"
-                />
-
-                {/* Top-Left Official Hospital Logo & Header in Glassmorphism Blur Translucent Card */}
-                <div className="hidden sm:flex absolute top-5 left-6 md:top-6 md:left-7 z-20 items-center gap-3 px-3.5 py-2 rounded-2xl bg-[#002147]/75 hover:bg-[#002147]/85 backdrop-blur-md border border-[#D2B48C]/55 shadow-[0_12px_32px_rgba(0,0,0,0.45)] transition-all select-none">
-                  <div className="relative w-8.5 h-8.5 md:w-10 md:h-10 shrink-0 flex items-center justify-center">
-                    <Image
-                      src="/assets/aistudio/logo-1_06649eb7.png"
-                      alt="Logo UOBK RSUD Al-Mulk"
-                      width={40}
-                      height={40}
-                      className="object-contain"
-                      referrerPolicy="no-referrer"
-                      priority
-                    />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[13px] md:text-[15px] font-extrabold tracking-wide text-[#FAF6F0] font-sans leading-tight">
-                      UOBK RSUD AL-MULK
-                    </span>
-                    <span className="text-[9.5px] md:text-[10.5px] font-bold tracking-[0.16em] text-[#D2B48C] uppercase font-sans leading-none mt-0.5">
-                      KOTA SUKABUMI
-                    </span>
-                  </div>
-                </div>
-
-                {/* Top-Right Audio Icon Button on Tablet/Desktop (Icon Only, Cream Icon with Navy Background) */}
-                <div className="hidden sm:flex absolute top-5 right-6 md:top-6 md:right-7 z-20 items-center">
-                  <button
-                    type="button"
-                    onClick={toggleAudio}
-                    aria-label={isMuted ? 'Nyalakan Suara Video' : 'Matikan Suara Video'}
-                    title={isMuted ? 'Nyalakan Suara Video' : 'Matikan Suara Video'}
-                    className="p-2.5 md:p-3 rounded-full bg-[#002147]/90 hover:bg-[#082B54] backdrop-blur-md border border-[#D2B48C]/70 shadow-xl transition-all cursor-pointer"
-                  >
-                    {isMuted ? (
-                      <VolumeX className="w-4 h-4 md:w-5 md:h-5 text-[#D2B48C]/65" />
-                    ) : (
-                      <Volume2 className="w-4 h-4 md:w-5 md:h-5 text-[#D2B48C]" />
-                    )}
-                  </button>
-                </div>
-
-                {/* Overlay CTA Button on Video (Smooth Floating Up-Down Animation & Sliding Arrow Forward-Backward) */}
-                <div className="absolute left-[5.5%] bottom-[15.5%] sm:left-[6.5%] sm:bottom-[19.5%] md:bottom-[20%] z-20 flex flex-col items-start">
-                  <motion.button
-                    type="button"
-                    onClick={onEnterLogin}
-                    animate={{ y: [0, -6, 0] }}
-                    transition={{
-                      duration: 2.5,
-                      repeat: Infinity,
-                      ease: 'easeInOut',
-                    }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.97 }}
-                    className="group relative inline-flex items-center gap-2 sm:gap-4 px-3.5 py-1.5 sm:px-7 sm:py-3 md:px-8 md:py-3.5 rounded-full bg-gradient-to-r from-[#FAF6F0] via-[#F2E3CE] to-[#D2B48C] text-[#002147] border sm:border-2 border-white/95 shadow-[0_12px_28px_rgba(0,0,0,0.5),0_0_22px_rgba(210,180,140,0.5)] sm:shadow-[0_16px_38px_rgba(0,0,0,0.52),0_0_28px_rgba(210,180,140,0.5)] transition-shadow cursor-pointer"
-                  >
-                    <div className="text-left select-none">
-                      <div className="hidden sm:block text-[11px] md:text-[12px] font-extrabold uppercase tracking-widest text-[#6E502B] leading-none">
-                        PORTAL UTAMA
-                      </div>
-                      <div className="text-[11.5px] sm:text-[16px] md:text-[18px] font-extrabold tracking-tight text-[#002147] leading-tight sm:mt-0.5">
-                        Masuk Menu
-                      </div>
-                    </div>
-
-                    <motion.span
-                      animate={{ x: [0, 5, 0] }}
-                      transition={{
-                        duration: 1.35,
-                        repeat: Infinity,
-                        ease: 'easeInOut',
-                      }}
-                      className="inline-flex items-center justify-center w-5 h-5 sm:w-8.5 sm:h-8.5 md:w-9 md:h-9 rounded-full bg-[#002147] text-[#D2B48C] shadow-xs shrink-0"
-                    >
-                      <ArrowRight className="w-3 h-3 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 stroke-[2.5]" />
-                    </motion.span>
-                  </motion.button>
-                </div>
-              </div>
-            </div>
-
-            {/* Mobile Live Institutional Status Bar below Video */}
-            <div className="flex sm:hidden items-center justify-between px-4 pb-3 pt-1 text-[10px] font-semibold text-[#D2B48C]/90">
-              <div className="inline-flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Sistem Monitoring & Supervisi Terpadu</span>
-              </div>
-              <span className="text-white/80 font-bold">UOBK RSUD Al-Mulk</span>
-            </div>
-          </div>
-
-          {/* Portrait / Mobile Lower Executive Sheet (Fills remaining height cleanly with balanced executive sections) */}
-          <div className="flex sm:hidden flex-1 w-full flex-col justify-between rounded-t-[26px] bg-gradient-to-br from-[#FAF6F0] via-[#F5EDE0] to-[#EADBC8] px-4 pt-4 pb-4 border-t-2 border-[#D2B48C]/70 shadow-[0_-14px_34px_rgba(0,0,0,0.35)]">
-            {/* Top Welcome Heading & Description */}
-            <div className="space-y-1.5">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#002147] text-[#D2B48C] text-[9.5px] font-extrabold uppercase tracking-wider shadow-xs">
-                <Sparkles className="w-3 h-3 text-[#D2B48C]" />
-                <span>SELAMAT DATANG DI SIKESLING RSAM</span>
-              </div>
-              <h2 className="text-[16.5px] font-extrabold text-[#002147] leading-snug tracking-tight">
-                Sistem Informasi Kesehatan Lingkungan RSUD Al-Mulk Kota Sukabumi
-              </h2>
-              <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
-                Platform digital pemantauan mutu lingkungan rumah sakit, ceklist kebersihan ruangan, dan tindak lanjut pengawasan sanitarian secara terintegrasi.
-              </p>
-            </div>
-
-            {/* 3 Executive Pillar Cards + Scope Tags */}
-            <div className="space-y-2.5">
-              <div className="grid grid-cols-3 gap-2.5">
-                <div className="rounded-2xl bg-white/95 border border-[#D2B48C]/80 p-3 flex flex-col items-center text-center shadow-xs">
-                  <div className="w-8.5 h-8.5 rounded-xl bg-[#002147] text-[#D2B48C] flex items-center justify-center mb-1.5 shadow-xs">
-                    <Activity className="w-4 h-4" />
-                  </div>
-                  <div className="text-xs font-extrabold text-[#002147] leading-tight">
-                    6 Modul
-                  </div>
-                  <div className="text-[9.5px] font-bold text-[#8B6B43] mt-0.5">
-                    Monitoring
-                  </div>
-                </div>
-
-                <div className="rounded-2xl bg-white/95 border border-[#D2B48C]/80 p-3 flex flex-col items-center text-center shadow-xs">
-                  <div className="w-8.5 h-8.5 rounded-xl bg-[#002147] text-[#D2B48C] flex items-center justify-center mb-1.5 shadow-xs">
-                    <ClipboardCheck className="w-4 h-4" />
-                  </div>
-                  <div className="text-xs font-extrabold text-[#002147] leading-tight">
-                    10 Unit
-                  </div>
-                  <div className="text-[9.5px] font-bold text-[#8B6B43] mt-0.5">
-                    Supervisi
-                  </div>
-                </div>
-
-                <div className="rounded-2xl bg-white/95 border border-[#D2B48C]/80 p-3 flex flex-col items-center text-center shadow-xs">
-                  <div className="w-8.5 h-8.5 rounded-xl bg-emerald-600 text-white flex items-center justify-center mb-1.5 shadow-xs">
-                    <CheckCircle2 className="w-4 h-4" />
-                  </div>
-                  <div className="text-xs font-extrabold text-[#002147] leading-tight">
-                    Terpadu
-                  </div>
-                  <div className="text-[9.5px] font-bold text-[#8B6B43] mt-0.5">
-                    Tindak Lanjut
-                  </div>
-                </div>
-              </div>
-
-              {/* Module Scope Strip */}
-              <div className="rounded-xl bg-white/75 border border-[#D2B48C]/60 px-3 py-2 flex items-center justify-between text-[9.5px] font-bold text-[#002147]">
-                <span className="text-[#8B6B43] uppercase tracking-wider">Cakupan:</span>
-                <span>Air • Udara • IPAL • Limbah B3 • Vektor • Pangan</span>
-              </div>
-            </div>
-
-            {/* Executive Primary CTA Button */}
-            <button
-              type="button"
-              onClick={onEnterLogin}
-              className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#002147] via-[#082B54] to-[#002147] hover:from-[#002B5E] hover:to-[#002B5E] text-[#FAF6F0] border border-[#D2B48C]/60 shadow-[0_12px_28px_rgba(0,33,71,0.3)] flex items-center justify-between transition-all cursor-pointer"
+            {/* Top-Left Official Hospital Logo & Header in Glassmorphism Blur Translucent Card */}
+            <div
+              data-testid="welcome-rs-logo-badge"
+              className="flex absolute top-3.5 left-3.5 sm:top-5 sm:left-6 md:top-6 md:left-7 z-20 items-center gap-2 sm:gap-3 px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl sm:rounded-2xl bg-[#002147]/80 hover:bg-[#002147]/90 backdrop-blur-md border border-[#D2B48C]/60 shadow-[0_10px_28px_rgba(0,0,0,0.45)] transition-all select-none"
             >
-              <div className="flex items-center gap-3 text-left">
-                <div className="w-9 h-9 rounded-xl bg-[#D2B48C]/20 border border-[#D2B48C]/50 flex items-center justify-center text-[#D2B48C] shrink-0">
-                  <Lock className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="text-xs font-extrabold text-white tracking-tight">
-                    Masuk Menu Log In
-                  </div>
-                  <div className="text-[10px] text-[#D2B48C] font-medium">
-                    Akses Portal Petugas Kesling RSAM
-                  </div>
-                </div>
+              <div className="relative w-7 h-7 sm:w-8.5 sm:h-8.5 md:w-10 md:h-10 shrink-0 flex items-center justify-center">
+                <Image
+                  src="/assets/aistudio/logo-1_06649eb7.png"
+                  alt="Logo UOBK RSUD Al-Mulk"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                  referrerPolicy="no-referrer"
+                  priority
+                />
               </div>
+              <div className="flex flex-col">
+                <span className="text-[11px] sm:text-[13px] md:text-[15px] font-extrabold tracking-wide text-[#FAF6F0] font-sans leading-tight">
+                  UOBK RSUD AL-MULK
+                </span>
+                <span className="text-[8.5px] sm:text-[9.5px] md:text-[10.5px] font-bold tracking-[0.16em] text-[#D2B48C] uppercase font-sans leading-none mt-0.5">
+                  KOTA SUKABUMI
+                </span>
+              </div>
+            </div>
 
-              <motion.span
-                animate={{ x: [0, 5, 0] }}
-                transition={{ duration: 1.35, repeat: Infinity, ease: 'easeInOut' }}
-                className="w-8 h-8 rounded-full bg-[#D2B48C] text-[#002147] flex items-center justify-center shadow-xs shrink-0"
+            {/* Top-Right Audio Icon Button (Both Portrait & Landscape) */}
+            <div className="flex absolute top-3.5 right-3.5 sm:top-5 sm:right-6 md:top-6 md:right-7 z-20 items-center">
+              <button
+                type="button"
+                onClick={toggleAudio}
+                aria-label={isMuted ? 'Nyalakan Suara Video' : 'Matikan Suara Video'}
+                title={isMuted ? 'Nyalakan Suara Video' : 'Matikan Suara Video'}
+                className="p-2 sm:p-2.5 md:p-3 rounded-full bg-[#002147]/90 hover:bg-[#082B54] backdrop-blur-md border border-[#D2B48C]/70 shadow-xl transition-all cursor-pointer"
               >
-                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-              </motion.span>
-            </button>
+                {isMuted ? (
+                  <VolumeX className="w-4 h-4 md:w-5 md:h-5 text-[#D2B48C]/65" />
+                ) : (
+                  <Volume2 className="w-4 h-4 md:w-5 md:h-5 text-[#D2B48C]" />
+                )}
+              </button>
+            </div>
+
+            {/* Overlay CTA Button on Video (Adjusted cleanly for Portrait & Landscape) */}
+            <div
+              className={`absolute z-20 flex flex-col items-start ${
+                isPortrait
+                  ? 'left-[6%] bottom-[17%]'
+                  : 'left-[6.5%] bottom-[19.5%] md:bottom-[20%]'
+              }`}
+            >
+              <motion.button
+                type="button"
+                data-testid="welcome-enter-menu-btn"
+                onClick={onEnterLogin}
+                animate={{ y: [0, -6, 0] }}
+                transition={{
+                  duration: 2.5,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.97 }}
+                className={`group relative inline-flex items-center rounded-full bg-gradient-to-r from-[#FAF6F0] via-[#F2E3CE] to-[#D2B48C] text-[#002147] border-2 border-white/95 shadow-[0_14px_34px_rgba(0,0,0,0.52),0_0_24px_rgba(210,180,140,0.5)] transition-shadow cursor-pointer ${
+                  isPortrait
+                    ? 'gap-2.5 px-4 py-2'
+                    : 'gap-3 sm:gap-4 px-5 py-2.5 sm:px-7 sm:py-3 md:px-8 md:py-3.5'
+                }`}
+              >
+                <div className="text-left select-none">
+                  <div
+                    className={`font-extrabold uppercase tracking-widest text-[#6E502B] leading-none ${
+                      isPortrait
+                        ? 'text-[9px]'
+                        : 'text-[10px] sm:text-[11px] md:text-[12px]'
+                    }`}
+                  >
+                    PORTAL UTAMA
+                  </div>
+                  <div
+                    className={`font-extrabold tracking-tight text-[#002147] leading-tight mt-0.5 ${
+                      isPortrait
+                        ? 'text-[13.5px]'
+                        : 'text-[14px] sm:text-[16px] md:text-[18px]'
+                    }`}
+                  >
+                    Masuk Menu
+                  </div>
+                </div>
+
+                <motion.span
+                  animate={{ x: [0, 5, 0] }}
+                  transition={{
+                    duration: 1.35,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }}
+                  className={`inline-flex items-center justify-center rounded-full bg-[#002147] text-[#D2B48C] shadow-xs shrink-0 ${
+                    isPortrait
+                      ? 'w-7 h-7'
+                      : 'w-7.5 h-7.5 sm:w-8.5 sm:h-8.5 md:w-9 md:h-9'
+                  }`}
+                >
+                  <ArrowRight
+                    className={
+                      isPortrait
+                        ? 'w-3.5 h-3.5 stroke-[2.5]'
+                        : 'w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 stroke-[2.5]'
+                    }
+                  />
+                </motion.span>
+              </motion.button>
+            </div>
           </div>
         </motion.div>
       )}
