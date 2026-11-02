@@ -5,6 +5,7 @@ import {
   VALID_AUTH_USERNAME,
   WELCOME_VIDEO_LANDSCAPE_SRC,
   WELCOME_VIDEO_PORTRAIT_SRC,
+  getPortraitVideoFitMode,
   getWelcomeVideoSrc,
   isPortraitViewport,
   validateLoginCredentials,
@@ -45,4 +46,15 @@ test('isPortraitViewport and getWelcomeVideoSrc select portrait video on mobile/
   assert.equal(getWelcomeVideoSrc(true), WELCOME_VIDEO_PORTRAIT_SRC);
   assert.equal(getWelcomeVideoSrc(false), WELCOME_VIDEO_LANDSCAPE_SRC);
 });
+
+test('getPortraitVideoFitMode preserves 9:16 aspect ratio on tall 20:9 smartphones and wider 3:4 portrait tablets', () => {
+  // Tall 20:9 phone like 1220x2712 or 390x844 -> fit-width so video is never stretched vertically
+  assert.equal(getPortraitVideoFitMode(1220, 2712), 'fit-width');
+  assert.equal(getPortraitVideoFitMode(390, 844), 'fit-width');
+  // Standard 9:16 phone (360x640) -> fit-width
+  assert.equal(getPortraitVideoFitMode(360, 640), 'fit-width');
+  // Wider portrait tablet (768x1024, 3:4) -> fit-height so video does not overflow vertically
+  assert.equal(getPortraitVideoFitMode(768, 1024), 'fit-height');
+});
+
 

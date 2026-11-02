@@ -76,6 +76,10 @@ export const WELCOME_VIDEO_LANDSCAPE_SRC =
 export const WELCOME_VIDEO_PORTRAIT_SRC =
   '/assets/aistudio/gemini_generated_video_4eb3b858_7592732a.mp4';
 
+export const NATIVE_PORTRAIT_VIDEO_ASPECT_RATIO = 9 / 16;
+
+export type PortraitVideoFitMode = 'fit-width' | 'fit-height';
+
 export function isPortraitViewport(width: number, height: number): boolean {
   if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
     return false;
@@ -83,7 +87,21 @@ export function isPortraitViewport(width: number, height: number): boolean {
   return height > width;
 }
 
+export function getPortraitVideoFitMode(
+  width: number,
+  height: number
+): PortraitVideoFitMode {
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+    return 'fit-width';
+  }
+  const viewportRatio = width / height;
+  return viewportRatio <= NATIVE_PORTRAIT_VIDEO_ASPECT_RATIO
+    ? 'fit-width'
+    : 'fit-height';
+}
+
 export function getWelcomeVideoSrc(isPortrait: boolean): string {
   return isPortrait ? WELCOME_VIDEO_PORTRAIT_SRC : WELCOME_VIDEO_LANDSCAPE_SRC;
 }
+
 

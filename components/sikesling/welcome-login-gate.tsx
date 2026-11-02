@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import {
   AuthFlowStage,
+  PortraitVideoFitMode,
+  getPortraitVideoFitMode,
   getWelcomeVideoSrc,
   isPortraitViewport,
   validateLoginCredentials,
@@ -40,6 +42,8 @@ export function WelcomeLoginGate({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [isPortrait, setIsPortrait] = useState<boolean>(false);
+  const [portraitFitMode, setPortraitFitMode] =
+    useState<PortraitVideoFitMode>('fit-width');
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -54,7 +58,10 @@ export function WelcomeLoginGate({
 
   useEffect(() => {
     const updateOrientation = () => {
-      setIsPortrait(isPortraitViewport(window.innerWidth, window.innerHeight));
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      setIsPortrait(isPortraitViewport(w, h));
+      setPortraitFitMode(getPortraitVideoFitMode(w, h));
     };
     updateOrientation();
     window.addEventListener('resize', updateOrientation);
@@ -151,7 +158,8 @@ export function WelcomeLoginGate({
 
       {/* =====================================================================
           STAGE 1: WELCOME SCREEN
-          - Portrait / Mobile: Full-Canvas Portrait Video (/assets/aistudio/gemini_generated_video_4eb3b858_7592732a.mp4)
+          - Portrait / Mobile: Proportional 9:16 Portrait Video (/assets/aistudio/gemini_generated_video_4eb3b858_7592732a.mp4)
+            with seamless top/bottom ambient wave fill so tall 20:9 phones never stretch the video
           - Landscape / Desktop: Full-Canvas Landscape Video (/assets/aistudio/gemini_generated_video_d24d733d_3d063e8d.mp4)
           - Both feature Top-Left Hospital Logo Badge & Responsive "Masuk Menu" CTA Button
          ===================================================================== */}
@@ -163,20 +171,140 @@ export function WelcomeLoginGate({
           transition={{ duration: 0.3, ease: 'easeOut' }}
           className="relative z-10 w-full h-full max-h-[calc(100dvh-0.75rem)] sm:max-h-none flex flex-col justify-between"
         >
-          <div className="relative w-full h-full flex-1 rounded-[22px] sm:rounded-[26px] lg:rounded-[30px] overflow-hidden border-2 border-[#D2B48C]/85 ring-1 ring-white/15 shadow-[0_24px_70px_rgba(0,0,0,0.6)] bg-[#082747]">
-            <video
-              ref={videoRef}
-              key={activeVideoSrc}
-              src={activeVideoSrc}
-              data-testid="welcome-screen-video"
-              data-orientation={isPortrait ? 'portrait' : 'landscape'}
-              preload="auto"
-              autoPlay
-              loop
-              muted={isMuted}
-              playsInline
-              className="w-full h-full object-fill"
-            />
+          <div
+            className={`relative w-full h-full flex-1 flex justify-center rounded-[22px] sm:rounded-[26px] lg:rounded-[30px] overflow-hidden border-2 border-[#D2B48C]/85 ring-1 ring-white/15 shadow-[0_24px_70px_rgba(0,0,0,0.6)] ${
+              isPortrait
+                ? 'items-start bg-gradient-to-b from-[#082E5E] via-[#F4E5D2] via-78% to-[#E5CCB0]'
+                : 'items-center bg-[#082747]'
+            }`}
+          >
+            {/* Seamless Bottom Cream Wave Extension for Tall Portrait Smartphones (20:9 / 19.5:9) */}
+            {isPortrait && (
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 bottom-0 h-[32%] overflow-hidden z-0 bg-gradient-to-b from-[#F5E6D3] via-[#EDD9C0] to-[#E2C8A8]"
+              >
+                <svg
+                  viewBox="0 0 400 160"
+                  preserveAspectRatio="none"
+                  className="w-full h-full opacity-85"
+                >
+                  <path
+                    d="M0,35 C115,95 265,-5 400,45 L400,160 L0,160 Z"
+                    fill="#EAD4B8"
+                  />
+                  <path
+                    d="M0,85 C140,40 275,125 400,70 L400,160 L0,160 Z"
+                    fill="#DFC3A1"
+                    fillOpacity="0.65"
+                  />
+                </svg>
+              </div>
+            )}
+
+            {/* Proportional 9:16 Stage on Portrait (Never Stretches Vertically) vs Full Stage on Landscape */}
+            <div
+              data-testid="welcome-video-stage"
+              data-fit-mode={isPortrait ? portraitFitMode : 'landscape-fill'}
+              className={
+                isPortrait
+                  ? `relative z-10 flex items-start justify-center aspect-[9/16] shrink-0 ${
+                      portraitFitMode === 'fit-width'
+                        ? 'w-[105%] max-w-none'
+                        : 'h-full max-w-full'
+                    }`
+                  : 'relative z-10 w-full h-full'
+              }
+            >
+              <video
+                ref={videoRef}
+                key={activeVideoSrc}
+                src={activeVideoSrc}
+                data-testid="welcome-screen-video"
+                data-orientation={isPortrait ? 'portrait' : 'landscape'}
+                preload="auto"
+                autoPlay
+                loop
+                muted={isMuted}
+                playsInline
+                className={
+                  isPortrait
+                    ? 'w-full h-full object-contain [mask-image:linear-gradient(to_bottom,black_0%,black_92%,transparent_100%)]'
+                    : 'w-full h-full object-fill'
+                }
+              />
+
+              {/* Overlay CTA Button on Video (Anchored inside 9:16 stage on Portrait so it stays locked below Tindak Lanjut on any phone ratio) */}
+              <div
+                className={`absolute z-20 flex flex-col items-start ${
+                  isPortrait
+                    ? 'left-[7.5%] bottom-[14%]'
+                    : 'left-[6.5%] bottom-[19.5%] md:bottom-[20%]'
+                }`}
+              >
+                <motion.button
+                  type="button"
+                  data-testid="welcome-enter-menu-btn"
+                  onClick={onEnterLogin}
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{
+                    duration: 2.5,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.97 }}
+                  className={`group relative inline-flex items-center rounded-full bg-gradient-to-r from-[#FAF6F0] via-[#F2E3CE] to-[#D2B48C] text-[#002147] border-2 border-white/95 shadow-[0_14px_34px_rgba(0,0,0,0.52),0_0_24px_rgba(210,180,140,0.5)] transition-shadow cursor-pointer ${
+                    isPortrait
+                      ? 'gap-2.5 px-4 py-2'
+                      : 'gap-3 sm:gap-4 px-5 py-2.5 sm:px-7 sm:py-3 md:px-8 md:py-3.5'
+                  }`}
+                >
+                  <div className="text-left select-none">
+                    <div
+                      className={`font-extrabold uppercase tracking-widest text-[#6E502B] leading-none ${
+                        isPortrait
+                          ? 'text-[9px]'
+                          : 'text-[10px] sm:text-[11px] md:text-[12px]'
+                      }`}
+                    >
+                      PORTAL UTAMA
+                    </div>
+                    <div
+                      className={`font-extrabold tracking-tight text-[#002147] leading-tight mt-0.5 ${
+                        isPortrait
+                          ? 'text-[13.5px]'
+                          : 'text-[14px] sm:text-[16px] md:text-[18px]'
+                      }`}
+                    >
+                      Masuk Menu
+                    </div>
+                  </div>
+
+                  <motion.span
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{
+                      duration: 1.35,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                    }}
+                    className={`inline-flex items-center justify-center rounded-full bg-[#002147] text-[#D2B48C] shadow-xs shrink-0 ${
+                      isPortrait
+                        ? 'w-7 h-7'
+                        : 'w-7.5 h-7.5 sm:w-8.5 sm:h-8.5 md:w-9 md:h-9'
+                    }`}
+                  >
+                    <ArrowRight
+                      className={
+                        isPortrait
+                          ? 'w-3.5 h-3.5 stroke-[2.5]'
+                          : 'w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 stroke-[2.5]'
+                      }
+                    />
+                  </motion.span>
+                </motion.button>
+              </div>
+            </div>
 
             {/* Top-Left Official Hospital Logo & Header in Glassmorphism Blur Translucent Card */}
             <div
@@ -219,77 +347,6 @@ export function WelcomeLoginGate({
                   <Volume2 className="w-4 h-4 md:w-5 md:h-5 text-[#D2B48C]" />
                 )}
               </button>
-            </div>
-
-            {/* Overlay CTA Button on Video (Adjusted cleanly for Portrait & Landscape) */}
-            <div
-              className={`absolute z-20 flex flex-col items-start ${
-                isPortrait
-                  ? 'left-[6%] bottom-[17%]'
-                  : 'left-[6.5%] bottom-[19.5%] md:bottom-[20%]'
-              }`}
-            >
-              <motion.button
-                type="button"
-                data-testid="welcome-enter-menu-btn"
-                onClick={onEnterLogin}
-                animate={{ y: [0, -6, 0] }}
-                transition={{
-                  duration: 2.5,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.97 }}
-                className={`group relative inline-flex items-center rounded-full bg-gradient-to-r from-[#FAF6F0] via-[#F2E3CE] to-[#D2B48C] text-[#002147] border-2 border-white/95 shadow-[0_14px_34px_rgba(0,0,0,0.52),0_0_24px_rgba(210,180,140,0.5)] transition-shadow cursor-pointer ${
-                  isPortrait
-                    ? 'gap-2.5 px-4 py-2'
-                    : 'gap-3 sm:gap-4 px-5 py-2.5 sm:px-7 sm:py-3 md:px-8 md:py-3.5'
-                }`}
-              >
-                <div className="text-left select-none">
-                  <div
-                    className={`font-extrabold uppercase tracking-widest text-[#6E502B] leading-none ${
-                      isPortrait
-                        ? 'text-[9px]'
-                        : 'text-[10px] sm:text-[11px] md:text-[12px]'
-                    }`}
-                  >
-                    PORTAL UTAMA
-                  </div>
-                  <div
-                    className={`font-extrabold tracking-tight text-[#002147] leading-tight mt-0.5 ${
-                      isPortrait
-                        ? 'text-[13.5px]'
-                        : 'text-[14px] sm:text-[16px] md:text-[18px]'
-                    }`}
-                  >
-                    Masuk Menu
-                  </div>
-                </div>
-
-                <motion.span
-                  animate={{ x: [0, 5, 0] }}
-                  transition={{
-                    duration: 1.35,
-                    repeat: Infinity,
-                    ease: 'easeInOut',
-                  }}
-                  className={`inline-flex items-center justify-center rounded-full bg-[#002147] text-[#D2B48C] shadow-xs shrink-0 ${
-                    isPortrait
-                      ? 'w-7 h-7'
-                      : 'w-7.5 h-7.5 sm:w-8.5 sm:h-8.5 md:w-9 md:h-9'
-                  }`}
-                >
-                  <ArrowRight
-                    className={
-                      isPortrait
-                        ? 'w-3.5 h-3.5 stroke-[2.5]'
-                        : 'w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 stroke-[2.5]'
-                    }
-                  />
-                </motion.span>
-              </motion.button>
             </div>
           </div>
         </motion.div>
