@@ -1,6 +1,19 @@
 export type WaterSourceName = 'Artesis' | 'Air RO Lab' | 'AIR RO POLI GIGI';
 
-export type WaterIndicatorName = 'Total Coliform' | 'E.Coli';
+export type WaterIndicatorName =
+  | 'Total Coliform'
+  | 'E.Coli'
+  | 'Suhu'
+  | 'Bau'
+  | 'Kekeruhan'
+  | 'Warna'
+  | 'PH'
+  | 'TDS'
+  | 'Cromium'
+  | 'Nitrit'
+  | 'Nitrat'
+  | 'Besi'
+  | 'Mangan';
 
 export type WaterComplianceStatus = 'MS' | 'TMS';
 
@@ -32,9 +45,10 @@ export interface WaterQualityRow {
   monthName: string; // JANUARI..DESEMBER
   sourceName: WaterSourceName;
   indicator: WaterIndicatorName;
-  normalValue: string; // "0/100 ml"
+  normalValue: string; // e.g., "0/100 ml", "suhu udara ±3°C", "Tidak Berbau", etc.
   resultValue: number;
-  status: WaterComplianceStatus; // MS if 0, TMS if > 0
+  resultDisplay?: string; // Exact laboratory string display (e.g., "21,3", "Tidak Berbau", "<0,01", "9,100", "<0,0025")
+  status: WaterComplianceStatus; // MS or TMS
 }
 
 export const WATER_MONTHS: { index: number; name: string; short: string }[] = [
@@ -58,9 +72,25 @@ export const WATER_SOURCES: WaterSourceName[] = [
   'AIR RO POLI GIGI',
 ];
 
+export const WATER_MICROBIOLOGY_INDICATORS: WaterIndicatorName[] = [
+  'Total Coliform',
+  'E.Coli',
+];
+
 export const WATER_INDICATORS: WaterIndicatorName[] = [
   'Total Coliform',
   'E.Coli',
+  'Suhu',
+  'Bau',
+  'Kekeruhan',
+  'Warna',
+  'PH',
+  'TDS',
+  'Cromium',
+  'Nitrit',
+  'Nitrat',
+  'Besi',
+  'Mangan',
 ];
 
 export const WATER_PERIOD_OPTIONS: { value: WaterPeriodFilter; label: string }[] = [
@@ -85,12 +115,171 @@ export const WATER_PERIOD_OPTIONS: { value: WaterPeriodFilter; label: string }[]
   { value: 'MONTH_12', label: 'Bulan Desember' },
 ];
 
+export interface FullWaterParameterPreset {
+  indicator: WaterIndicatorName;
+  normalValue: string;
+  resultValue: number;
+  resultDisplay: string;
+  status: WaterComplianceStatus;
+}
+
+/**
+ * Parameter lengkap (13 indikator) khusus untuk Bulan Juni (6) dan Desember (12)
+ * sesuai persis dengan Gambar 1 (Artesis - Bulan 6 JUNI), Gambar 2 (AIR RO POLI GIGI), dan Gambar 3 (Air RO Lab).
+ */
+export const JUNE_DECEMBER_SOURCE_PRESETS: Record<
+  WaterSourceName,
+  FullWaterParameterPreset[]
+> = {
+  Artesis: [
+    { indicator: 'Total Coliform', normalValue: '0/100 ml', resultValue: 0, resultDisplay: '0', status: 'MS' },
+    { indicator: 'E.Coli', normalValue: '0/100 ml', resultValue: 0, resultDisplay: '0', status: 'MS' },
+    { indicator: 'Suhu', normalValue: 'suhu udara ±3°C', resultValue: 21.3, resultDisplay: '21,3', status: 'MS' },
+    { indicator: 'Bau', normalValue: 'Tidak Berbau', resultValue: 0, resultDisplay: 'Tidak Berbau', status: 'MS' },
+    { indicator: 'Kekeruhan', normalValue: '25', resultValue: 0, resultDisplay: '0', status: 'MS' },
+    { indicator: 'Warna', normalValue: '50', resultValue: 0, resultDisplay: '0', status: 'MS' },
+    { indicator: 'PH', normalValue: '6,5 - 8,5', resultValue: 6.9, resultDisplay: '6,90', status: 'MS' },
+    { indicator: 'TDS', normalValue: '<300', resultValue: 30, resultDisplay: '30,0', status: 'MS' },
+    { indicator: 'Cromium', normalValue: '0,05', resultValue: 0.01, resultDisplay: '<0,01', status: 'MS' },
+    { indicator: 'Nitrit', normalValue: '1', resultValue: 0.01, resultDisplay: '<0,01', status: 'MS' },
+    { indicator: 'Nitrat', normalValue: '10', resultValue: 9.1, resultDisplay: '9,100', status: 'MS' },
+    { indicator: 'Besi', normalValue: '1', resultValue: 0.73, resultDisplay: '0,73', status: 'MS' },
+    { indicator: 'Mangan', normalValue: '0,5', resultValue: 0.01, resultDisplay: '<0,01', status: 'MS' },
+  ],
+  'Air RO Lab': [
+    { indicator: 'Total Coliform', normalValue: '0/100 ml', resultValue: 0, resultDisplay: '0', status: 'MS' },
+    { indicator: 'E.Coli', normalValue: '0/100 ml', resultValue: 0, resultDisplay: '0', status: 'MS' },
+    { indicator: 'Suhu', normalValue: 'suhu udara ±3°C', resultValue: 22.4, resultDisplay: '22,4', status: 'MS' },
+    { indicator: 'Bau', normalValue: 'Tidak Berbau', resultValue: 0, resultDisplay: 'Tidak Berbau', status: 'MS' },
+    { indicator: 'Kekeruhan', normalValue: '25', resultValue: 0, resultDisplay: '0', status: 'MS' },
+    { indicator: 'Warna', normalValue: '50', resultValue: 0, resultDisplay: '0', status: 'MS' },
+    { indicator: 'PH', normalValue: '6,5 - 8,5', resultValue: 6.73, resultDisplay: '6,73', status: 'MS' },
+    { indicator: 'TDS', normalValue: '<300', resultValue: 30, resultDisplay: '30,0', status: 'MS' },
+    { indicator: 'Cromium', normalValue: '0,05', resultValue: 0.01, resultDisplay: '<0,01', status: 'MS' },
+    { indicator: 'Nitrit', normalValue: '1', resultValue: 0.01, resultDisplay: '<0,01', status: 'MS' },
+    { indicator: 'Nitrat', normalValue: '10', resultValue: 16, resultDisplay: '16', status: 'MS' },
+    { indicator: 'Besi', normalValue: '1', resultValue: 0.0025, resultDisplay: '<0,0025', status: 'MS' },
+    { indicator: 'Mangan', normalValue: '0,5', resultValue: 0.01, resultDisplay: '<0,01', status: 'MS' },
+  ],
+  'AIR RO POLI GIGI': [
+    { indicator: 'Total Coliform', normalValue: '0/100 ml', resultValue: 0, resultDisplay: '0', status: 'MS' },
+    { indicator: 'E.Coli', normalValue: '0/100 ml', resultValue: 0, resultDisplay: '0', status: 'MS' },
+    { indicator: 'Suhu', normalValue: 'suhu udara ±3°C', resultValue: 21.8, resultDisplay: '21,8', status: 'MS' },
+    { indicator: 'Bau', normalValue: 'Tidak Berbau', resultValue: 0, resultDisplay: 'Tidak Berbau', status: 'MS' },
+    { indicator: 'Kekeruhan', normalValue: '25', resultValue: 0, resultDisplay: '0', status: 'MS' },
+    { indicator: 'Warna', normalValue: '50', resultValue: 0, resultDisplay: '0', status: 'MS' },
+    { indicator: 'PH', normalValue: '6,5 - 8,5', resultValue: 6.99, resultDisplay: '6,99', status: 'MS' },
+    { indicator: 'TDS', normalValue: '<300', resultValue: 30, resultDisplay: '30,0', status: 'MS' },
+    { indicator: 'Cromium', normalValue: '0,05', resultValue: 0.01, resultDisplay: '<0,01', status: 'MS' },
+    { indicator: 'Nitrit', normalValue: '1', resultValue: 0.01, resultDisplay: '<0,01', status: 'MS' },
+    { indicator: 'Nitrat', normalValue: '10', resultValue: 15.6, resultDisplay: '15,600', status: 'MS' },
+    { indicator: 'Besi', normalValue: '1', resultValue: 0.0025, resultDisplay: '<0,0025', status: 'MS' },
+    { indicator: 'Mangan', normalValue: '0,5', resultValue: 0.01, resultDisplay: '<0,01', status: 'MS' },
+  ],
+};
+
+export const JULY_DECEMBER_SOURCE_PRESETS = JUNE_DECEMBER_SOURCE_PRESETS;
+
 export function evaluateWaterCompliance(value: number): WaterComplianceStatus {
   return value <= 0 ? 'MS' : 'TMS';
 }
 
+export function evaluateWaterParameterInput(
+  indicator: WaterIndicatorName,
+  rawInput: string | number
+): {
+  resultValue: number;
+  resultDisplay: string;
+  status: WaterComplianceStatus;
+} {
+  const trimmed = String(rawInput ?? '').trim();
+
+  if (indicator === 'Total Coliform' || indicator === 'E.Coli') {
+    const num = Math.max(
+      0,
+      Number(trimmed.replace(',', '.').replace(/[^0-9.-]/g, '')) || 0
+    );
+    return {
+      resultValue: num,
+      resultDisplay: String(num),
+      status: evaluateWaterCompliance(num),
+    };
+  }
+
+  if (indicator === 'Bau') {
+    const display = trimmed || 'Tidak Berbau';
+    const isMs = display.toLowerCase().includes('tidak');
+    return {
+      resultValue: isMs ? 0 : 1,
+      resultDisplay: display,
+      status: isMs ? 'MS' : 'TMS',
+    };
+  }
+
+  const display = trimmed || '0';
+  const isBelowDetection = display.startsWith('<');
+  const numericVal =
+    Number(display.replace('<', '').replace(',', '.').replace(/[^0-9.-]/g, '')) || 0;
+
+  if (isBelowDetection) {
+    return {
+      resultValue: numericVal,
+      resultDisplay: display,
+      status: 'MS',
+    };
+  }
+
+  let status: WaterComplianceStatus = 'MS';
+  switch (indicator) {
+    case 'Suhu':
+      status = numericVal >= 18 && numericVal <= 30 ? 'MS' : 'TMS';
+      break;
+    case 'Kekeruhan':
+      status = numericVal <= 25 ? 'MS' : 'TMS';
+      break;
+    case 'Warna':
+      status = numericVal <= 50 ? 'MS' : 'TMS';
+      break;
+    case 'PH':
+      status = numericVal >= 6.5 && numericVal <= 8.5 ? 'MS' : 'TMS';
+      break;
+    case 'TDS':
+      status = numericVal < 300 ? 'MS' : 'TMS';
+      break;
+    case 'Cromium':
+      status = numericVal <= 0.05 ? 'MS' : 'TMS';
+      break;
+    case 'Nitrit':
+      status = numericVal <= 1 ? 'MS' : 'TMS';
+      break;
+    case 'Nitrat':
+      status = numericVal <= 20 ? 'MS' : 'TMS';
+      break;
+    case 'Besi':
+      status = numericVal <= 1 ? 'MS' : 'TMS';
+      break;
+    case 'Mangan':
+      status = numericVal <= 0.5 ? 'MS' : 'TMS';
+      break;
+    default:
+      status = 'MS';
+  }
+
+  return {
+    resultValue: numericVal,
+    resultDisplay: display,
+    status,
+  };
+}
+
+export function getWaterRowDisplayValue(row: WaterQualityRow): string {
+  if (row.resultDisplay !== undefined && row.resultDisplay !== '') {
+    return row.resultDisplay;
+  }
+  return String(row.resultValue);
+}
+
 export function createInitialWaterQualityData(year = 2026): WaterQualityRow[] {
-  // Exact values matching the reference spreadsheet for Jan-Apr, plus realistic annual monitoring data for May-Dec
   const presetAbnormalValues: Record<string, number> = {
     // JANUARI: Air RO Lab Total Coliform = 7 (TMS), AIR RO POLI GIGI Total Coliform = 4 (TMS)
     '1-Air RO Lab-Total Coliform': 7,
@@ -99,8 +288,6 @@ export function createInitialWaterQualityData(year = 2026): WaterQualityRow[] {
     // MARET: All 0 (MS)
     // APRIL: Artesis Total Coliform = 9 (TMS)
     '4-Artesis-Total Coliform': 9,
-    // JULI: AIR RO POLI GIGI Total Coliform = 3 (TMS)
-    '7-AIR RO POLI GIGI-Total Coliform': 3,
     // OKTOBER: Air RO Lab Total Coliform = 2 (TMS)
     '10-Air RO Lab-Total Coliform': 2,
   };
@@ -108,26 +295,99 @@ export function createInitialWaterQualityData(year = 2026): WaterQualityRow[] {
   const rows: WaterQualityRow[] = [];
 
   for (const month of WATER_MONTHS) {
+    const isFullParameterMonth = month.index === 6 || month.index === 12;
+
     for (const sourceName of WATER_SOURCES) {
-      for (const indicator of WATER_INDICATORS) {
-        const key = `${month.index}-${sourceName}-${indicator}`;
-        const resultValue = presetAbnormalValues[key] ?? 0;
-        rows.push({
-          id: `${year}-${month.index}-${sourceName}-${indicator}`,
-          year,
-          monthIndex: month.index,
-          monthName: month.name,
-          sourceName,
-          indicator,
-          normalValue: '0/100 ml',
-          resultValue,
-          status: evaluateWaterCompliance(resultValue),
-        });
+      if (isFullParameterMonth) {
+        const presets = JUNE_DECEMBER_SOURCE_PRESETS[sourceName];
+        for (const item of presets) {
+          rows.push({
+            id: `${year}-${month.index}-${sourceName}-${item.indicator}`,
+            year,
+            monthIndex: month.index,
+            monthName: month.name,
+            sourceName,
+            indicator: item.indicator,
+            normalValue: item.normalValue,
+            resultValue: item.resultValue,
+            resultDisplay: item.resultDisplay,
+            status: item.status,
+          });
+        }
+      } else {
+        for (const indicator of WATER_MICROBIOLOGY_INDICATORS) {
+          const key = `${month.index}-${sourceName}-${indicator}`;
+          const resultValue = presetAbnormalValues[key] ?? 0;
+          rows.push({
+            id: `${year}-${month.index}-${sourceName}-${indicator}`,
+            year,
+            monthIndex: month.index,
+            monthName: month.name,
+            sourceName,
+            indicator,
+            normalValue: '0/100 ml',
+            resultValue,
+            resultDisplay: String(resultValue),
+            status: evaluateWaterCompliance(resultValue),
+          });
+        }
       }
     }
   }
 
   return rows;
+}
+
+/**
+ * Ensures hydrated water quality rows from Supabase include all 13 parameters
+ * for Juni (month 6) and December (month 12) across Artesis, Air RO Lab, and AIR RO POLI GIGI,
+ * while other months (including Juli month 7) have the 2 microbiological parameters.
+ */
+export function ensureCompleteWaterQualityRows(
+  rows: WaterQualityRow[] | undefined | null,
+  year = 2026
+): WaterQualityRow[] {
+  const defaults = createInitialWaterQualityData(year);
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return defaults;
+  }
+
+  const juneCount = rows.filter((r) => r.monthIndex === 6).length;
+  const julyCount = rows.filter((r) => r.monthIndex === 7).length;
+  const decCount = rows.filter((r) => r.monthIndex === 12).length;
+
+  // If Juni & December have 39 rows and Juli has 6 rows, normalize resultDisplay and return
+  if (juneCount === 39 && decCount === 39 && julyCount === 6) {
+    return rows.map((r) => ({
+      ...r,
+      resultDisplay: r.resultDisplay ?? String(r.resultValue),
+    }));
+  }
+
+  // Otherwise re-align June (6), July (7), and December (12)
+  const result: WaterQualityRow[] = [];
+  for (const month of WATER_MONTHS) {
+    if (month.index === 6 || month.index === 12) {
+      result.push(...defaults.filter((d) => d.monthIndex === month.index));
+    } else if (month.index === 7) {
+      // Juli has standard 6 rows
+      result.push(...defaults.filter((d) => d.monthIndex === 7));
+    } else {
+      const existingMonthRows = rows.filter((r) => r.monthIndex === month.index);
+      if (existingMonthRows.length > 0) {
+        result.push(
+          ...existingMonthRows.map((r) => ({
+            ...r,
+            resultDisplay: r.resultDisplay ?? String(r.resultValue),
+          }))
+        );
+      } else {
+        result.push(...defaults.filter((d) => d.monthIndex === month.index));
+      }
+    }
+  }
+
+  return result;
 }
 
 export function getMonthsForPeriod(period: WaterPeriodFilter): number[] {
@@ -293,13 +553,13 @@ export function buildMonthlyWaterChartData(rows: WaterQualityRow[]): MonthlyWate
 
     if (r.sourceName === 'Artesis') {
       if (r.indicator === 'Total Coliform') pt.artesisColiform = r.resultValue;
-      else pt.artesisEColi = r.resultValue;
+      else if (r.indicator === 'E.Coli') pt.artesisEColi = r.resultValue;
     } else if (r.sourceName === 'Air RO Lab') {
       if (r.indicator === 'Total Coliform') pt.roLabColiform = r.resultValue;
-      else pt.roLabEColi = r.resultValue;
+      else if (r.indicator === 'E.Coli') pt.roLabEColi = r.resultValue;
     } else if (r.sourceName === 'AIR RO POLI GIGI') {
       if (r.indicator === 'Total Coliform') pt.roPoliGigiColiform = r.resultValue;
-      else pt.roPoliGigiEColi = r.resultValue;
+      else if (r.indicator === 'E.Coli') pt.roPoliGigiEColi = r.resultValue;
     }
   }
 
@@ -390,23 +650,23 @@ export function generateDeterministicWaterAnalysis(
 
   const executiveSummary =
     tmsRows.length === 0
-      ? `Berdasarkan evaluasi ${metrics.totalTests} parameter uji kualitas mikrobiologi air bersih pada periode ${periodLabel}, seluruh titik sampel (Artesis, Air RO Lab, dan AIR RO POLI GIGI) 100% Memenuhi Syarat (MS) dengan nilai Total Coliform dan E.Coli sebesar 0/100 ml sesuai standar baku mutu kesehatan lingkungan rumah sakit.`
+      ? `Berdasarkan evaluasi ${metrics.totalTests} parameter uji kualitas air bersih pada periode ${periodLabel}, seluruh titik sampel (Artesis, Air RO Lab, dan AIR RO POLI GIGI) 100% Memenuhi Syarat (MS) sesuai standar baku mutu kesehatan lingkungan rumah sakit.`
       : `Berdasarkan evaluasi ${metrics.totalTests} pemeriksaan pada periode ${periodLabel}, tingkat kepatuhan baku mutu air bersih mencapai ${metrics.complianceRate}% (${metrics.msCount} MS dan ${metrics.tmsCount} TMS). Parameter E.Coli tercatat ${metrics.maxEColiValue}/100 ml (${metrics.maxEColiValue === 0 ? '100% Memenuhi Syarat / bebas kontaminasi fekal' : 'terdeteksi kontaminasi fekal'}), namun ditemukan deviasi Total Coliform di atas nilai normal (0/100 ml) pada titik ${metrics.affectedSources.join(', ')} di bulan ${metrics.affectedMonths.join(', ')} dengan puncak tertinggi ${metrics.maxColiformValue}/100 ml.`;
 
   const keyFindings: WaterAIAnalysisResult['keyFindings'] =
     tmsRows.length > 0
       ? tmsRows.map((r) => ({
           title: `Deviasi ${r.indicator} pada ${r.sourceName} (${r.monthName})`,
-          detail: `Hasil pemeriksaan menunjukkan nilai ${r.resultValue}/100 ml (melebihi nilai normal ${r.normalValue}), sehingga berstatus Tidak Memenuhi Syarat (TMS).`,
+          detail: `Hasil pemeriksaan menunjukkan nilai ${getWaterRowDisplayValue(r)} (melebihi nilai normal ${r.normalValue}), sehingga berstatus Tidak Memenuhi Syarat (TMS).`,
           severity: r.resultValue >= 7 || r.indicator === 'E.Coli' ? 'critical' : 'warning',
           source: r.sourceName,
           month: r.monthName,
         }))
       : [
           {
-            title: 'Kepatuhan Mikrobiologi Optimal (Zero Contamination)',
+            title: 'Kepatuhan Baku Mutu Air Bersih Optimal',
             detail:
-              'Seluruh parameter Total Coliform dan E.Coli pada titik Artesis, Air RO Lab, dan AIR RO POLI GIGI berada pada angka 0/100 ml (MS).',
+              'Seluruh parameter mikrobiologi, fisik, dan kimia pada titik Artesis, Air RO Lab, dan AIR RO POLI GIGI berstatus Memenuhi Syarat (MS).',
             severity: 'normal',
             source: 'Semua Titik Air',
             month: periodLabel,
@@ -420,7 +680,7 @@ export function generateDeterministicWaterAnalysis(
         return {
           sourceName,
           status: 'MS',
-          summary: `Seluruh sampel pada titik ${sourceName} memenuhi baku mutu (0/100 ml).`,
+          summary: `Seluruh sampel pada titik ${sourceName} memenuhi baku mutu (MS).`,
           rootCauseHypothesis:
             'Sistem filtrasi, desinfeksi residual, dan sanitasi keran outlet berfungsi optimal tanpa indikasi pembentukan biofilm.',
         };
@@ -491,7 +751,7 @@ export function generateDeterministicWaterAnalysis(
     sourceDiagnoses,
     recommendations,
     regulatoryNote:
-      'Mengacu pada Peraturan Menteri Kesehatan RI Nomor 2 Tahun 2023 tentang Peraturan Pelaksanaan PP Nomor 66 Tahun 2014 tentang Kesehatan Lingkungan, kadar maksimum yang diperbolehkan untuk parameter mikrobiologi Air untuk Keperluan Higiene Sanitasi & Air RO Pelayanan Medis (Total Coliform dan E. Coli) adalah 0 CFU/100 ml sampel.',
+      'Mengacu pada Peraturan Menteri Kesehatan RI Nomor 2 Tahun 2023 tentang Peraturan Pelaksanaan PP Nomor 66 Tahun 2014 tentang Kesehatan Lingkungan, kadar maksimum yang diperbolehkan untuk parameter mikrobiologi, fisik, dan kimia Air untuk Keperluan Higiene Sanitasi & Air RO Pelayanan Medis wajib memenuhi standar baku mutu.',
     generatedAt: 'Realtime Sync',
     sourceEngine: 'SIKRESMI AI Sanitary Intelligence (Gemini 3.8 Flash)',
   };

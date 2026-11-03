@@ -50,6 +50,8 @@ import {
   WATER_PERIOD_OPTIONS,
   createInitialWaterQualityData,
   evaluateWaterCompliance,
+  evaluateWaterParameterInput,
+  getWaterRowDisplayValue,
   filterWaterQualityRows,
   calculateWaterQualityMetrics,
   buildMonthlyWaterChartData,
@@ -127,7 +129,7 @@ export function WaterQualityMonitoringView() {
   } | null>(null);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
-  const waterFilterKey = `${selectedYear}-${selectedPeriod}-${selectedSource}-${selectedIndicator}-${selectedStatus}-${rows.map((r) => r.resultValue).join(',')}`;
+  const waterFilterKey = `${selectedYear}-${selectedPeriod}-${selectedSource}-${selectedIndicator}-${selectedStatus}-${rows.map((r) => getWaterRowDisplayValue(r)).join(',')}`;
 
   const activeAiAnalysis =
     customAiAnalysis && customAiAnalysis.key === waterFilterKey
@@ -171,17 +173,20 @@ export function WaterQualityMonitoringView() {
 
   const handleStartInlineEdit = (row: WaterQualityRow) => {
     setEditingRowId(row.id);
-    setEditingValue(String(row.resultValue));
+    setEditingValue(getWaterRowDisplayValue(row));
   };
 
   const handleSaveInlineEdit = (rowId: string) => {
-    const parsed = Math.max(0, Number(editingValue) || 0);
+    const targetRow = rows.find((r) => r.id === rowId);
+    if (!targetRow) return;
+    const evaluated = evaluateWaterParameterInput(targetRow.indicator, editingValue);
     const updated = rows.map((r) => {
       if (r.id !== rowId) return r;
       return {
         ...r,
-        resultValue: parsed,
-        status: evaluateWaterCompliance(parsed),
+        resultValue: evaluated.resultValue,
+        resultDisplay: evaluated.resultDisplay,
+        status: evaluated.status,
       };
     });
     saveRows(updated);
@@ -189,7 +194,7 @@ export function WaterQualityMonitoringView() {
     pushToast({
       type: 'success',
       title: 'Nilai Pemeriksaan Diperbarui',
-      message: `Nilai berhasil diubah menjadi ${parsed}/100 ml (${evaluateWaterCompliance(parsed)}).`,
+      message: `Nilai ${targetRow.indicator} berhasil diubah menjadi ${evaluated.resultDisplay} (${evaluated.status}).`,
     });
   };
 
@@ -525,9 +530,7 @@ export function WaterQualityMonitoringView() {
                             {editingRowId === row.id ? (
                               <div className="inline-flex items-center gap-1">
                                 <input
-                                  type="number"
-                                  min={0}
-                                  max={999}
+                                  type="text"
                                   aria-label={`Input Nilai ${row.sourceName} ${row.indicator} ${row.monthName}`}
                                   value={editingValue}
                                   onChange={(e) => setEditingValue(e.target.value)}
@@ -535,7 +538,7 @@ export function WaterQualityMonitoringView() {
                                     if (e.key === 'Enter') handleSaveInlineEdit(row.id);
                                     if (e.key === 'Escape') setEditingRowId(null);
                                   }}
-                                  className="w-16 px-2 py-0.5 text-center text-xs font-bold rounded border border-[#002147] bg-white text-[#002147] shadow-sm"
+                                  className="w-24 px-2 py-0.5 text-center text-xs font-bold rounded border border-[#002147] bg-white text-[#002147] shadow-sm"
                                   autoFocus
                                 />
                                 <button
@@ -554,7 +557,7 @@ export function WaterQualityMonitoringView() {
                                 className="w-full py-0.5 font-bold tabular-nums cursor-pointer select-none hover:underline"
                                 title="Klik untuk mengubah nilai hasil pemeriksaan"
                               >
-                                {row.resultValue}
+                                {getWaterRowDisplayValue(row)}
                               </button>
                             )}
                           </td>
@@ -1119,16 +1122,23 @@ export function WaterQualityMonitoringView() {
         onSave={async () => {
           let nextRows = rows;
           if (editingRowId) {
-            const parsed = Math.max(0, Number(editingValue) || 0);
-            nextRows = rows.map((r) =>
-              r.id === editingRowId
-                ? {
-                    ...r,
-                    resultValue: parsed,
-                    status: evaluateWaterCompliance(parsed),
-                  }
-                : r
-            );
+            const targetRow = rows.find((r) => r.id === editingRowId);
+            if (targetRow) {
+              const evaluated = evaluateWaterParameterInput(
+                targetRow.indicator,
+                editingValue
+              );
+              nextRows = rows.map((r) =>
+                r.id === editingRowId
+                  ? {
+                      ...r,
+                      resultValue: evaluated.resultValue,
+                      resultDisplay: evaluated.resultDisplay,
+                      status: evaluated.status,
+                    }
+                  : r
+              );
+            }
             setEditingRowId(null);
           }
           await updateWaterRows(nextRows);

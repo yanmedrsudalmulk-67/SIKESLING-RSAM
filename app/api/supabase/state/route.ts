@@ -10,6 +10,10 @@ import {
   SupabaseSyncDiagnostic,
   upsertRowsToSupabaseRest,
 } from '@/lib/supabase';
+import {
+  ensureCompleteWaterQualityRows,
+  WaterQualityRow,
+} from '@/lib/water-quality';
 
 declare global {
   var __sikeslingServerCloudState: SikeslingCloudState | undefined;
@@ -18,6 +22,11 @@ declare global {
 function getServerCloudState(): SikeslingCloudState {
   if (!globalThis.__sikeslingServerCloudState) {
     globalThis.__sikeslingServerCloudState = createInitialSikeslingCloudState();
+  } else {
+    globalThis.__sikeslingServerCloudState.water_quality_2026 =
+      ensureCompleteWaterQualityRows(
+        globalThis.__sikeslingServerCloudState.water_quality_2026
+      );
   }
   return globalThis.__sikeslingServerCloudState;
 }
@@ -48,7 +57,17 @@ export async function GET() {
     for (const row of remote.rows) {
       const k = row.key as SikeslingCloudCollectionKey;
       if (k in CLOUD_COLLECTION_META && row.payload !== undefined && row.payload !== null) {
-        (state as unknown as Record<string, unknown>)[k] = row.payload;
+        if (k === 'water_quality_2026' && Array.isArray(row.payload)) {
+          const upgraded = ensureCompleteWaterQualityRows(row.payload as WaterQualityRow[]);
+          state.water_quality_2026 = upgraded;
+          if (upgraded.length !== row.payload.length) {
+            void upsertRowsToSupabaseRest(
+              buildStoreRowsFromState(state, ['water_quality_2026'])
+            );
+          }
+        } else {
+          (state as unknown as Record<string, unknown>)[k] = row.payload;
+        }
         existingRemoteKeys.add(k);
       }
     }

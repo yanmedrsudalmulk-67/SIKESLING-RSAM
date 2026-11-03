@@ -220,6 +220,22 @@ export const MAIN_NAVIGATION: MainMenuItem[] = [
         ],
       },
       {
+        id: 'sarana-prasarana',
+        title: 'Monitoring Sarana dan Prasarana',
+        href: '/monitoring/sarana-prasarana',
+        description:
+          'Pemantauan fisik sarana prasarana rumah sakit (Toilet/Sanitasi, Lantai, Pintu & Jendela, Atap, Langit-langit) beserta rekapan terpadu, grafik interaktif, analisa, dan tindak lanjut.',
+        status: 'Functional',
+        plannedFeatures: [
+          'Sheet 1: Toilet & Sanitasi (L, P, L/P) dan Toilet Disabilitas',
+          'Sheet 2: Lantai RS (Bahan kedap air, rata, kemiringan, konus lengkung, cat bebas logam berat)',
+          'Sheet 3: Pintu & Jendela RS (Bukaan brankar min 120 cm, level rata, pintu toilet keluar, pengaman jatuh)',
+          'Sheet 4: Atap RS (Kekuatan struktur, bebas bocor, bebas perindukan hama & serangga)',
+          'Sheet 5: Langit-langit RS (Plafon bebas bocor/jamur, tinggi 2,8m / OK 3,0m, TKA 2 jam, recessed lamp)',
+          'Sheet 6: Rekapan terpadu 6 sheet, visualisasi grafik, analisa data otomatis, rekomendasi teknis & RTL',
+        ],
+      },
+      {
         id: 'vektor',
         title: 'Pengendalian Vektor & Binatang',
         href: '/monitoring/vektor',

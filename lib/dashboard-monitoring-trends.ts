@@ -456,7 +456,9 @@ function buildMonthlyPointForModule(
         activityCompliantBonus !== null
           ? Math.round((rawCompliance + activityCompliantBonus) / 2)
           : rawCompliance;
-      const maxColiform = mRows.reduce((max, r) => Math.max(max, r.resultValue), 0);
+      const maxColiform = mRows
+        .filter((r) => r.indicator === 'Total Coliform')
+        .reduce((max, r) => Math.max(max, r.resultValue), 0);
       return {
         label: monthMeta.short,
         fullLabel: `Bulan ${monthMeta.label}`,

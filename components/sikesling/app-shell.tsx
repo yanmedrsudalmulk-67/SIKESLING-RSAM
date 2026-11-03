@@ -103,9 +103,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const stored = readAuthStageFromStorage();
-    if (stored !== 'welcome') {
-      setAuthStage(stored);
-    }
+    setAuthStage(stored);
   }, []);
 
   const handleSetAuthStage = (nextStage: AuthFlowStage) => {
@@ -170,8 +168,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return false;
   };
 
-  // Filter out Program Kerja, Operasional, Arsip (dokumentasi), and Master Data per user request
-  const hiddenMenuIds = new Set(['program-kerja', 'operasional', 'dokumentasi', 'master-data']);
+  // Filter out Program Kerja, Operasional, Arsip (dokumentasi), Master Data, and Analisis per user request
+  // Main menu strictly displays: Dashboard, Monitoring, Supervisi, Tindak Lanjut, Laporan
+  const hiddenMenuIds = new Set([
+    'program-kerja',
+    'operasional',
+    'dokumentasi',
+    'master-data',
+    'analisis',
+  ]);
   const visibleNavigation = MAIN_NAVIGATION.filter((m) => !hiddenMenuIds.has(m.id));
 
   // Separate primary capsule menus and Settings pill
@@ -565,7 +570,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
-      {/* Mobile / Portrait Floating Arch-Wave Pill Navigation Bar (6 Menus: Dashboard, Monitoring, Supervisi, Temuan, Grafik, Laporan) + Glassmorphism Submenu Popup */}
+      {/* Mobile / Portrait Floating Arch-Wave Pill Navigation Bar (5 Menus: Dashboard, Monitoring, Supervisi, Tindak Lanjut, Laporan) + Glassmorphism Submenu Popup */}
       {(() => {
         const mobileNavItems = [
           {
@@ -578,7 +583,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               (!pathname.startsWith('/monitoring') &&
                 !pathname.startsWith('/supervisi') &&
                 !pathname.startsWith('/tindak-lanjut') &&
-                !pathname.startsWith('/analisis') &&
                 !pathname.startsWith('/laporan')),
             Icon: LayoutDashboard,
           },
@@ -600,19 +604,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           },
           {
             id: 'tindak-lanjut',
-            label: 'Temuan',
+            label: 'Tindak Lanjut',
             href: '/tindak-lanjut/temuan',
             hasPopup: true,
             isRouteActive: pathname.startsWith('/tindak-lanjut'),
             Icon: CheckSquare,
-          },
-          {
-            id: 'analisis',
-            label: 'Grafik',
-            href: '/analisis/grafik',
-            hasPopup: true,
-            isRouteActive: pathname.startsWith('/analisis'),
-            Icon: BarChart3,
           },
           {
             id: 'laporan',
@@ -630,8 +626,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             ? mobileNavItems.findIndex((item) => item.id === mobilePopupMenuId)
             : mobileNavItems.findIndex((item) => item.isRouteActive)
         );
-        // Shift the 300%-wide SVG wave so its center arch (x=750 of 1500) aligns with column activeIdx (0..5)
-        const waveShiftPercent = (activeIdx - 2.5) * 5.38;
+        // Shift the 300%-wide SVG wave so its center arch (x=750 of 1500) aligns with column activeIdx (0..4)
+        const waveShiftPercent = (activeIdx - 2) * 6.67;
 
         // Resolve the active menu object for the open mobile popup
         const activePopupMenu = mobilePopupMenuId
@@ -854,8 +850,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </motion.svg>
                 </div>
 
-                {/* 6 Navigation Slots (Dashboard, Monitoring, Supervisi, Temuan, Grafik, Laporan) */}
-                <div className="relative z-10 grid grid-cols-6 h-full items-center px-[5px]">
+                {/* 5 Navigation Slots (Dashboard, Monitoring, Supervisi, Tindak Lanjut, Laporan) */}
+                <div className="relative z-10 grid grid-cols-5 h-full items-center px-[5px]">
                   {mobileNavItems.map((item, idx) => {
                     const IconComponent = item.Icon;
                     const active = idx === activeIdx;

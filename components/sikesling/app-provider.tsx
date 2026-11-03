@@ -21,6 +21,7 @@ import {
 import {
   WaterQualityRow,
   createInitialWaterQualityData,
+  ensureCompleteWaterQualityRows,
 } from '@/lib/water-quality';
 import {
   WastewaterRow,
@@ -47,6 +48,10 @@ import {
   MedicalWasteLogRow,
   createRealtimeInitialMedicalWasteLogbook,
 } from '@/lib/medical-waste-logbook';
+import {
+  SaranaPrasaranaDataset,
+  createInitialSaranaPrasaranaData,
+} from '@/lib/sarana-prasarana';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -151,6 +156,8 @@ interface AppContextValue {
   updateVectorUnits: (units: string[]) => Promise<boolean>;
   foodRows: FoodSanitationSnapshotRow[];
   updateFoodRows: (rows: FoodSanitationSnapshotRow[]) => Promise<boolean>;
+  saranaPrasaranaData: SaranaPrasaranaDataset;
+  updateSaranaPrasaranaData: (data: SaranaPrasaranaDataset) => Promise<boolean>;
 
   // Supabase Cloud Diagnostics & Manual Sync Controls
   supabaseDiagnostic: SupabaseSyncDiagnostic | null;
@@ -219,6 +226,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [foodRows, setFoodRows] = useState<FoodSanitationSnapshotRow[]>(
     initialMonitoringDefaults.foodRows
   );
+  const [saranaPrasaranaData, setSaranaPrasaranaData] = useState<SaranaPrasaranaDataset>(() =>
+    createInitialSaranaPrasaranaData(2026)
+  );
 
   const [supabaseDiagnostic, setSupabaseDiagnostic] =
     useState<SupabaseSyncDiagnostic | null>(null);
@@ -244,7 +254,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       Array.isArray(cloud.water_quality_2026) &&
       cloud.water_quality_2026.length > 0
     ) {
-      setWaterRows(cloud.water_quality_2026);
+      setWaterRows(ensureCompleteWaterQualityRows(cloud.water_quality_2026));
     }
     if (Array.isArray(cloud.air_quality_items)) {
       setAirItems(cloud.air_quality_items);
@@ -278,6 +288,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       cloud.food_sanitation.length === 12
     ) {
       setFoodRows(cloud.food_sanitation);
+    }
+    if (cloud.sarana_prasarana && typeof cloud.sarana_prasarana === 'object') {
+      setSaranaPrasaranaData(cloud.sarana_prasarana);
     }
     if (Array.isArray(cloud.activities)) {
       setActivities(cloud.activities);
@@ -494,6 +507,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     async (rows: FoodSanitationSnapshotRow[]): Promise<boolean> => {
       setFoodRows(rows);
       await persistCollectionToSupabase('food_sanitation', rows);
+      return true;
+    },
+    [persistCollectionToSupabase]
+  );
+
+  const updateSaranaPrasaranaData = useCallback(
+    async (data: SaranaPrasaranaDataset): Promise<boolean> => {
+      setSaranaPrasaranaData(data);
+      await persistCollectionToSupabase('sarana_prasarana', data);
       return true;
     },
     [persistCollectionToSupabase]
@@ -802,6 +824,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         updateVectorUnits,
         foodRows,
         updateFoodRows,
+        saranaPrasaranaData,
+        updateSaranaPrasaranaData,
         supabaseDiagnostic,
         isSyncingSupabase,
         syncAllToSupabase,

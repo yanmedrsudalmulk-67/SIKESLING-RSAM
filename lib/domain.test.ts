@@ -158,8 +158,8 @@ test('dashboard summary returns zero values on empty state and never invents fak
 
 test('water quality dataset matches reference image and period filters accurately', () => {
   const rows = createInitialWaterQualityData(2026);
-  // 12 months * 3 sources * 2 indicators = 72 rows
-  assert.equal(rows.length, 72);
+  // 10 regular months * 3 sources * 2 indicators (60) + 2 full months (July & Dec) * 3 sources * 13 indicators (78) = 138 rows
+  assert.equal(rows.length, 138);
 
   // Verify JANUARI values match screenshot:
   // Artesis: Total Coliform = 0 (MS), E.Coli = 0 (MS)
@@ -191,6 +191,39 @@ test('water quality dataset matches reference image and period filters accuratel
   assert.equal(aprArtesisColiform?.resultValue, 9);
   assert.equal(aprArtesisColiform?.status, 'TMS');
 
+  // Verify JUNI (MONTH_6) & DESEMBER (MONTH_12) have 13 indicators per source (39 rows per month) matching Images 1-3
+  for (const mPeriod of ['MONTH_6', 'MONTH_12'] as const) {
+    const fullMonthRows = filterWaterQualityRows(rows, { period: mPeriod });
+    assert.equal(fullMonthRows.length, 39);
+    assert.equal(fullMonthRows.every((r) => r.status === 'MS'), true);
+
+    const artesisRows = fullMonthRows.filter((r) => r.sourceName === 'Artesis');
+    assert.equal(artesisRows.length, 13);
+    assert.equal(artesisRows.find((r) => r.indicator === 'Suhu')?.resultDisplay, '21,3');
+    assert.equal(artesisRows.find((r) => r.indicator === 'PH')?.resultDisplay, '6,90');
+    assert.equal(artesisRows.find((r) => r.indicator === 'Nitrat')?.resultDisplay, '9,100');
+    assert.equal(artesisRows.find((r) => r.indicator === 'Besi')?.resultDisplay, '0,73');
+
+    const roLabRows = fullMonthRows.filter((r) => r.sourceName === 'Air RO Lab');
+    assert.equal(roLabRows.length, 13);
+    assert.equal(roLabRows.find((r) => r.indicator === 'Suhu')?.resultDisplay, '22,4');
+    assert.equal(roLabRows.find((r) => r.indicator === 'PH')?.resultDisplay, '6,73');
+    assert.equal(roLabRows.find((r) => r.indicator === 'Nitrat')?.resultDisplay, '16');
+    assert.equal(roLabRows.find((r) => r.indicator === 'Besi')?.resultDisplay, '<0,0025');
+
+    const roGigiRows = fullMonthRows.filter((r) => r.sourceName === 'AIR RO POLI GIGI');
+    assert.equal(roGigiRows.length, 13);
+    assert.equal(roGigiRows.find((r) => r.indicator === 'Suhu')?.resultDisplay, '21,8');
+    assert.equal(roGigiRows.find((r) => r.indicator === 'PH')?.resultDisplay, '6,99');
+    assert.equal(roGigiRows.find((r) => r.indicator === 'Nitrat')?.resultDisplay, '15,600');
+    assert.equal(roGigiRows.find((r) => r.indicator === 'Besi')?.resultDisplay, '<0,0025');
+  }
+
+  // Verify JULI (MONTH_7) is a regular microbiological month with 6 rows
+  const julyRows = filterWaterQualityRows(rows, { period: 'MONTH_7' });
+  assert.equal(julyRows.length, 6);
+  assert.equal(julyRows.every((r) => r.indicator === 'Total Coliform' || r.indicator === 'E.Coli'), true);
+
   // Verify Q1 filter returns 3 months (18 rows)
   const q1Rows = filterWaterQualityRows(rows, { period: 'Q1' });
   assert.equal(q1Rows.length, 18);
@@ -203,8 +236,8 @@ test('water quality dataset matches reference image and period filters accuratel
   assert.equal(chartData[3].artesisColiform, 9);
 
   const metrics = calculateWaterQualityMetrics(rows);
-  assert.equal(metrics.tmsCount, 5);
-  assert.equal(metrics.msCount, 67);
+  assert.equal(metrics.tmsCount, 4);
+  assert.equal(metrics.msCount, 134);
   assert.equal(evaluateWaterCompliance(0), 'MS');
   assert.equal(evaluateWaterCompliance(1), 'TMS');
 
@@ -291,7 +324,7 @@ test('air quality and indoor physical environment dataset is populated with requ
   assert.ok(meta.breadcrumbs.length >= 2);
 });
 
-test('supabase integration normalizes REST v1 URLs and defines all 17 application collections', () => {
+test('supabase integration normalizes REST v1 URLs and defines all 18 application collections', () => {
   const {
     normalizeSupabaseUrls,
     getSupabaseConfig,
@@ -307,7 +340,7 @@ test('supabase integration normalizes REST v1 URLs and defines all 17 applicatio
   assert.ok(cfg.anonKey.startsWith('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'));
 
   const initialState = createInitialSikeslingCloudState();
-  assert.equal(Object.keys(initialState).length, 17);
+  assert.equal(Object.keys(initialState).length, 18);
 });
 
 

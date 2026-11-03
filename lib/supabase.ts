@@ -26,6 +26,10 @@ import {
   MedicalWasteLogRow,
   createRealtimeInitialMedicalWasteLogbook,
 } from './medical-waste-logbook';
+import {
+  SaranaPrasaranaDataset,
+  createInitialSaranaPrasaranaData,
+} from './sarana-prasarana';
 
 export const DEFAULT_SUPABASE_RAW_URL =
   'https://zwsshqpenadbpytvwkje.supabase.co/rest/v1/';
@@ -148,6 +152,7 @@ export interface SikeslingCloudState {
   vector_findings: VectorFindingsSnapshotMap;
   vector_units: string[];
   food_sanitation: FoodSanitationSnapshotRow[];
+  sarana_prasarana: SaranaPrasaranaDataset;
   activities: DailyActivityRecord[];
   supervisions: SupervisionRecord[];
   findings: FindingFollowUpRecord[];
@@ -305,6 +310,7 @@ export function createInitialSikeslingCloudState(): SikeslingCloudState {
     vector_findings: defaultMonitoring.vectorFindings,
     vector_units: [...INITIAL_VECTOR_UNITS],
     food_sanitation: defaultMonitoring.foodRows,
+    sarana_prasarana: createInitialSaranaPrasaranaData(2026),
     activities: [],
     supervisions: [],
     findings: [],
@@ -340,6 +346,10 @@ export const CLOUD_COLLECTION_META: Record<
   medical_waste_logbook: {
     category: 'MONITORING',
     title: 'Log Book Limbah Medis Harian per Sumber Ruangan',
+  },
+  sarana_prasarana: {
+    category: 'MONITORING',
+    title: 'Monitoring Sarana dan Prasarana (Toilet, Lantai, Pintu/Jendela, Atap, Langit-langit)',
   },
   vector_findings: {
     category: 'MONITORING',
