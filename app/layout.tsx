@@ -18,29 +18,29 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'SIKESLING RSAM — Sistem Informasi Kesehatan Lingkungan',
+  title: 'SIKRESMI — Sistem Informasi Kesehatan Lingkungan RSUD Al-Mulk Kota Sukabumi',
   description:
-    'Sistem Informasi Kesehatan Lingkungan UOBK RSUD Al-Mulk Kota Sukabumi — Smart Environmental Health Monitoring & Management',
+    'Sistem Informasi Kesehatan Lingkungan RSUD Al-Mulk Kota Sukabumi — Smart Environmental Health Monitoring & Management',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'SIKESLING',
+    title: 'SIKRESMI',
   },
   icons: {
     icon: '/icon.svg',
     apple: '/apple-touch-icon.png',
   },
   openGraph: {
-    title: 'SIKESLING RSAM — Sistem Informasi Kesehatan Lingkungan',
+    title: 'SIKRESMI — Sistem Informasi Kesehatan Lingkungan RSUD Al-Mulk Kota Sukabumi',
     description:
-      'Sistem Informasi Kesehatan Lingkungan UOBK RSUD Al-Mulk Kota Sukabumi — Smart Environmental Health Monitoring & Management',
+      'Sistem Informasi Kesehatan Lingkungan RSUD Al-Mulk Kota Sukabumi — Smart Environmental Health Monitoring & Management',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'SIKESLING RSAM — Sistem Informasi Kesehatan Lingkungan',
+    title: 'SIKRESMI — Sistem Informasi Kesehatan Lingkungan RSUD Al-Mulk Kota Sukabumi',
     description:
-      'Sistem Informasi Kesehatan Lingkungan UOBK RSUD Al-Mulk Kota Sukabumi — Smart Environmental Health Monitoring & Management',
+      'Sistem Informasi Kesehatan Lingkungan RSUD Al-Mulk Kota Sukabumi — Smart Environmental Health Monitoring & Management',
   },
 };
 

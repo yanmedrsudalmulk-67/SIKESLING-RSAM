@@ -493,6 +493,6 @@ export function generateDeterministicWaterAnalysis(
     regulatoryNote:
       'Mengacu pada Peraturan Menteri Kesehatan RI Nomor 2 Tahun 2023 tentang Peraturan Pelaksanaan PP Nomor 66 Tahun 2014 tentang Kesehatan Lingkungan, kadar maksimum yang diperbolehkan untuk parameter mikrobiologi Air untuk Keperluan Higiene Sanitasi & Air RO Pelayanan Medis (Total Coliform dan E. Coli) adalah 0 CFU/100 ml sampel.',
     generatedAt: 'Realtime Sync',
-    sourceEngine: 'SIKESLING AI Sanitary Intelligence (Gemini 3.8 Flash)',
+    sourceEngine: 'SIKRESMI AI Sanitary Intelligence (Gemini 3.8 Flash)',
   };
 }

@@ -740,7 +740,7 @@ export const MAIN_NAVIGATION: MainMenuItem[] = [
         title: 'Manajemen Pengguna',
         href: '/pengaturan/pengguna',
         description:
-          'Pengelolaan akun pengguna sistem SIKESLING RSAM beserta status keaktifan.',
+          'Pengelolaan akun pengguna sistem SIKRESMI beserta status keaktifan.',
         status: 'UI Ready',
         plannedFeatures: [
           'Penambahan akun pengguna, penetapan role, dan reset kredensial aman',
@@ -787,7 +787,7 @@ export const MAIN_NAVIGATION: MainMenuItem[] = [
         title: 'Tentang Aplikasi',
         href: '/pengaturan/tentang',
         description:
-          'Informasi versi SIKESLING RSAM v1.0 (Foundation Development), arsitektur sistem, dan dokumentasi teknis.',
+          'Informasi versi SIKRESMI v1.0 (Foundation Development), arsitektur sistem, dan dokumentasi teknis.',
         status: 'Functional',
         plannedFeatures: [
           'Ringkasan spesifikasi sistem, roadmap pengembangan, dan status modul',
@@ -819,7 +819,7 @@ export function resolveRouteMeta(pathname: string): {
         description: menu.description,
         status: menu.status,
         breadcrumbs: [
-          { label: 'SIKESLING RSAM', href: '/dashboard' },
+          { label: 'SIKRESMI', href: '/dashboard' },
           { label: menu.title, href: menu.href },
         ],
         parentMenu: menu,
@@ -834,7 +834,7 @@ export function resolveRouteMeta(pathname: string): {
             description: sub.description,
             status: sub.status,
             breadcrumbs: [
-              { label: 'SIKESLING RSAM', href: '/dashboard' },
+              { label: 'SIKRESMI', href: '/dashboard' },
               { label: menu.title, href: menu.href },
               { label: sub.title, href: sub.href },
             ],
@@ -849,9 +849,9 @@ export function resolveRouteMeta(pathname: string): {
   return {
     title: 'Dashboard',
     description:
-      'Sistem Monitoring dan Manajemen Kesehatan Lingkungan UOBK RSUD Al-Mulk Kota Sukabumi.',
+      'Sistem Informasi Kesehatan Lingkungan RSUD Al-Mulk Kota Sukabumi.',
     status: 'UI Ready',
-    breadcrumbs: [{ label: 'SIKESLING RSAM', href: '/dashboard' }],
+    breadcrumbs: [{ label: 'SIKRESMI', href: '/dashboard' }],
   };
 }
 

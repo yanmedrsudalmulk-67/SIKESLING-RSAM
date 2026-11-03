@@ -136,21 +136,21 @@ interface AppContextValue {
 
   // Environmental Monitoring Datasets (Synced with Supabase — No Local Storage)
   waterRows: WaterQualityRow[];
-  updateWaterRows: (rows: WaterQualityRow[]) => void;
+  updateWaterRows: (rows: WaterQualityRow[]) => Promise<boolean>;
   airItems: AirQualitySnapshotItem[];
-  updateAirItems: (items: AirQualitySnapshotItem[]) => void;
+  updateAirItems: (items: AirQualitySnapshotItem[]) => Promise<boolean>;
   wastewaterRows: WastewaterRow[];
-  updateWastewaterRows: (rows: WastewaterRow[]) => void;
+  updateWastewaterRows: (rows: WastewaterRow[]) => Promise<boolean>;
   solidWasteRows: SolidWasteSnapshotRow[];
-  updateSolidWasteRows: (rows: SolidWasteSnapshotRow[]) => void;
+  updateSolidWasteRows: (rows: SolidWasteSnapshotRow[]) => Promise<boolean>;
   medicalWasteLogbookRows: MedicalWasteLogRow[];
   saveMedicalWasteLogbookRows: (rows: MedicalWasteLogRow[]) => Promise<boolean>;
   vectorFindings: VectorFindingsSnapshotMap;
-  updateVectorFindings: (findings: VectorFindingsSnapshotMap) => void;
+  updateVectorFindings: (findings: VectorFindingsSnapshotMap) => Promise<boolean>;
   vectorUnits: string[];
-  updateVectorUnits: (units: string[]) => void;
+  updateVectorUnits: (units: string[]) => Promise<boolean>;
   foodRows: FoodSanitationSnapshotRow[];
-  updateFoodRows: (rows: FoodSanitationSnapshotRow[]) => void;
+  updateFoodRows: (rows: FoodSanitationSnapshotRow[]) => Promise<boolean>;
 
   // Supabase Cloud Diagnostics & Manual Sync Controls
   supabaseDiagnostic: SupabaseSyncDiagnostic | null;
@@ -375,7 +375,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           type: 'success',
           title: 'Sinkronisasi Supabase Berhasil',
           message:
-            'Seluruh 16 koleksi data SIKESLING RSAM telah tersimpan di tabel Supabase.',
+            'Seluruh 16 koleksi data SIKRESMI telah tersimpan di tabel Supabase.',
         });
       } else {
         pushToast({
@@ -428,33 +428,37 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // Monitoring Updaters (Sync directly to Supabase)
   const updateWaterRows = useCallback(
-    (rows: WaterQualityRow[]) => {
+    async (rows: WaterQualityRow[]): Promise<boolean> => {
       setWaterRows(rows);
-      void persistCollectionToSupabase('water_quality_2026', rows);
+      await persistCollectionToSupabase('water_quality_2026', rows);
+      return true;
     },
     [persistCollectionToSupabase]
   );
 
   const updateAirItems = useCallback(
-    (items: AirQualitySnapshotItem[]) => {
+    async (items: AirQualitySnapshotItem[]): Promise<boolean> => {
       setAirItems(items);
-      void persistCollectionToSupabase('air_quality_items', items);
+      await persistCollectionToSupabase('air_quality_items', items);
+      return true;
     },
     [persistCollectionToSupabase]
   );
 
   const updateWastewaterRows = useCallback(
-    (rows: WastewaterRow[]) => {
+    async (rows: WastewaterRow[]): Promise<boolean> => {
       setWastewaterRows(rows);
-      void persistCollectionToSupabase('wastewater_quality_2026', rows);
+      await persistCollectionToSupabase('wastewater_quality_2026', rows);
+      return true;
     },
     [persistCollectionToSupabase]
   );
 
   const updateSolidWasteRows = useCallback(
-    (rows: SolidWasteSnapshotRow[]) => {
+    async (rows: SolidWasteSnapshotRow[]): Promise<boolean> => {
       setSolidWasteRows(rows);
-      void persistCollectionToSupabase('solid_waste_b3', rows);
+      await persistCollectionToSupabase('solid_waste_b3', rows);
+      return true;
     },
     [persistCollectionToSupabase]
   );
@@ -469,25 +473,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   );
 
   const updateVectorFindings = useCallback(
-    (nextFindings: VectorFindingsSnapshotMap) => {
+    async (nextFindings: VectorFindingsSnapshotMap): Promise<boolean> => {
       setVectorFindings(nextFindings);
-      void persistCollectionToSupabase('vector_findings', nextFindings);
+      await persistCollectionToSupabase('vector_findings', nextFindings);
+      return true;
     },
     [persistCollectionToSupabase]
   );
 
   const updateVectorUnits = useCallback(
-    (units: string[]) => {
+    async (units: string[]): Promise<boolean> => {
       setVectorUnits(units);
-      void persistCollectionToSupabase('vector_units', units);
+      await persistCollectionToSupabase('vector_units', units);
+      return true;
     },
     [persistCollectionToSupabase]
   );
 
   const updateFoodRows = useCallback(
-    (rows: FoodSanitationSnapshotRow[]) => {
+    async (rows: FoodSanitationSnapshotRow[]): Promise<boolean> => {
       setFoodRows(rows);
-      void persistCollectionToSupabase('food_sanitation', rows);
+      await persistCollectionToSupabase('food_sanitation', rows);
+      return true;
     },
     [persistCollectionToSupabase]
   );
@@ -737,7 +744,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const roleUserMap: Record<UserRole, string> = {
-    Administrator: 'Admin Sistem SIKESLING',
+    Administrator: 'Admin Sistem SIKRESMI',
     'Petugas Kesling': 'Fitria Wulandari, A.M.KL',
     'Koordinator Kesling': 'Koordinator Kesling RSAM',
     'Pimpinan / Viewer': 'Manajemen RSUD Al-Mulk',

@@ -478,7 +478,7 @@ export function DashboardView() {
           SECTION 2: SINGLE-VIEWPORT HERO BENTO GRID (4 Columns, No Scroll)
          ===================================================================== */}
       <section
-        aria-label="Panel Utama SIKESLING RSAM"
+        aria-label="Panel Utama SIKRESMI"
         className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-0 items-stretch"
       >
         {/* -------------------------------------------------------------------

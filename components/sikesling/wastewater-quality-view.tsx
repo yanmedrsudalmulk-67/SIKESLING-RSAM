@@ -43,6 +43,7 @@ import {
 import { resolveRouteMeta } from '@/lib/navigation';
 import { useApp } from '@/components/sikesling/app-provider';
 import { PageContainer, PageHeader } from '@/components/sikesling/ui-system';
+import { FloatingSaveButton } from '@/components/sikesling/floating-save-button';
 import {
   WastewaterRow,
   WastewaterSamplingPoint,
@@ -82,8 +83,11 @@ export function WastewaterQualityMonitoringView() {
   const [chartMetric, setChartMetric] = useState<'bod_cod' | 'coliform' | 'ph' | 'tss'>('bod_cod');
   const [chartType, setChartType] = useState<'bar' | 'line'>('bar');
 
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
+
   const saveRows = (updated: WastewaterRow[]) => {
-    updateWastewaterRows(updated);
+    setHasUnsavedChanges(true);
+    void updateWastewaterRows(updated);
   };
 
   // Inline editing state
@@ -1311,6 +1315,38 @@ export function WastewaterQualityMonitoringView() {
           </div>
         </div>
       )}
+
+      <FloatingSaveButton
+        hasUnsavedChanges={hasUnsavedChanges}
+        onSave={async () => {
+          let nextRows = rows;
+          if (editingRowId) {
+            nextRows = rows.map((r) => {
+              if (r.id !== editingRowId) return r;
+              const evalRes = evaluateWastewaterCompliance(
+                r.indicator,
+                editingValue
+              );
+              return {
+                ...r,
+                resultValue: editingValue.trim(),
+                numericValue: parseWastewaterValue(editingValue),
+                status: evalRes.status,
+                notes: evalRes.notes,
+              };
+            });
+            setEditingRowId(null);
+          }
+          await updateWastewaterRows(nextRows);
+          setHasUnsavedChanges(false);
+          pushToast({
+            type: 'success',
+            title: 'Data Monitoring Pengelolaan Limbah Tersimpan',
+            message:
+              'Data tabel Monitoring Pengelolaan Limbah (IPAL) telah disimpan dalam aplikasi dan disinkronkan ke database Supabase.',
+          });
+        }}
+      />
     </PageContainer>
   );
 }

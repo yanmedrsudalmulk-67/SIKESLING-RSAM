@@ -375,7 +375,7 @@ export function generateMedicalWasteLogbookAnalysis(
   ];
 
   const tindakLanjutList: string[] = [
-    `Melaksanakan verifikasi harian terhadap pencatatan berat Limbah Tajam dan Limbah Padat dari ${roomSummaries.length} unit/ruangan penghasil limbah medis serta menyimpannya ke database terintegrasi SIKESLING RSAM.`,
+    `Melaksanakan verifikasi harian terhadap pencatatan berat Limbah Tajam dan Limbah Padat dari ${roomSummaries.length} unit/ruangan penghasil limbah medis serta menyimpannya ke database terintegrasi SIKRESMI.`,
     topSourceRoom
       ? `Melakukan supervisi lapangan ke ${topSourceRoom.room} dan unit pelayanan kritis lainnya guna memastikan penggantian safety box dilakukan segera setelah terisi 3/4 penuh.`
       : 'Melakukan supervisi lapangan rutin ke seluruh unit pelayanan (IGD, Rawat Inap, ICU, OK, Laboratorium, Farmasi, Poliklinik, dan Kebidanan) terkait kepatuhan pemilahan limbah di sumber.',

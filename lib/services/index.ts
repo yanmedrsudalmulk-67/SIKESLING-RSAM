@@ -37,8 +37,8 @@ export async function getSystemArchitectureOverview(role: UserRole = 'Administra
   return {
     authorized: auth.authorized,
     application: {
-      name: 'SIKESLING RSAM',
-      fullName: 'Sistem Informasi Kesehatan Lingkungan',
+      name: 'SIKRESMI',
+      fullName: 'Sistem Informasi Kesehatan Lingkungan RSUD Al-Mulk Kota Sukabumi',
       institution: 'UOBK RSUD Al-Mulk Kota Sukabumi',
       version: '1.0 — Foundation Development',
       stage: 'Tahap Pertama (Foundation Architecture)',

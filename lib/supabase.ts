@@ -555,13 +555,13 @@ export async function upsertRowsToSupabaseRest(
 }
 
 export const SUPABASE_SETUP_SQL = `-- ============================================================================
--- SIKESLING RSAM — SUPABASE CLOUD SCHEMA & RLS SETUP
+-- SIKRESMI — SUPABASE CLOUD SCHEMA & RLS SETUP
 -- Project Ref : zwsshqpenadbpytvwkje
 -- Endpoint    : https://zwsshqpenadbpytvwkje.supabase.co/rest/v1/
 -- Jalankan script ini di Supabase Dashboard -> SQL Editor -> New Query -> Run
 -- ============================================================================
 
--- 1. Tabel Utama Penyimpanan Terintegrasi SIKESLING RSAM (16 Koleksi Modul)
+-- 1. Tabel Utama Penyimpanan Terintegrasi SIKRESMI (16 Koleksi Modul)
 CREATE TABLE IF NOT EXISTS public.sikesling_cloud_store (
   key TEXT PRIMARY KEY,
   category TEXT NOT NULL DEFAULT 'MONITORING',

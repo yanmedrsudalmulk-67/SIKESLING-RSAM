@@ -26,6 +26,7 @@ import {
 import { resolveRouteMeta } from '@/lib/navigation';
 import { useApp } from '@/components/sikesling/app-provider';
 import { PageContainer, PageHeader } from '@/components/sikesling/ui-system';
+import { FloatingSaveButton } from '@/components/sikesling/floating-save-button';
 
 export interface SolidWasteMonthRow {
   no: number;
@@ -224,13 +225,16 @@ function getRowB3Total(row: SolidWasteMonthRow): number {
 
 export function SolidWasteQualityView() {
   const meta = resolveRouteMeta('/monitoring/ipal');
-  const { pushToast, solidWasteRows, updateSolidWasteRows } = useApp();
+  const { resolvedTheme, pushToast, solidWasteRows, updateSolidWasteRows } = useApp();
+  const isDark = resolvedTheme === 'dark';
 
   // Sheet switcher ('sheet1' = Indikator Baku Mutu Limbah Padat, 'sheet2' = Grafik/Tabel Hasil Limbah B3)
   const [activeSheet, setActiveSheet] = useState<'sheet1' | 'sheet2'>('sheet1');
 
   // Filter periode
   const [selectedPeriod, setSelectedPeriod] = useState<string>('FULL_YEAR');
+
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
 
   const rows = solidWasteRows as SolidWasteMonthRow[];
   const setRows = (
@@ -239,7 +243,8 @@ export function SolidWasteQualityView() {
       | ((prev: SolidWasteMonthRow[]) => SolidWasteMonthRow[])
   ) => {
     const next = typeof updater === 'function' ? updater(rows) : updater;
-    updateSolidWasteRows(next);
+    setHasUnsavedChanges(true);
+    void updateSolidWasteRows(next);
   };
 
   // Inline editing state for Sheet 2 numbers
@@ -797,24 +802,43 @@ export function SolidWasteQualityView() {
                 data={monthlyChartData}
                 margin={{ top: 10, right: 12, left: 0, bottom: 5 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={isDark ? '#334155' : '#E2E8F0'}
+                />
                 <XAxis
                   dataKey="name"
-                  tick={{ fontSize: 11, fontWeight: 700, fill: '#475569' }}
+                  tick={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    fill: isDark ? '#E2E8F0' : '#475569',
+                  }}
                 />
                 <YAxis
-                  tick={{ fontSize: 11, fontWeight: 600, fill: '#475569' }}
+                  tick={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    fill: isDark ? '#E2E8F0' : '#475569',
+                  }}
                 />
                 <Tooltip
                   contentStyle={{
+                    backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
                     borderRadius: '16px',
-                    border: '1px solid #CBD5E1',
+                    border: isDark ? '1px solid #334155' : '1px solid #CBD5E1',
+                    color: isDark ? '#F8FAFC' : '#0F172A',
                     boxShadow: '0 10px 25px rgba(15,23,42,0.1)',
                     fontSize: '12px',
                     fontWeight: 600,
                   }}
                 />
-                <Legend wrapperStyle={{ fontSize: '12px', fontWeight: 700 }} />
+                <Legend
+                  wrapperStyle={{
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: isDark ? '#E2E8F0' : '#334155',
+                  }}
+                />
                 <Bar
                   dataKey="Limbah Padat (kg)"
                   fill="#1D7AFC"
@@ -836,9 +860,9 @@ export function SolidWasteQualityView() {
                 <Line
                   type="monotone"
                   dataKey="Total Limbah B3 (kg)"
-                  stroke="#153E75"
+                  stroke={isDark ? '#38BDF8' : '#153E75'}
                   strokeWidth={2.5}
-                  dot={{ r: 4, fill: '#153E75' }}
+                  dot={{ r: 4, fill: isDark ? '#38BDF8' : '#153E75' }}
                 />
               </ComposedChart>
             </ResponsiveContainer>
@@ -869,16 +893,27 @@ export function SolidWasteQualityView() {
                 layout="vertical"
                 margin={{ top: 10, right: 24, left: 20, bottom: 5 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={isDark ? '#334155' : '#E2E8F0'}
+                />
                 <XAxis
                   type="number"
-                  tick={{ fontSize: 11, fontWeight: 600, fill: '#475569' }}
+                  tick={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    fill: isDark ? '#E2E8F0' : '#475569',
+                  }}
                 />
                 <YAxis
                   type="category"
                   dataKey="kategori"
                   width={115}
-                  tick={{ fontSize: 11, fontWeight: 700, fill: '#1E293B' }}
+                  tick={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    fill: isDark ? '#E2E8F0' : '#1E293B',
+                  }}
                 />
                 <Tooltip
                   formatter={(value) => [
@@ -886,8 +921,10 @@ export function SolidWasteQualityView() {
                     'Total Timbulan',
                   ]}
                   contentStyle={{
+                    backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
                     borderRadius: '16px',
-                    border: '1px solid #CBD5E1',
+                    border: isDark ? '1px solid #334155' : '1px solid #CBD5E1',
+                    color: isDark ? '#F8FAFC' : '#0F172A',
                     fontSize: '12px',
                     fontWeight: 700,
                   }}
@@ -984,6 +1021,44 @@ export function SolidWasteQualityView() {
           </ol>
         </div>
       </section>
+
+      <FloatingSaveButton
+        hasUnsavedChanges={hasUnsavedChanges}
+        onSave={async () => {
+          let nextRows = rows;
+          if (editingCell) {
+            const parsed = Math.max(
+              0,
+              parseFloat(editingValue.replace(',', '.')) || 0
+            );
+            nextRows = rows.map((r) => {
+              if (r.no !== editingCell.monthNo) return r;
+              if (editingCell.field === 'limbahPadat') {
+                return { ...r, limbahPadat: parsed, totalOverride: null };
+              }
+              if (editingCell.field === 'limbahTajam') {
+                return { ...r, limbahTajam: parsed, totalOverride: null };
+              }
+              if (editingCell.field === 'obatKadaluarsa') {
+                return { ...r, obatKadaluarsa: parsed };
+              }
+              if (editingCell.field === 'total') {
+                return { ...r, totalOverride: parsed };
+              }
+              return r;
+            });
+            setEditingCell(null);
+          }
+          await updateSolidWasteRows(nextRows);
+          setHasUnsavedChanges(false);
+          pushToast({
+            type: 'success',
+            title: 'Data Monitoring Limbah Padat Tersimpan',
+            message:
+              'Data tabel Monitoring Baku Mutu Limbah Padat & B3 telah disimpan dalam aplikasi dan disinkronkan ke database Supabase.',
+          });
+        }}
+      />
     </PageContainer>
   );
 }

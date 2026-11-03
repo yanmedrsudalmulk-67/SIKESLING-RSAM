@@ -722,7 +722,7 @@ export function AplicleanSupervisiWorkspace({
                 href="/dashboard"
                 className="font-semibold text-slate-500 hover:text-[#002147] dark:text-slate-400 dark:hover:text-[#D2B48C]"
               >
-                SIKESLING RSAM
+                SIKRESMI
               </Link>
               <span className="text-slate-300 dark:text-slate-600">/</span>
               <Link

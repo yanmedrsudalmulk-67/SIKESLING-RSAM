@@ -342,7 +342,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 : 'bg-transparent border-b border-transparent shadow-none backdrop-blur-none'
             }`}
           >
-            {/* Left: Outlined Glass Brand Pill ("SIKESLING RSAM") — Hamburger Removed */}
+            {/* Left: Outlined Glass Brand Pill ("SIKRESMI") — Hamburger Removed */}
             <div className="flex items-center gap-2 shrink-0">
               <Link
                 href="/dashboard"
@@ -354,14 +354,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               >
                 <span className="w-2.5 h-2.5 rounded-full bg-[#002147] dark:bg-[#D2B48C] ring-2 ring-[#D2B48C] dark:ring-white/40 shrink-0" />
                 <span className="text-xs xl:text-sm font-bold tracking-tight text-[#002147] dark:text-white whitespace-nowrap">
-                  SIKESLING RSAM
+                  SIKRESMI
                 </span>
               </Link>
             </div>
 
             {/* Center: Floating Frosted Glass Capsule Menu Bar with Click Dropdowns */}
             <nav
-              aria-label="Navigasi Utama SIKESLING RSAM"
+              aria-label="Navigasi Utama SIKRESMI"
               className="hidden lg:flex items-center bg-white/80 dark:bg-[#001835]/80 backdrop-blur-md rounded-full p-1.5 border-[1.5px] border-[#D2B48C]/55 dark:border-[#D2B48C]/25 shadow-[0_10px_32px_rgba(0,33,71,0.09),inset_0_1px_2px_rgba(255,255,255,0.95)] gap-1"
             >
               {primaryCapsuleMenus.map((menu) => {
@@ -991,7 +991,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </button>
             </div>
             <div className="px-4 py-2 bg-[#F5EDE0] dark:bg-[#002147] text-[11px] font-medium text-[#002147] dark:text-[#D2B48C] border-b border-[#D2B48C]/30 dark:border-slate-800">
-              Navigasi cepat seluruh 10 Menu Utama & 38 Submenu SIKESLING RSAM
+              Navigasi cepat seluruh 10 Menu Utama & 38 Submenu SIKRESMI
             </div>
             <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
               {filteredSearchItems.map((item) => (

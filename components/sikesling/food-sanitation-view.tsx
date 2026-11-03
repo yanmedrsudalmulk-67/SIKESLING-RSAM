@@ -27,6 +27,7 @@ import {
 import { resolveRouteMeta } from '@/lib/navigation';
 import { useApp } from '@/components/sikesling/app-provider';
 import { PageContainer, PageHeader } from '@/components/sikesling/ui-system';
+import { FloatingSaveButton } from '@/components/sikesling/floating-save-button';
 
 export interface FoodSanitationMonthRow {
   no: number;
@@ -158,7 +159,8 @@ type PeriodFilter =
   | 'M_12';
 
 export function FoodSanitationView() {
-  const { pushToast, foodRows, updateFoodRows } = useApp();
+  const { resolvedTheme, pushToast, foodRows, updateFoodRows } = useApp();
+  const isDark = resolvedTheme === 'dark';
   const meta = resolveRouteMeta('/monitoring/sanitasi-pangan');
 
   const rows = foodRows as FoodSanitationMonthRow[];
@@ -172,8 +174,11 @@ export function FoodSanitationView() {
   } | null>(null);
   const [editValue, setEditValue] = useState<string>('');
 
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
+
   const saveRows = (updated: FoodSanitationMonthRow[]) => {
-    updateFoodRows(updated);
+    setHasUnsavedChanges(true);
+    void updateFoodRows(updated);
   };
 
   // Filter rows by selected period
@@ -362,15 +367,15 @@ export function FoodSanitationView() {
       {
         periode: 'Agu – Des',
         nilai: avg(aguDes),
-        color: '#002147',
+        color: isDark ? '#38BDF8' : '#002147',
       },
       {
         periode: 'Rata-rata Tahunan',
         nilai: summaryStats.avgNilai,
-        color: '#1C3D63',
+        color: isDark ? '#60A5FA' : '#1C3D63',
       },
     ];
-  }, [rows, summaryStats.avgNilai]);
+  }, [rows, summaryStats.avgNilai, isDark]);
 
   return (
     <PageContainer>
@@ -721,42 +726,61 @@ export function FoodSanitationView() {
                 data={monthlyChartData}
                 margin={{ top: 10, right: 14, left: 0, bottom: 5 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={isDark ? '#334155' : '#E2E8F0'}
+                />
                 <XAxis
                   dataKey="name"
-                  tick={{ fontSize: 11, fontWeight: 700, fill: '#002147' }}
+                  tick={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    fill: isDark ? '#E2E8F0' : '#002147',
+                  }}
                 />
                 <YAxis
                   domain={[0, 105]}
                   tickFormatter={(v) => `${v}%`}
-                  tick={{ fontSize: 11, fontWeight: 600, fill: '#002147' }}
+                  tick={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    fill: isDark ? '#E2E8F0' : '#002147',
+                  }}
                 />
                 <Tooltip
                   formatter={(value) => [`${value}%`, '']}
                   contentStyle={{
+                    backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
                     borderRadius: '16px',
                     border: '1px solid #D2B48C',
+                    color: isDark ? '#F8FAFC' : '#002147',
                     boxShadow: '0 10px 25px rgba(0,33,71,0.12)',
                     fontSize: '12px',
                     fontWeight: 600,
                   }}
                 />
-                <Legend wrapperStyle={{ fontSize: '12px', fontWeight: 700 }} />
+                <Legend
+                  wrapperStyle={{
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: isDark ? '#E2E8F0' : '#002147',
+                  }}
+                />
                 <ReferenceLine
                   y={80}
-                  stroke="#B8976C"
+                  stroke={isDark ? '#FBBF24' : '#B8976C'}
                   strokeDasharray="4 4"
                   label={{
                     value: 'Batas Minimal 80%',
                     position: 'insideTopRight',
-                    fill: '#8C6D46',
+                    fill: isDark ? '#FBBF24' : '#8C6D46',
                     fontSize: 10,
                     fontWeight: 700,
                   }}
                 />
                 <Bar
                   dataKey="Nilai Penghidangan (%)"
-                  fill="#002147"
+                  fill={isDark ? '#38BDF8' : '#002147'}
                   radius={[6, 6, 0, 0]}
                   barSize={26}
                 >
@@ -765,9 +789,15 @@ export function FoodSanitationView() {
                       key={`cell-nilai-${index}`}
                       fill={
                         entry['Nilai Penghidangan (%)'] >= 84
-                          ? '#002147'
+                          ? isDark
+                            ? '#38BDF8'
+                            : '#002147'
                           : entry['Nilai Penghidangan (%)'] >= 80
-                          ? '#1C3D63'
+                          ? isDark
+                            ? '#60A5FA'
+                            : '#1C3D63'
+                          : isDark
+                          ? '#FBBF24'
                           : '#D2B48C'
                       }
                     />
@@ -776,9 +806,9 @@ export function FoodSanitationView() {
                 <Line
                   type="monotone"
                   dataKey="Sertifikat Jasa Boga Gol. B (%)"
-                  stroke="#D2B48C"
+                  stroke={isDark ? '#FBBF24' : '#D2B48C'}
                   strokeWidth={2.5}
-                  dot={{ r: 3.5, fill: '#002147' }}
+                  dot={{ r: 3.5, fill: isDark ? '#FBBF24' : '#002147' }}
                 />
               </ComposedChart>
             </ResponsiveContainer>
@@ -809,24 +839,37 @@ export function FoodSanitationView() {
                 layout="vertical"
                 margin={{ top: 10, right: 24, left: 20, bottom: 5 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={isDark ? '#334155' : '#E2E8F0'}
+                />
                 <XAxis
                   type="number"
                   domain={[0, 100]}
                   tickFormatter={(v) => `${v}%`}
-                  tick={{ fontSize: 11, fontWeight: 600, fill: '#002147' }}
+                  tick={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    fill: isDark ? '#E2E8F0' : '#002147',
+                  }}
                 />
                 <YAxis
                   type="category"
                   dataKey="periode"
                   width={120}
-                  tick={{ fontSize: 11, fontWeight: 700, fill: '#002147' }}
+                  tick={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    fill: isDark ? '#E2E8F0' : '#002147',
+                  }}
                 />
                 <Tooltip
                   formatter={(value) => [`${value}%`, 'Rata-rata Nilai']}
                   contentStyle={{
+                    backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
                     borderRadius: '16px',
                     border: '1px solid #D2B48C',
+                    color: isDark ? '#F8FAFC' : '#002147',
                     fontSize: '12px',
                     fontWeight: 700,
                   }}
@@ -923,6 +966,39 @@ export function FoodSanitationView() {
           </ol>
         </div>
       </section>
+
+      <FloatingSaveButton
+        hasUnsavedChanges={hasUnsavedChanges}
+        onSave={async () => {
+          let nextRows = rows;
+          if (editingCell) {
+            const { no, field } = editingCell;
+            if (field === 'hasilIklStatus') {
+              const cleaned = editValue.trim() || 'belum memenuhi syarat';
+              nextRows = rows.map((r) =>
+                r.no === no ? { ...r, hasilIklStatus: cleaned } : r
+              );
+            } else {
+              const parsed = Math.min(
+                100,
+                Math.max(0, Number(editValue) || 0)
+              );
+              nextRows = rows.map((r) =>
+                r.no === no ? { ...r, [field]: parsed } : r
+              );
+            }
+            setEditingCell(null);
+          }
+          await updateFoodRows(nextRows);
+          setHasUnsavedChanges(false);
+          pushToast({
+            type: 'success',
+            title: 'Data Higiene Sanitasi Pangan Tersimpan',
+            message:
+              'Data tabel Higiene Sanitasi Pangan telah disimpan dalam aplikasi dan disinkronkan ke database Supabase.',
+          });
+        }}
+      />
     </PageContainer>
   );
 }

@@ -37,6 +37,7 @@ import {
 import { resolveRouteMeta } from '@/lib/navigation';
 import { useApp } from '@/components/sikesling/app-provider';
 import { PageContainer, PageHeader } from '@/components/sikesling/ui-system';
+import { FloatingSaveButton } from '@/components/sikesling/floating-save-button';
 import {
   WaterQualityRow,
   WaterSourceName,
@@ -59,7 +60,8 @@ import {
 
 export function WaterQualityMonitoringView() {
   const meta = resolveRouteMeta('/monitoring/kualitas-air');
-  const { pushToast, addFinding, waterRows: rows, updateWaterRows } = useApp();
+  const { resolvedTheme, pushToast, addFinding, waterRows: rows, updateWaterRows } = useApp();
+  const isDark = resolvedTheme === 'dark';
 
   const [selectedYear, setSelectedYear] = useState<number>(2026);
   const [selectedPeriod, setSelectedPeriod] = useState<WaterPeriodFilter>('FULL_YEAR');
@@ -68,9 +70,12 @@ export function WaterQualityMonitoringView() {
   const [selectedStatus, setSelectedStatus] = useState<WaterComplianceStatus | 'ALL'>('ALL');
   const [chartType, setChartType] = useState<'bar' | 'line'>('bar');
 
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
+
   const saveRows = useCallback(
     (updated: WaterQualityRow[]) => {
-      updateWaterRows(updated);
+      setHasUnsavedChanges(true);
+      void updateWaterRows(updated);
     },
     [updateWaterRows]
   );
@@ -641,35 +646,54 @@ export function WaterQualityMonitoringView() {
                   data={chartData}
                   margin={{ top: 16, right: 16, left: -10, bottom: 8 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#CBD5E1" opacity={0.5} />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke={isDark ? '#334155' : '#CBD5E1'}
+                    opacity={0.5}
+                  />
                   <XAxis
                     dataKey="monthShort"
-                    tick={{ fontSize: 11, fill: '#334155', fontWeight: 600 }}
+                    tick={{
+                      fontSize: 11,
+                      fill: isDark ? '#E2E8F0' : '#334155',
+                      fontWeight: 600,
+                    }}
                   />
                   <YAxis
                     allowDecimals={false}
                     domain={[0, (dataMax: number) => Math.max(10, dataMax + 1)]}
-                    tick={{ fontSize: 11, fill: '#334155' }}
+                    tick={{ fontSize: 11, fill: isDark ? '#E2E8F0' : '#334155' }}
                     label={{
                       value: 'CFU/100ml',
                       angle: -90,
                       position: 'insideLeft',
-                      style: { fontSize: 10, fill: '#64748B' },
+                      style: {
+                        fontSize: 10,
+                        fill: isDark ? '#94A3B8' : '#64748B',
+                      },
                     }}
                   />
                   <Tooltip
                     contentStyle={{
+                      backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
                       borderRadius: '14px',
-                      border: '1px solid #E2E8F0',
+                      border: isDark ? '1px solid #334155' : '1px solid #E2E8F0',
+                      color: isDark ? '#F8FAFC' : '#0F172A',
                       boxShadow: '0 10px 25px rgba(15,23,42,0.1)',
                       fontSize: '12px',
                     }}
                   />
-                  <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                  <Legend
+                    wrapperStyle={{
+                      fontSize: '11px',
+                      paddingTop: '10px',
+                      color: isDark ? '#E2E8F0' : '#334155',
+                    }}
+                  />
                   <Bar
                     dataKey="artesisColiform"
                     name="Artesis (Total Coliform)"
-                    fill="#153E75"
+                    fill={isDark ? '#38BDF8' : '#153E75'}
                     radius={[6, 6, 0, 0]}
                     barSize={16}
                     isAnimationActive={false}
@@ -696,30 +720,46 @@ export function WaterQualityMonitoringView() {
                   data={chartData}
                   margin={{ top: 16, right: 16, left: -10, bottom: 8 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#CBD5E1" opacity={0.5} />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke={isDark ? '#334155' : '#CBD5E1'}
+                    opacity={0.5}
+                  />
                   <XAxis
                     dataKey="monthShort"
-                    tick={{ fontSize: 11, fill: '#334155', fontWeight: 600 }}
+                    tick={{
+                      fontSize: 11,
+                      fill: isDark ? '#E2E8F0' : '#334155',
+                      fontWeight: 600,
+                    }}
                   />
                   <YAxis
                     allowDecimals={false}
                     domain={[0, (dataMax: number) => Math.max(10, dataMax + 1)]}
-                    tick={{ fontSize: 11, fill: '#334155' }}
+                    tick={{ fontSize: 11, fill: isDark ? '#E2E8F0' : '#334155' }}
                   />
                   <Tooltip
                     contentStyle={{
+                      backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
                       borderRadius: '14px',
-                      border: '1px solid #E2E8F0',
+                      border: isDark ? '1px solid #334155' : '1px solid #E2E8F0',
+                      color: isDark ? '#F8FAFC' : '#0F172A',
                       boxShadow: '0 10px 25px rgba(15,23,42,0.1)',
                       fontSize: '12px',
                     }}
                   />
-                  <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                  <Legend
+                    wrapperStyle={{
+                      fontSize: '11px',
+                      paddingTop: '10px',
+                      color: isDark ? '#E2E8F0' : '#334155',
+                    }}
+                  />
                   <Line
                     type="monotone"
                     dataKey="artesisColiform"
                     name="Artesis (Total Coliform)"
-                    stroke="#153E75"
+                    stroke={isDark ? '#38BDF8' : '#153E75'}
                     strokeWidth={2.5}
                     dot={{ r: 4 }}
                     activeDot={{ r: 6 }}
@@ -1073,6 +1113,34 @@ export function WaterQualityMonitoringView() {
           </div>
         </div>
       )}
+
+      <FloatingSaveButton
+        hasUnsavedChanges={hasUnsavedChanges}
+        onSave={async () => {
+          let nextRows = rows;
+          if (editingRowId) {
+            const parsed = Math.max(0, Number(editingValue) || 0);
+            nextRows = rows.map((r) =>
+              r.id === editingRowId
+                ? {
+                    ...r,
+                    resultValue: parsed,
+                    status: evaluateWaterCompliance(parsed),
+                  }
+                : r
+            );
+            setEditingRowId(null);
+          }
+          await updateWaterRows(nextRows);
+          setHasUnsavedChanges(false);
+          pushToast({
+            type: 'success',
+            title: 'Data Monitoring Kualitas Air Tersimpan',
+            message:
+              'Data tabel Monitoring Kualitas Air telah disimpan dalam aplikasi dan disinkronkan ke database Supabase.',
+          });
+        }}
+      />
     </PageContainer>
   );
 }

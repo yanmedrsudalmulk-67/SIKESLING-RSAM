@@ -272,7 +272,7 @@ export function LaporanView({ routePath }: { routePath: string }) {
           filteredFindings.length === 0 ? (
             <EmptyState
               title="Belum Terdapat Data Aktual untuk Direkapitulasi"
-              description="Sesuai prinsip pengembangan SIKESLING RSAM, modul laporan tidak menampilkan data fiktif. Silakan catat kegiatan harian atau supervisi lapangan terlebih dahulu untuk melihat kompilasi otomatis pada laporan ini."
+              description="Sesuai prinsip pengembangan SIKRESMI, modul laporan tidak menampilkan data fiktif. Silakan catat kegiatan harian atau supervisi lapangan terlebih dahulu untuk melihat kompilasi otomatis pada laporan ini."
               actionLabel="Catat Kegiatan Operasional"
               actionHref="/operasional/kegiatan-harian"
               icon={<Eye className="w-6 h-6" />}

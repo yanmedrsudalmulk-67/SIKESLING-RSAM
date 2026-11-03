@@ -39,6 +39,7 @@ test('navigation structure includes all 11 main menus and required routes', () =
   const resolved = resolveRouteMeta('/supervisi/riwayat');
   assert.equal(resolved.title, 'Tabel Rekap Supervisi');
   assert.equal(resolved.breadcrumbs.length, 3);
+  assert.equal(resolved.breadcrumbs[0].label, 'SIKRESMI');
 });
 
 test('RBAC permissions enforce role boundaries accurately', () => {
@@ -290,7 +291,7 @@ test('air quality and indoor physical environment dataset is populated with requ
   assert.ok(meta.breadcrumbs.length >= 2);
 });
 
-test('supabase integration normalizes REST v1 URLs and defines all 16 application collections', () => {
+test('supabase integration normalizes REST v1 URLs and defines all 17 application collections', () => {
   const {
     normalizeSupabaseUrls,
     getSupabaseConfig,
@@ -306,7 +307,7 @@ test('supabase integration normalizes REST v1 URLs and defines all 16 applicatio
   assert.ok(cfg.anonKey.startsWith('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'));
 
   const initialState = createInitialSikeslingCloudState();
-  assert.equal(Object.keys(initialState).length, 16);
+  assert.equal(Object.keys(initialState).length, 17);
 });
 
 

@@ -22,9 +22,11 @@ import {
   EmptyState,
   ModulePlaceholder,
 } from '@/components/sikesling/ui-system';
+import { FloatingSaveButton } from '@/components/sikesling/floating-save-button';
 
 export function MonitoringIndexView() {
   const meta = resolveRouteMeta('/monitoring');
+  const { syncAllToSupabase } = useApp();
 
   return (
     <PageContainer>
@@ -59,6 +61,8 @@ export function MonitoringIndexView() {
           </Link>
         ))}
       </div>
+
+      <FloatingSaveButton onSave={syncAllToSupabase} />
     </PageContainer>
   );
 }
@@ -71,7 +75,7 @@ export function MonitoringSubmoduleView({
   subCategories?: string[];
 }) {
   const meta = resolveRouteMeta(routePath);
-  const { masterRooms, pushToast } = useApp();
+  const { masterRooms, pushToast, syncAllToSupabase } = useApp();
 
   const [search, setSearch] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -220,6 +224,8 @@ export function MonitoringSubmoduleView({
           </div>
         </div>
       </ModulePlaceholder>
+
+      <FloatingSaveButton onSave={syncAllToSupabase} />
     </PageContainer>
   );
 }

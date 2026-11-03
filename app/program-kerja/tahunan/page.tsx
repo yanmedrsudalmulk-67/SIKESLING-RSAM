@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import { AnnualProgramView } from '@/components/sikesling/annual-program-view';
 
 export const metadata: Metadata = {
-  title: 'Program Tahunan Kesehatan Lingkungan - SIKESLING RSAM',
+  title: 'Program Tahunan Kesehatan Lingkungan - SIKRESMI',
   description:
     'Matriks program kerja tahunan 9 bidang kesehatan lingkungan UOBK RSUD Al-Mulk Kota Sukabumi berdasarkan Permenkes No 7 Tahun 2019.',
 };

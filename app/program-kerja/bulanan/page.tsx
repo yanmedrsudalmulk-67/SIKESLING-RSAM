@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import { MonthlyProgramView } from '@/components/sikesling/monthly-program-view';
 
 export const metadata: Metadata = {
-  title: 'Program Bulanan & Mingguan Kesehatan Lingkungan - SIKESLING RSAM',
+  title: 'Program Bulanan & Mingguan Kesehatan Lingkungan - SIKRESMI',
   description:
     'Rincian jadwal bulanan dan mingguan (Minggu 1 - Minggu 4) kegiatan kesehatan lingkungan UOBK RSUD Al-Mulk Kota Sukabumi.',
 };

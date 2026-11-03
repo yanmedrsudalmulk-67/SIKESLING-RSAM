@@ -28,6 +28,7 @@ import {
 import { resolveRouteMeta } from '@/lib/navigation';
 import { useApp } from '@/components/sikesling/app-provider';
 import { PageContainer, PageHeader } from '@/components/sikesling/ui-system';
+import { FloatingSaveButton } from '@/components/sikesling/floating-save-button';
 
 export type AirPeriodFilter =
   | 'FULL_YEAR'
@@ -103,12 +104,15 @@ export function AirQualityView() {
   const [selectedPeriod, setSelectedPeriod] = useState<AirPeriodFilter>('FULL_YEAR');
   const [activeSheet, setActiveSheet] = useState<'sheet1' | 'sheet2'>('sheet1');
 
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
+
   const items = airItems as AirQualityItem[];
   const setItems = (
     updater: AirQualityItem[] | ((prev: AirQualityItem[]) => AirQualityItem[])
   ) => {
     const next = typeof updater === 'function' ? updater(items) : updater;
-    updateAirItems(next);
+    setHasUnsavedChanges(true);
+    void updateAirItems(next);
   };
 
   // State untuk inline edit nilai hasil ukur
@@ -1401,6 +1405,54 @@ export function AirQualityView() {
           </div>
         </div>
       )}
+
+      <FloatingSaveButton
+        hasUnsavedChanges={hasUnsavedChanges}
+        onSave={async () => {
+          let nextItems = items;
+          if (editingId && editField) {
+            const num = Math.max(0, Number(editValue) || 0);
+            nextItems = items.map((item) => {
+              if (item.id !== editingId) return item;
+              const updated = { ...item };
+              if (editField === 'temp') updated.tempResult = num;
+              if (editField === 'humidity') updated.humidityResult = num;
+              if (editField === 'lux') {
+                updated.luxResult = num;
+                updated.luxScore = num >= 100 ? 1 : 0;
+              }
+              if (editField === 'noise') {
+                updated.noiseResult = num;
+                updated.noiseScore = num <= 55 ? 1 : 0;
+              }
+              const isTempOk = updated.tempResult >= 18 && updated.tempResult <= 26;
+              const isHumidityOk =
+                updated.humidityResult >= 40 && updated.humidityResult <= 60;
+              updated.tempHumidityScore =
+                isTempOk && isHumidityOk ? 1 : isTempOk || isHumidityOk ? 0.5 : 0;
+              return updated;
+            });
+            setEditingId(null);
+            setEditField(null);
+          }
+          if (editingUnitId && editingUnitName.trim()) {
+            nextItems = nextItems.map((item) =>
+              item.id === editingUnitId
+                ? { ...item, unitName: editingUnitName.trim().toUpperCase() }
+                : item
+            );
+            setEditingUnitId(null);
+          }
+          await updateAirItems(nextItems);
+          setHasUnsavedChanges(false);
+          pushToast({
+            type: 'success',
+            title: 'Data Monitoring Kualitas Udara Tersimpan',
+            message:
+              'Data tabel Monitoring Kualitas Udara telah disimpan dalam aplikasi dan disinkronkan ke database Supabase.',
+          });
+        }}
+      />
     </PageContainer>
   );
 }

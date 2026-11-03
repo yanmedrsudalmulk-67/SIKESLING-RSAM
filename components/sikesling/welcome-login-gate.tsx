@@ -394,7 +394,7 @@ export function WelcomeLoginGate({
             {/* Title & Single-Line Subtitle on All Platforms (Mobile & Desktop) */}
             <div className="relative z-20 mt-1 lg:mt-2.5">
               <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white leading-tight">
-                SIKESLING RSAM
+                SIKRESMI
               </h1>
               <p className="text-[9px] sm:text-xs lg:text-[12.5px] xl:text-[13px] text-[#D2B48C] font-medium mt-0.5 lg:mt-1 whitespace-nowrap tracking-tight leading-snug">
                 Sistem Informasi Kesehatan Lingkungan RSUD Al-Mulk Kota Sukabumi
@@ -595,7 +595,7 @@ export function WelcomeLoginGate({
                     Masukkan username dan password petugas kesehatan lingkungan
                   </span>
                   <span className="block whitespace-nowrap">
-                    untuk mengakses Dashboard utama SIKESLING RSAM.
+                    untuk mengakses Dashboard utama SIKRESMI.
                   </span>
                 </p>
               </div>

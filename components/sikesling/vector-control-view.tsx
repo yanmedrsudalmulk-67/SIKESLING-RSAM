@@ -27,6 +27,7 @@ import {
 import { resolveRouteMeta } from '@/lib/navigation';
 import { useApp } from '@/components/sikesling/app-provider';
 import { PageContainer, PageHeader } from '@/components/sikesling/ui-system';
+import { FloatingSaveButton } from '@/components/sikesling/floating-save-button';
 
 export type VectorPeriodFilter =
   | 'FULL_YEAR'
@@ -294,24 +295,29 @@ export function calculateMonthVectorSummary(
 export function VectorControlView() {
   const meta = resolveRouteMeta('/monitoring/vektor');
   const {
+    resolvedTheme,
     pushToast,
     vectorFindings,
     updateVectorFindings,
     vectorUnits,
     updateVectorUnits,
   } = useApp();
+  const isDark = resolvedTheme === 'dark';
 
   const [selectedYear, setSelectedYear] = useState<number>(2026);
   const [selectedPeriod, setSelectedPeriod] = useState<VectorPeriodFilter>('FULL_YEAR');
   const [activeSheet, setActiveSheet] = useState<'sheet1' | 'sheet2'>('sheet1');
   const [chartType, setChartType] = useState<'monthly' | 'indicator'>('monthly');
 
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
+
   const units = vectorUnits;
   const setUnits = (
     updater: string[] | ((prev: string[]) => string[])
   ) => {
     const next = typeof updater === 'function' ? updater(units) : updater;
-    updateVectorUnits(next);
+    setHasUnsavedChanges(true);
+    void updateVectorUnits(next);
   };
 
   const findings = vectorFindings as VectorFindingsMap;
@@ -321,7 +327,8 @@ export function VectorControlView() {
       | ((prev: VectorFindingsMap) => VectorFindingsMap)
   ) => {
     const next = typeof updater === 'function' ? updater(findings) : updater;
-    updateVectorFindings(next);
+    setHasUnsavedChanges(true);
+    void updateVectorFindings(next);
   };
 
   // Inline edit unit name state
@@ -995,9 +1002,21 @@ export function VectorControlView() {
                 data={filteredMonthlyChartData}
                 margin={{ top: 10, right: 15, left: -10, bottom: 10 }}
               >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" opacity={0.6} />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748B' }} />
-                <YAxis domain={[50, 100]} tick={{ fontSize: 11, fill: '#64748B' }} unit="%" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke={isDark ? '#334155' : '#E2E8F0'}
+                  opacity={0.6}
+                />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fontSize: 11, fill: isDark ? '#E2E8F0' : '#64748B' }}
+                />
+                <YAxis
+                  domain={[50, 100]}
+                  tick={{ fontSize: 11, fill: isDark ? '#E2E8F0' : '#64748B' }}
+                  unit="%"
+                />
                 <Tooltip
                   formatter={(value) => [`${value ?? 0}%`, '']}
                   contentStyle={{
@@ -1018,7 +1037,7 @@ export function VectorControlView() {
                 <Line
                   type="monotone"
                   dataKey="Capaian Kumulatif (%)"
-                  stroke="#153E75"
+                  stroke={isDark ? '#38BDF8' : '#153E75'}
                   strokeWidth={3}
                   dot={{ r: 4 }}
                   isAnimationActive={false}
@@ -1053,15 +1072,24 @@ export function VectorControlView() {
                 data={indicatorAverageChartData}
                 margin={{ top: 10, right: 15, left: -10, bottom: 20 }}
               >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" opacity={0.6} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke={isDark ? '#334155' : '#E2E8F0'}
+                  opacity={0.6}
+                />
                 <XAxis
                   dataKey="name"
-                  tick={{ fontSize: 11, fill: '#64748B' }}
+                  tick={{ fontSize: 11, fill: isDark ? '#E2E8F0' : '#64748B' }}
                   interval={0}
                   angle={-12}
                   textAnchor="end"
                 />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: '#64748B' }} unit="%" />
+                <YAxis
+                  domain={[0, 100]}
+                  tick={{ fontSize: 11, fill: isDark ? '#E2E8F0' : '#64748B' }}
+                  unit="%"
+                />
                 <Tooltip
                   formatter={(value) => [`${value ?? 0}%`, '']}
                   contentStyle={{
@@ -1223,6 +1251,32 @@ export function VectorControlView() {
           </div>
         </div>
       )}
+
+      <FloatingSaveButton
+        hasUnsavedChanges={hasUnsavedChanges}
+        onSave={async () => {
+          let nextUnits = units;
+          if (editingUnitIdx !== null && editingUnitValue.trim()) {
+            nextUnits = units.map((u, idx) =>
+              idx === editingUnitIdx
+                ? editingUnitValue.trim().toUpperCase()
+                : u
+            );
+            setEditingUnitIdx(null);
+          }
+          await Promise.all([
+            updateVectorUnits(nextUnits),
+            updateVectorFindings(findings),
+          ]);
+          setHasUnsavedChanges(false);
+          pushToast({
+            type: 'success',
+            title: 'Data Pengendalian Vektor Tersimpan',
+            message:
+              'Data tabel Pengendalian Vektor & Binatang telah disimpan dalam aplikasi dan disinkronkan ke database Supabase.',
+          });
+        }}
+      />
     </PageContainer>
   );
 }

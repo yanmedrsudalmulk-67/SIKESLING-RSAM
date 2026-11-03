@@ -120,7 +120,7 @@ export async function PUT(req: NextRequest) {
         syncedKeysCount: Object.keys(CLOUD_COLLECTION_META).length,
         lastSyncedAt: new Date().toISOString(),
         statusMessage: upsertRes.ok
-          ? 'Seluruh 16 koleksi data SIKESLING RSAM berhasil disimpan ke Supabase REST v1.'
+          ? 'Seluruh 16 koleksi data SIKRESMI berhasil disimpan ke Supabase REST v1.'
           : upsertRes.errorMessage ||
             'Endpoint Supabase aktif; jalankan script SQL di Supabase SQL Editor untuk menyimpan ke tabel.',
         errorCode: upsertRes.errorCode,

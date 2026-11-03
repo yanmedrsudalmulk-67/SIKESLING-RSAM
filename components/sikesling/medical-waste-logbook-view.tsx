@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Calendar,
@@ -65,12 +65,15 @@ interface PendingDeleteAction {
 export function MedicalWasteLogbookView() {
   const meta = resolveRouteMeta('/monitoring/logbook-limbah-medis');
   const {
+    resolvedTheme,
     masterRooms,
     pushToast,
     medicalWasteLogbookRows,
     saveMedicalWasteLogbookRows,
     isSyncingSupabase,
   } = useApp();
+  const isDark = resolvedTheme === 'dark';
+  const filterDateInputRef = useRef<HTMLInputElement>(null);
 
   // Core logbook rows state synced with AppProvider & Supabase
   const [rows, setRows] = useState<MedicalWasteLogRow[]>(
@@ -482,13 +485,58 @@ export function MedicalWasteLogbookView() {
         breadcrumbs={meta.breadcrumbs}
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            <div className="relative inline-flex items-center">
+              <button
+                type="button"
+                onClick={() => {
+                  const input = filterDateInputRef.current;
+                  if (!input) return;
+                  if (typeof input.showPicker === 'function') {
+                    try {
+                      input.showPicker();
+                    } catch {
+                      input.focus();
+                    }
+                  } else {
+                    input.focus();
+                  }
+                }}
+                className="relative inline-flex items-center gap-2 bg-[#FAF6F0] dark:bg-[#001835] hover:bg-[#F3ECE0] dark:hover:bg-[#002147] border border-[#D2B48C]/70 rounded-full px-3.5 py-2 text-xs font-bold text-[#002147] dark:text-[#D2B48C] shadow-2xs transition-colors cursor-pointer"
+              >
+                <Calendar className="w-3.5 h-3.5 text-[#002147] dark:text-[#D2B48C] shrink-0" />
+                <span>
+                  {filterDateMasuk
+                    ? `Filter Tgl Masuk (${formatIsoToDisplayDate(filterDateMasuk)})`
+                    : 'Filter Tgl Masuk'}
+                </span>
+                <input
+                  ref={filterDateInputRef}
+                  type="date"
+                  value={filterDateMasuk}
+                  onChange={(e) => setFilterDateMasuk(e.target.value)}
+                  aria-label="Filter Tgl Masuk"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+              </button>
+              {filterDateMasuk && (
+                <button
+                  type="button"
+                  onClick={() => setFilterDateMasuk('')}
+                  title="Reset Filter Tanggal Masuk"
+                  className="ml-1.5 p-1.5 rounded-full bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-300 hover:bg-rose-200 transition-colors cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
             <button
               type="button"
               onClick={handleOpenBatchDateModal}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#002147] text-white hover:bg-[#003166] text-xs font-bold transition-all shadow-sm cursor-pointer"
             >
-              <Calendar className="w-3.5 h-3.5 text-[#D2B48C]" />
-              <span>+ Batch Tanggal (11 Ruangan)</span>
+              <Plus className="w-3.5 h-3.5 text-[#D2B48C]" />
+              <span>Batch</span>
             </button>
           </div>
         }
@@ -707,54 +755,6 @@ export function MedicalWasteLogbookView() {
         </div>
       </div>
 
-      {/* Filter & Quick Instruction Bar */}
-      <div className="rounded-[24px] bg-white/90 dark:bg-[#001835]/90 border border-[#D2B48C]/55 dark:border-[#D2B48C]/25 p-4 shadow-xs flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <div className="relative min-w-[240px]">
-            <input
-              type="text"
-              value={searchRoomOrManifest}
-              onChange={(e) => setSearchRoomOrManifest(e.target.value)}
-              placeholder="Cari Sumber Limbah / No.Manifest..."
-              className="w-full px-3.5 py-2 rounded-xl bg-[#FAF6F0] dark:bg-[#001228] border border-[#D2B48C]/55 text-xs text-[#002147] dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#002147]"
-            />
-          </div>
-
-          <div className="flex items-center gap-2 bg-[#FAF6F0] dark:bg-[#001228] border border-[#D2B48C]/55 rounded-xl px-3 py-1.5">
-            <Calendar className="w-3.5 h-3.5 text-[#002147] dark:text-[#D2B48C]" />
-            <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-              Filter Tgl Masuk:
-            </span>
-            <input
-              type="date"
-              value={filterDateMasuk}
-              onChange={(e) => setFilterDateMasuk(e.target.value)}
-              aria-label="Filter Tanggal Masuk Limbah"
-              className="text-xs font-bold text-[#002147] dark:text-white bg-transparent focus:outline-none cursor-pointer"
-            />
-            {filterDateMasuk && (
-              <button
-                type="button"
-                onClick={() => setFilterDateMasuk('')}
-                className="text-[11px] font-bold text-rose-600 hover:underline ml-1 cursor-pointer"
-              >
-                Reset
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 text-[11px] text-slate-600 dark:text-[#D2B48C]/90 bg-[#F7F1E7]/80 dark:bg-[#002147]/60 px-3.5 py-2 rounded-xl border border-[#D2B48C]/40">
-          <Pencil className="w-3.5 h-3.5 text-[#002147] dark:text-[#D2B48C] shrink-0" />
-          <span>
-            <strong>Tips Interaktif:</strong> Klik langsung pada{' '}
-            <strong>sel mana saja</strong> atau <strong>judul kolom</strong>{' '}
-            untuk mengedit. Kolom tanggal menggunakan <strong>Kalender</strong>,
-            berat &amp; manifest diinput manual.
-          </span>
-        </div>
-      </div>
-
       {/* Datalist for Sumber Limbah Room Picker */}
       <datalist id="sikesling-waste-room-list">
         {roomOptions.map((roomName) => (
@@ -764,13 +764,9 @@ export function MedicalWasteLogbookView() {
 
       {/* Main Official Log Book Limbah Medis Table Card */}
       <div className="rounded-[28px] bg-white dark:bg-[#00152E] border-[1.5px] border-[#D2B48C]/70 dark:border-[#D2B48C]/30 shadow-[0_18px_50px_rgba(0,33,71,0.10)] overflow-hidden">
-        {/* Official Document Banner matching the Reference Screenshot & Realtime Year */}
-        <div className="px-6 pt-5 pb-4 bg-gradient-to-r from-[#FAF6F0] via-white to-[#FAF6F0] dark:from-[#001D3D] dark:via-[#00152E] dark:to-[#001D3D] border-b border-[#D2B48C]/50">
-          <div className="flex items-center justify-between text-[11px] font-bold tracking-widest text-[#002147]/70 dark:text-[#D2B48C] uppercase">
-            <span>UOBK RSUD AL-MULK KOTA SUKABUMI</span>
-            <span>LAMPIRAN 2</span>
-          </div>
-          <h2 className="text-center text-base sm:text-lg font-extrabold tracking-wide text-[#002147] dark:text-white uppercase mt-1">
+        {/* Official Document Banner */}
+        <div className="px-6 py-4 bg-gradient-to-r from-[#FAF6F0] via-white to-[#FAF6F0] dark:from-[#001D3D] dark:via-[#00152E] dark:to-[#001D3D] border-b border-[#D2B48C]/50">
+          <h2 className="text-center text-base sm:text-lg font-extrabold tracking-wide text-[#002147] dark:text-white uppercase">
             LOG BOOK LIMBAH MEDIS TAHUN {autoAnalysis.activeYear}
           </h2>
         </div>
@@ -1560,35 +1556,68 @@ export function MedicalWasteLogbookView() {
                 data={roomChartData}
                 margin={{ top: 10, right: 16, left: 0, bottom: 45 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={isDark ? '#334155' : '#E2E8F0'}
+                />
                 <XAxis
                   dataKey="room"
-                  tick={{ fontSize: 10, fill: '#002147' }}
+                  tick={{
+                    fontSize: 10,
+                    fill: isDark ? '#E2E8F0' : '#002147',
+                    fontWeight: 600,
+                  }}
+                  stroke={isDark ? '#475569' : '#94A3B8'}
                   angle={-25}
                   textAnchor="end"
                   interval={0}
                 />
                 <YAxis
-                  tick={{ fontSize: 11, fill: '#002147' }}
+                  tick={{
+                    fontSize: 11,
+                    fill: isDark ? '#E2E8F0' : '#002147',
+                    fontWeight: 600,
+                  }}
+                  stroke={isDark ? '#475569' : '#94A3B8'}
                   unit=" kg"
                 />
                 <Tooltip
                   formatter={(value) =>
                     `${formatWeightKgId(Number(value ?? 0), true)} kg`
                   }
+                  contentStyle={{
+                    backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
+                    borderColor: '#D2B48C',
+                    borderRadius: '14px',
+                    color: isDark ? '#F8FAFC' : '#002147',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                  }}
+                  itemStyle={{ color: isDark ? '#F8FAFC' : '#002147' }}
+                  labelStyle={{
+                    color: isDark ? '#D2B48C' : '#002147',
+                    fontWeight: 700,
+                  }}
                 />
-                <Legend wrapperStyle={{ fontSize: 11, paddingTop: 12 }} />
+                <Legend
+                  wrapperStyle={{
+                    fontSize: 11,
+                    paddingTop: 12,
+                    color: isDark ? '#E2E8F0' : '#002147',
+                    fontWeight: 600,
+                  }}
+                />
                 <Bar
                   dataKey="padatKg"
                   name="Limbah Padat (kg)"
-                  fill="#002147"
+                  fill={isDark ? '#38BDF8' : '#002147'}
                   radius={[6, 6, 0, 0]}
                   isAnimationActive={false}
                 />
                 <Bar
                   dataKey="tajamKg"
                   name="Limbah Tajam (kg)"
-                  fill="#D2B48C"
+                  fill={isDark ? '#FBBF24' : '#D2B48C'}
                   radius={[6, 6, 0, 0]}
                   isAnimationActive={false}
                 />

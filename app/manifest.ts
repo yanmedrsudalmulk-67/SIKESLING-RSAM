@@ -3,10 +3,10 @@ import type { MetadataRoute } from 'next';
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: '/',
-    name: 'SIKESLING RSAM — Sistem Informasi Kesehatan Lingkungan',
-    short_name: 'SIKESLING',
+    name: 'SIKRESMI — Sistem Informasi Kesehatan Lingkungan RSUD Al-Mulk Kota Sukabumi',
+    short_name: 'SIKRESMI',
     description:
-      'Sistem Informasi Manajemen Kesehatan Lingkungan UOBK RSUD Al-Mulk Kota Sukabumi — Smart Environmental Health Monitoring & Management.',
+      'Sistem Informasi Kesehatan Lingkungan RSUD Al-Mulk Kota Sukabumi — Smart Environmental Health Monitoring & Management.',
     start_url: '/dashboard',
     scope: '/',
     display: 'standalone',

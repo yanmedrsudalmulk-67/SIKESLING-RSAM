@@ -420,7 +420,7 @@ export function PengaturanView({ routePath }: { routePath: string }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormSection
               title="Integrasi Cloud Supabase REST v1 (Aktif)"
-              description="Seluruh 16 modul data SIKESLING RSAM kini terhubung penuh ke Supabase tanpa penyimpanan lokal browser (Zero Local Storage)."
+              description="Seluruh 16 modul data SIKRESMI kini terhubung penuh ke Supabase tanpa penyimpanan lokal browser (Zero Local Storage)."
             >
               <div className="space-y-2.5 text-xs">
                 <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800 gap-2">
@@ -496,7 +496,7 @@ export function PengaturanView({ routePath }: { routePath: string }) {
             >
               <div className="space-y-4 text-xs text-slate-600 dark:text-slate-300">
                 <p>
-                  SIKESLING RSAM dilengkapi Web App Manifest standar agar dapat dipasang ke layar utama perangkat petugas lapangan dan langsung menyinkronkan data ke Supabase Cloud.
+                  SIKRESMI dilengkapi Web App Manifest standar agar dapat dipasang ke layar utama perangkat petugas lapangan dan langsung menyinkronkan data ke Supabase Cloud.
                 </p>
                 <PWAInstallButton />
               </div>
@@ -532,13 +532,13 @@ export function PengaturanView({ routePath }: { routePath: string }) {
           <div className="rounded-[28px] bg-gradient-to-br from-white/62 via-white/44 to-white/54 dark:from-white/[0.10] dark:via-white/[0.05] dark:to-white/[0.08] backdrop-blur-2xl border-[1.5px] border-white/85 dark:border-white/15 shadow-[0_14px_38px_rgba(21,62,117,0.08),inset_0_1px_2px_rgba(255,255,255,0.95)] p-6 space-y-4">
             <div className="space-y-1">
               <div className="text-xs font-semibold text-[#1D7AFC] dark:text-[#60A5FA]">
-                SISTEM INFORMASI KESEHATAN LINGKUNGAN RUMAH SAKIT
+                SISTEM INFORMASI KESEHATAN LINGKUNGAN RSUD AL-MULK KOTA SUKABUMI
               </div>
               <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-                SIKESLING RSAM — Versi 1.0 (Foundation Development)
+                SIKRESMI — Versi 1.0 (Foundation Development)
               </h2>
               <p className="text-xs text-slate-500">
-                UOBK RSUD Al-Mulk Kota Sukabumi · Smart Environmental Health Monitoring & Management
+                Sistem Informasi Kesehatan Lingkungan RSUD Al-Mulk Kota Sukabumi · Smart Environmental Health Monitoring & Management
               </p>
             </div>
 

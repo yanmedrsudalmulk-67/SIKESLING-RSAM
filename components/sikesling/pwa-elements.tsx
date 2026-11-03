@@ -34,7 +34,7 @@ export function PWAInstallButton({ compact = false }: { compact?: boolean }) {
             ? 'inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium rounded-full bg-white/90 dark:bg-slate-800/90 border border-white/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-white shadow-xs transition-all whitespace-nowrap shrink-0'
             : 'inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-full bg-[#153E75] text-white hover:bg-[#0F294D] transition-colors whitespace-nowrap shrink-0'
         }
-        aria-label="Pasang Aplikasi PWA SIKESLING RSAM"
+        aria-label="Pasang Aplikasi PWA SIKRESMI"
       >
         <Download className="w-3.5 h-3.5 shrink-0 text-[#1D7AFC] dark:text-sky-400" />
         <span>Pasang App</span>
@@ -58,7 +58,7 @@ export function PWAInstallButton({ compact = false }: { compact?: boolean }) {
                     id="pwa-modal-title"
                     className="text-base font-semibold text-slate-900 dark:text-slate-100"
                   >
-                    Panduan Instalasi PWA SIKESLING RSAM
+                    Panduan Instalasi PWA SIKRESMI
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
                     Fondasi Progressive Web App (Tahap 1)
