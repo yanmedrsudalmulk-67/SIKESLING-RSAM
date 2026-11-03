@@ -45,6 +45,10 @@ test('isPortraitViewport and getWelcomeVideoSrc select portrait video on mobile/
 
   assert.equal(getWelcomeVideoSrc(true), WELCOME_VIDEO_PORTRAIT_SRC);
   assert.equal(getWelcomeVideoSrc(false), WELCOME_VIDEO_LANDSCAPE_SRC);
+  assert.equal(
+    WELCOME_VIDEO_LANDSCAPE_SRC,
+    '/assets/aistudio/gemini_generated_video_91994e90_fb8b5397.mp4'
+  );
 });
 
 test('getPortraitVideoFitMode preserves 9:16 aspect ratio on tall 20:9 smartphones and wider 3:4 portrait tablets', () => {

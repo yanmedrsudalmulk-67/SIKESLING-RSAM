@@ -77,7 +77,7 @@ export function writeAuthStageToStorage(stage: AuthFlowStage): void {
 }
 
 export const WELCOME_VIDEO_LANDSCAPE_SRC =
-  '/assets/aistudio/gemini_generated_video_d24d733d_3d063e8d.mp4';
+  '/assets/aistudio/gemini_generated_video_91994e90_fb8b5397.mp4';
 
 export const WELCOME_VIDEO_PORTRAIT_SRC =
   '/assets/aistudio/gemini_generated_video_4eb3b858_7592732a.mp4';

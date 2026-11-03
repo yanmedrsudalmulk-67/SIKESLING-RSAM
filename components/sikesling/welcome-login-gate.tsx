@@ -160,7 +160,7 @@ export function WelcomeLoginGate({
           STAGE 1: WELCOME SCREEN
           - Portrait / Mobile: Proportional 9:16 Portrait Video (/assets/aistudio/gemini_generated_video_4eb3b858_7592732a.mp4)
             with seamless top/bottom ambient wave fill so tall 20:9 phones never stretch the video
-          - Landscape / Desktop: Full-Canvas Landscape Video (/assets/aistudio/gemini_generated_video_d24d733d_3d063e8d.mp4)
+          - Landscape / Desktop: Full-Canvas Landscape Video (/assets/aistudio/gemini_generated_video_91994e90_fb8b5397.mp4)
           - Both feature Top-Left Hospital Logo Badge & Responsive "Masuk Menu" CTA Button
          ===================================================================== */}
       {stage === 'welcome' && (
@@ -271,7 +271,7 @@ export function WelcomeLoginGate({
                 </motion.button>
               </div>
             ) : (
-              <div className="absolute left-[6.5%] bottom-[19.5%] md:bottom-[20%] z-20 flex flex-col items-start">
+              <div className="absolute left-[6.5%] bottom-[25.5%] md:bottom-[26.5%] z-20 flex flex-col items-start">
                 <motion.button
                   type="button"
                   data-testid="welcome-enter-menu-btn"
@@ -282,29 +282,23 @@ export function WelcomeLoginGate({
                     repeat: Infinity,
                     ease: 'easeInOut',
                   }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.97 }}
-                  className="group relative inline-flex items-center gap-3 sm:gap-4 px-5 py-2.5 sm:px-7 sm:py-3 md:px-8 md:py-3.5 rounded-full bg-gradient-to-r from-[#FAF6F0] via-[#F2E3CE] to-[#D2B48C] text-[#002147] border-2 border-white/95 shadow-[0_14px_34px_rgba(0,0,0,0.52),0_0_24px_rgba(210,180,140,0.5)] transition-shadow cursor-pointer"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-[320px] sm:w-[360px] md:w-[400px] max-w-[85vw] h-[56px] sm:h-[60px] rounded-full bg-gradient-to-r from-[#FAF6F0] via-[#F2E3CE] to-[#D2B48C] text-[#002147] border-2 border-white/95 shadow-[0_14px_34px_rgba(0,0,0,0.52),0_0_24px_rgba(210,180,140,0.5)] flex items-center justify-center gap-3 transition-shadow cursor-pointer select-none"
                 >
-                  <div className="text-left select-none">
-                    <div className="text-[10px] sm:text-[11px] md:text-[12px] font-extrabold uppercase tracking-widest text-[#6E502B] leading-none">
-                      PORTAL UTAMA
-                    </div>
-                    <div className="text-[14px] sm:text-[16px] md:text-[18px] font-extrabold tracking-tight text-[#002147] leading-tight mt-0.5">
-                      Masuk Menu
-                    </div>
-                  </div>
-
+                  <span className="text-[16px] sm:text-[17px] font-extrabold tracking-[0.1em] text-[#002147]">
+                    MASUK APLIKASI
+                  </span>
                   <motion.span
-                    animate={{ x: [0, 5, 0] }}
+                    animate={{ x: [0, 6, 0] }}
                     transition={{
-                      duration: 1.35,
+                      duration: 1.4,
                       repeat: Infinity,
                       ease: 'easeInOut',
                     }}
-                    className="inline-flex items-center justify-center w-7.5 h-7.5 sm:w-8.5 sm:h-8.5 md:w-9 md:h-9 rounded-full bg-[#002147] text-[#D2B48C] shadow-xs shrink-0"
+                    className="inline-flex items-center justify-center text-[#002147]"
                   >
-                    <ArrowRight className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 stroke-[2.5]" />
+                    <ArrowRight className="w-5 h-5 stroke-[2.75]" />
                   </motion.span>
                 </motion.button>
               </div>
