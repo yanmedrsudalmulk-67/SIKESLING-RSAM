@@ -1,0 +1,890 @@
+'use client';
+
+import React, { useState, useMemo, useEffect } from 'react';
+import {
+  Calendar,
+  ChevronDown,
+  Check,
+  X,
+  Pencil,
+  BarChart3,
+  TrendingUp,
+} from 'lucide-react';
+import {
+  ResponsiveContainer,
+  ComposedChart,
+  BarChart,
+  Bar,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  Cell,
+  ReferenceLine,
+} from 'recharts';
+import { resolveRouteMeta } from '@/lib/navigation';
+import { useApp } from '@/components/sikesling/app-provider';
+import { PageContainer, PageHeader } from '@/components/sikesling/ui-system';
+import { FloatingSaveButton } from '@/components/sikesling/floating-save-button';
+import {
+  LinenChoice,
+  LinenMonitoringRow,
+  calculateLinenRowCapaian,
+  calculateLinenSummary,
+  createInitialLinenMonitoringData,
+} from '@/lib/linen-monitoring';
+
+type PeriodFilter =
+  | 'FULL_YEAR'
+  | 'SEM_1'
+  | 'SEM_2'
+  | 'Q1'
+  | 'Q2'
+  | 'Q3'
+  | 'Q4'
+  | 'M_1'
+  | 'M_2'
+  | 'M_3'
+  | 'M_4'
+  | 'M_5'
+  | 'M_6'
+  | 'M_7'
+  | 'M_8'
+  | 'M_9'
+  | 'M_10'
+  | 'M_11'
+  | 'M_12';
+
+const PERIOD_OPTIONS: { value: PeriodFilter; label: string }[] = [
+  { value: 'FULL_YEAR', label: '1 Tahun Penuh (Januari – Desember)' },
+  { value: 'SEM_1', label: 'Semester I (Januari – Juni)' },
+  { value: 'SEM_2', label: 'Semester II (Juli – Desember)' },
+  { value: 'Q1', label: 'Triwulan I (Jan – Mar)' },
+  { value: 'Q2', label: 'Triwulan II (Apr – Jun)' },
+  { value: 'Q3', label: 'Triwulan III (Jul – Sep)' },
+  { value: 'Q4', label: 'Triwulan IV (Okt – Des)' },
+  { value: 'M_1', label: 'Bulan Januari' },
+  { value: 'M_2', label: 'Bulan Februari' },
+  { value: 'M_3', label: 'Bulan Maret' },
+  { value: 'M_4', label: 'Bulan April' },
+  { value: 'M_5', label: 'Bulan Mei' },
+  { value: 'M_6', label: 'Bulan Juni' },
+  { value: 'M_7', label: 'Bulan Juli' },
+  { value: 'M_8', label: 'Bulan Agustus' },
+  { value: 'M_9', label: 'Bulan September' },
+  { value: 'M_10', label: 'Bulan Oktober' },
+  { value: 'M_11', label: 'Bulan November' },
+  { value: 'M_12', label: 'Bulan Desember' },
+];
+
+function getAllowedMonths(period: PeriodFilter): number[] {
+  switch (period) {
+    case 'FULL_YEAR':
+      return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    case 'SEM_1':
+      return [1, 2, 3, 4, 5, 6];
+    case 'SEM_2':
+      return [7, 8, 9, 10, 11, 12];
+    case 'Q1':
+      return [1, 2, 3];
+    case 'Q2':
+      return [4, 5, 6];
+    case 'Q3':
+      return [7, 8, 9];
+    case 'Q4':
+      return [10, 11, 12];
+    default: {
+      if (period.startsWith('M_')) {
+        const m = Number(period.replace('M_', ''));
+        return [m];
+      }
+      return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    }
+  }
+}
+
+export function LinenMonitoringView() {
+  const meta = resolveRouteMeta('/monitoring/penyelenggaraan-linen');
+  const {
+    pushToast,
+    linenRows: contextLinenRows,
+    updateLinenRows,
+    resolvedTheme,
+  } = useApp();
+  const isDark = resolvedTheme === 'dark';
+
+  const currentRealtimeYear = useMemo(() => String(new Date().getFullYear()), []);
+  const [selectedYear, setSelectedYear] = useState<string>(currentRealtimeYear);
+  const [selectedPeriod, setSelectedPeriod] = useState<PeriodFilter>('FULL_YEAR');
+  const [rows, setRows] = useState<LinenMonitoringRow[]>(() =>
+    contextLinenRows && contextLinenRows.length === 12
+      ? contextLinenRows
+      : createInitialLinenMonitoringData()
+  );
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  useEffect(() => {
+    if (contextLinenRows && contextLinenRows.length === 12) {
+      setRows(contextLinenRows);
+    }
+  }, [contextLinenRows]);
+
+  // Inline editing state for custom Capaian (%)
+  const [editingRowNo, setEditingRowNo] = useState<number | null>(null);
+  const [editCapaianValue, setEditCapaianValue] = useState<string>('');
+
+  const allowedMonthNumbers = useMemo(
+    () => getAllowedMonths(selectedPeriod),
+    [selectedPeriod]
+  );
+
+  const visibleRows = useMemo(
+    () => rows.filter((r) => allowedMonthNumbers.includes(r.no)),
+    [rows, allowedMonthNumbers]
+  );
+
+  // Realtime toggle handler for Ya / Tidak cells
+  const handleSelectChoice = (
+    no: number,
+    field: 'mouPihakKetiga' | 'pemilahanInfeksius' | 'pengawasan',
+    choice: 'ya' | 'tidak'
+  ) => {
+    setRows((prev) =>
+      prev.map((row) => {
+        if (row.no !== no) return row;
+        const nextChoice: LinenChoice = row[field] === choice ? null : choice;
+        const updatedRow: LinenMonitoringRow = {
+          ...row,
+          [field]: nextChoice,
+        };
+        updatedRow.capaian = calculateLinenRowCapaian(
+          updatedRow.mouPihakKetiga,
+          updatedRow.pemilahanInfeksius,
+          updatedRow.pengawasan
+        );
+        return updatedRow;
+      })
+    );
+    setHasUnsavedChanges(true);
+  };
+
+  const startEditCapaian = (no: number, currentVal: number) => {
+    setEditingRowNo(no);
+    setEditCapaianValue(String(currentVal));
+  };
+
+  const saveEditCapaian = () => {
+    if (editingRowNo === null) return;
+    const parsed = Math.min(100, Math.max(0, Math.round(Number(editCapaianValue) || 0)));
+    setRows((prev) =>
+      prev.map((row) =>
+        row.no === editingRowNo ? { ...row, capaian: parsed } : row
+      )
+    );
+    setEditingRowNo(null);
+    setHasUnsavedChanges(true);
+    pushToast({
+      type: 'info',
+      title: 'Capaian Diperbarui',
+      message: `Nilai capaian bulan ke-${editingRowNo} diperbarui menjadi ${parsed}%. Klik tombol Simpan Data di kanan bawah untuk menyimpan ke Supabase.`,
+    });
+  };
+
+  // Summary, Analysis, Recommendations, and RTL computed automatically in realtime
+  const summaryStats = useMemo(
+    () => calculateLinenSummary(visibleRows),
+    [visibleRows]
+  );
+
+  // Chart 1: Monthly Capaian Trend
+  const monthlyChartData = useMemo(
+    () =>
+      visibleRows.map((r) => ({
+        name: r.monthShort,
+        monthFull: r.monthLabel,
+        'Capaian Penyelenggaraan Linen (%)': r.capaian,
+        'Target Standar (%)': 100,
+      })),
+    [visibleRows]
+  );
+
+  // Chart 2: Indicator Compliance Breakdown
+  const indicatorChartData = useMemo(
+    () => [
+      {
+        indikator: 'MoU Pihak Ke-3',
+        kepatuhan: summaryStats.mouRate,
+        color: isDark ? '#38BDF8' : '#002147',
+      },
+      {
+        indikator: 'Pemilahan Linen',
+        kepatuhan: summaryStats.pemilahanRate,
+        color: isDark ? '#60A5FA' : '#1C3D63',
+      },
+      {
+        indikator: 'Pengawasan Linen',
+        kepatuhan: summaryStats.pengawasanRate,
+        color: isDark ? '#FBBF24' : '#B8976C',
+      },
+      {
+        indikator: 'Rata-rata Capaian',
+        kepatuhan: Math.round(summaryStats.avgCapaian),
+        color: isDark ? '#34D399' : '#0D9488',
+      },
+    ],
+    [summaryStats, isDark]
+  );
+
+  return (
+    <PageContainer>
+      {/* 1. HEADER HALAMAN & FILTER PERIODE */}
+      <PageHeader
+        title={meta.title}
+        status={meta.status}
+        breadcrumbs={meta.breadcrumbs}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Pilihan Tahun Realtime */}
+            <div className="flex items-center gap-1.5 bg-[#F5EDE0] dark:bg-slate-800 border border-[#D2B48C] dark:border-slate-700 rounded-xl px-3 py-1.5 shadow-2xs">
+              <Calendar className="w-3.5 h-3.5 text-[#002147] dark:text-[#D2B48C]" />
+              <label
+                htmlFor="linen-year-select"
+                className="text-xs font-bold text-[#002147] dark:text-slate-200"
+              >
+                Tahun:
+              </label>
+              <select
+                id="linen-year-select"
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+                className="bg-transparent text-xs font-extrabold text-[#002147] dark:text-[#D2B48C] focus:outline-none cursor-pointer"
+              >
+                <option value="2026" className="text-slate-900 bg-white">
+                  2026
+                </option>
+                <option value="2025" className="text-slate-900 bg-white">
+                  2025
+                </option>
+                <option value="2024" className="text-slate-900 bg-white">
+                  2024
+                </option>
+              </select>
+            </div>
+
+            {/* Pilihan Filter Periode */}
+            <div className="relative flex items-center bg-white dark:bg-slate-800 border border-[#D2B48C] dark:border-slate-700 rounded-xl px-3 py-1.5 shadow-2xs">
+              <select
+                aria-label="Filter Periode Penyelenggaraan Linen"
+                value={selectedPeriod}
+                onChange={(e) =>
+                  setSelectedPeriod(e.target.value as PeriodFilter)
+                }
+                className="appearance-none bg-transparent pr-6 text-xs font-bold text-[#002147] dark:text-slate-100 focus:outline-none cursor-pointer"
+              >
+                {PERIOD_OPTIONS.map((opt) => (
+                  <option
+                    key={opt.value}
+                    value={opt.value}
+                    className="text-slate-900 bg-white"
+                  >
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-[#002147] dark:text-[#D2B48C] absolute right-2.5 pointer-events-none" />
+            </div>
+          </div>
+        }
+      />
+
+      {/* 2. TABEL UTAMA: PENYELENGGARAAN LINEN */}
+      <section
+        aria-label="Tabel Penyelenggaraan Linen"
+        className="rounded-[28px] bg-white/95 dark:bg-[#001835]/95 backdrop-blur-sm border-[1.5px] border-[#D2B48C]/60 dark:border-white/15 shadow-[0_14px_38px_rgba(0,33,71,0.08)] overflow-hidden"
+      >
+        {/* Banner Header Tabel Oxford Blue & Tan (Rata Tengah dengan Sub-Judul UOBK RSUD AL-MULK KOTA SUKABUMI) */}
+        <div className="bg-[#002147] dark:bg-[#00152E] border-b border-[#D2B48C]/50 px-4 sm:px-6 py-4 text-center">
+          <h2 className="text-base sm:text-lg font-extrabold tracking-wider text-[#D2B48C] uppercase">
+            PENYELENGGARAAN LINEN
+          </h2>
+          <p className="text-xs sm:text-sm font-bold tracking-widest text-white/95 uppercase mt-1">
+            UOBK RSUD AL-MULK KOTA SUKABUMI
+          </p>
+        </div>
+
+        {/* Kontainer Tabel Clean & Elegan */}
+        <div className="overflow-x-auto smooth-scroll-container">
+          <table className="w-full min-w-[780px] border-collapse text-xs sm:text-sm">
+            <thead>
+              {/* Baris Header 1 */}
+              <tr className="bg-[#EFE4D2] dark:bg-[#002147] text-[#002147] dark:text-[#F5EDE0]">
+                <th
+                  rowSpan={2}
+                  className="border border-slate-400 dark:border-slate-700 px-3 py-3 text-center font-extrabold w-14 align-middle"
+                >
+                  No
+                </th>
+                <th
+                  rowSpan={2}
+                  className="border border-slate-400 dark:border-slate-700 px-4 py-3 text-center font-extrabold w-40 align-middle"
+                >
+                  Bulan
+                </th>
+                <th
+                  colSpan={2}
+                  className="border border-slate-400 dark:border-slate-700 px-4 py-2.5 text-center font-extrabold align-middle leading-snug"
+                >
+                  Adanya MoU dengan Pihak Ke tiga
+                </th>
+                <th
+                  colSpan={2}
+                  className="border border-slate-400 dark:border-slate-700 px-4 py-2.5 text-center font-extrabold align-middle leading-snug"
+                >
+                  Dilakukan pemilahan antara linen infeksius dan non infeksius
+                </th>
+                <th
+                  colSpan={2}
+                  className="border border-slate-400 dark:border-slate-700 px-4 py-2.5 text-center font-extrabold align-middle leading-snug"
+                >
+                  Dilakukan pengawasan
+                </th>
+                <th
+                  rowSpan={2}
+                  className="border border-slate-400 dark:border-slate-700 bg-[#D2B48C] dark:bg-[#001630] text-[#002147] dark:text-[#D2B48C] px-4 py-3 text-center font-extrabold w-28 align-middle"
+                >
+                  Capaian
+                </th>
+              </tr>
+
+              {/* Baris Header 2: Sub-kolom ya | tidak */}
+              <tr className="bg-[#F7F1E7] dark:bg-[#001A38] text-[#002147] dark:text-[#EADBC8]">
+                <th className="border border-slate-400 dark:border-slate-700 px-3 py-2 text-center font-bold w-20 align-middle">
+                  ya
+                </th>
+                <th className="border border-slate-400 dark:border-slate-700 px-3 py-2 text-center font-bold w-20 align-middle">
+                  tidak
+                </th>
+                <th className="border border-slate-400 dark:border-slate-700 px-3 py-2 text-center font-bold w-20 align-middle">
+                  ya
+                </th>
+                <th className="border border-slate-400 dark:border-slate-700 px-3 py-2 text-center font-bold w-20 align-middle">
+                  tidak
+                </th>
+                <th className="border border-slate-400 dark:border-slate-700 px-3 py-2 text-center font-bold w-20 align-middle">
+                  ya
+                </th>
+                <th className="border border-slate-400 dark:border-slate-700 px-3 py-2 text-center font-bold w-20 align-middle">
+                  tidak
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {visibleRows.map((row, idx) => {
+                const isEditingThisRow = editingRowNo === row.no;
+                const zebraClass =
+                  idx % 2 === 0
+                    ? 'bg-white dark:bg-[#001835]'
+                    : 'bg-[#FAF6F0]/75 dark:bg-[#00152E]';
+
+                return (
+                  <tr
+                    key={row.no}
+                    className={`${zebraClass} hover:bg-[#F3E9D8]/70 dark:hover:bg-[#002147]/80 transition-colors text-slate-900 dark:text-slate-100`}
+                  >
+                    {/* No */}
+                    <td className="border border-slate-300 dark:border-slate-700 px-3 py-2.5 text-center font-bold tabular-nums align-middle">
+                      {row.no}
+                    </td>
+
+                    {/* Bulan */}
+                    <td className="border border-slate-300 dark:border-slate-700 px-4 py-2.5 text-center font-semibold align-middle">
+                      {row.monthLabel}
+                    </td>
+
+                    {/* Indikator 1: Adanya MoU dengan Pihak Ke tiga (ya / tidak) */}
+                    <td
+                      onClick={() =>
+                        handleSelectChoice(row.no, 'mouPihakKetiga', 'ya')
+                      }
+                      className="border border-slate-300 dark:border-slate-700 px-2 py-2 text-center align-middle cursor-pointer select-none hover:bg-[#EFE4D2]/70 dark:hover:bg-slate-800 transition-colors"
+                      title={`Bulan ${row.monthLabel} - Adanya MoU dengan Pihak Ke tiga: Ya`}
+                    >
+                      <button
+                        type="button"
+                        aria-label={`MoU Pihak Ketiga ${row.monthLabel} Ya`}
+                        className={`w-7 h-7 mx-auto rounded-lg flex items-center justify-center font-black text-sm transition-all cursor-pointer ${
+                          row.mouPihakKetiga === 'ya'
+                            ? 'bg-[#002147] text-[#D2B48C] dark:bg-[#D2B48C] dark:text-[#002147] shadow-2xs'
+                            : 'text-transparent hover:text-slate-400 border border-transparent hover:border-slate-300 dark:hover:border-slate-600'
+                        }`}
+                      >
+                        ✓
+                      </button>
+                    </td>
+                    <td
+                      onClick={() =>
+                        handleSelectChoice(row.no, 'mouPihakKetiga', 'tidak')
+                      }
+                      className="border border-slate-300 dark:border-slate-700 px-2 py-2 text-center align-middle cursor-pointer select-none hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                      title={`Bulan ${row.monthLabel} - Adanya MoU dengan Pihak Ke tiga: Tidak`}
+                    >
+                      <button
+                        type="button"
+                        aria-label={`MoU Pihak Ketiga ${row.monthLabel} Tidak`}
+                        className={`w-7 h-7 mx-auto rounded-lg flex items-center justify-center font-black text-sm transition-all cursor-pointer ${
+                          row.mouPihakKetiga === 'tidak'
+                            ? 'bg-rose-600 text-white shadow-2xs'
+                            : 'text-transparent hover:text-rose-400 border border-transparent hover:border-rose-300 dark:hover:border-rose-700'
+                        }`}
+                      >
+                        ✓
+                      </button>
+                    </td>
+
+                    {/* Indikator 2: Dilakukan pemilahan antara linen infeksius dan non infeksius (ya / tidak) */}
+                    <td
+                      onClick={() =>
+                        handleSelectChoice(row.no, 'pemilahanInfeksius', 'ya')
+                      }
+                      className="border border-slate-300 dark:border-slate-700 px-2 py-2 text-center align-middle cursor-pointer select-none hover:bg-[#EFE4D2]/70 dark:hover:bg-slate-800 transition-colors"
+                      title={`Bulan ${row.monthLabel} - Pemilahan linen infeksius dan non infeksius: Ya`}
+                    >
+                      <button
+                        type="button"
+                        aria-label={`Pemilahan Linen ${row.monthLabel} Ya`}
+                        className={`w-7 h-7 mx-auto rounded-lg flex items-center justify-center font-black text-sm transition-all cursor-pointer ${
+                          row.pemilahanInfeksius === 'ya'
+                            ? 'bg-[#002147] text-[#D2B48C] dark:bg-[#D2B48C] dark:text-[#002147] shadow-2xs'
+                            : 'text-transparent hover:text-slate-400 border border-transparent hover:border-slate-300 dark:hover:border-slate-600'
+                        }`}
+                      >
+                        ✓
+                      </button>
+                    </td>
+                    <td
+                      onClick={() =>
+                        handleSelectChoice(row.no, 'pemilahanInfeksius', 'tidak')
+                      }
+                      className="border border-slate-300 dark:border-slate-700 px-2 py-2 text-center align-middle cursor-pointer select-none hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                      title={`Bulan ${row.monthLabel} - Pemilahan linen infeksius dan non infeksius: Tidak`}
+                    >
+                      <button
+                        type="button"
+                        aria-label={`Pemilahan Linen ${row.monthLabel} Tidak`}
+                        className={`w-7 h-7 mx-auto rounded-lg flex items-center justify-center font-black text-sm transition-all cursor-pointer ${
+                          row.pemilahanInfeksius === 'tidak'
+                            ? 'bg-rose-600 text-white shadow-2xs'
+                            : 'text-transparent hover:text-rose-400 border border-transparent hover:border-rose-300 dark:hover:border-rose-700'
+                        }`}
+                      >
+                        ✓
+                      </button>
+                    </td>
+
+                    {/* Indikator 3: Dilakukan pengawasan (ya / tidak) */}
+                    <td
+                      onClick={() =>
+                        handleSelectChoice(row.no, 'pengawasan', 'ya')
+                      }
+                      className="border border-slate-300 dark:border-slate-700 px-2 py-2 text-center align-middle cursor-pointer select-none hover:bg-[#EFE4D2]/70 dark:hover:bg-slate-800 transition-colors"
+                      title={`Bulan ${row.monthLabel} - Dilakukan pengawasan: Ya`}
+                    >
+                      <button
+                        type="button"
+                        aria-label={`Pengawasan Linen ${row.monthLabel} Ya`}
+                        className={`w-7 h-7 mx-auto rounded-lg flex items-center justify-center font-black text-sm transition-all cursor-pointer ${
+                          row.pengawasan === 'ya'
+                            ? 'bg-[#002147] text-[#D2B48C] dark:bg-[#D2B48C] dark:text-[#002147] shadow-2xs'
+                            : 'text-transparent hover:text-slate-400 border border-transparent hover:border-slate-300 dark:hover:border-slate-600'
+                        }`}
+                      >
+                        ✓
+                      </button>
+                    </td>
+                    <td
+                      onClick={() =>
+                        handleSelectChoice(row.no, 'pengawasan', 'tidak')
+                      }
+                      className="border border-slate-300 dark:border-slate-700 px-2 py-2 text-center align-middle cursor-pointer select-none hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                      title={`Bulan ${row.monthLabel} - Dilakukan pengawasan: Tidak`}
+                    >
+                      <button
+                        type="button"
+                        aria-label={`Pengawasan Linen ${row.monthLabel} Tidak`}
+                        className={`w-7 h-7 mx-auto rounded-lg flex items-center justify-center font-black text-sm transition-all cursor-pointer ${
+                          row.pengawasan === 'tidak'
+                            ? 'bg-rose-600 text-white shadow-2xs'
+                            : 'text-transparent hover:text-rose-400 border border-transparent hover:border-rose-300 dark:hover:border-rose-700'
+                        }`}
+                      >
+                        ✓
+                      </button>
+                    </td>
+
+                    {/* Capaian (%) */}
+                    <td className="border border-slate-300 dark:border-slate-700 px-3 py-2 text-center align-middle bg-[#FAF6F0]/90 dark:bg-[#00152B]">
+                      {isEditingThisRow ? (
+                        <div className="inline-flex items-center gap-1 justify-center">
+                          <input
+                            type="number"
+                            min={0}
+                            max={100}
+                            value={editCapaianValue}
+                            onChange={(e) => setEditCapaianValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') saveEditCapaian();
+                              if (e.key === 'Escape') setEditingRowNo(null);
+                            }}
+                            autoFocus
+                            aria-label={`Input Capaian ${row.monthLabel}`}
+                            className="w-16 px-2 py-1 text-xs font-bold text-center rounded border border-[#002147] bg-white text-slate-900 focus:outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={saveEditCapaian}
+                            className="p-1 rounded bg-[#002147] text-white hover:bg-[#003166] cursor-pointer"
+                            title="Simpan Capaian"
+                          >
+                            <Check className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingRowNo(null)}
+                            className="p-1 rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 cursor-pointer"
+                            title="Batal"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => startEditCapaian(row.no, row.capaian)}
+                          className={`group inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg transition-colors cursor-pointer font-extrabold tabular-nums ${
+                            row.capaian >= 100
+                              ? 'text-[#002147] dark:text-[#D2B48C] hover:bg-white dark:hover:bg-slate-800'
+                              : row.capaian >= 67
+                              ? 'text-amber-800 dark:text-amber-300 hover:bg-white dark:hover:bg-slate-800'
+                              : 'text-rose-700 dark:text-rose-400 hover:bg-white dark:hover:bg-slate-800'
+                          }`}
+                          title="Klik untuk mengedit persentase Capaian secara manual"
+                        >
+                          <span>{row.capaian}%</span>
+                          <Pencil className="w-3 h-3 opacity-0 group-hover:opacity-60 transition-opacity" />
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+
+              {/* Baris Rekapitulasi / Rata-Rata */}
+              <tr className="bg-[#002147] text-white font-extrabold">
+                <td
+                  colSpan={2}
+                  className="border border-slate-400 dark:border-slate-700 px-4 py-3 text-center uppercase tracking-wider text-xs text-[#D2B48C]"
+                >
+                  Total / Rata-Rata ({visibleRows.length} Bulan)
+                </td>
+                <td className="border border-slate-400 dark:border-slate-700 px-2 py-3 text-center tabular-nums text-xs text-[#EADBC8]">
+                  {summaryStats.mouYaCount} Ya
+                </td>
+                <td className="border border-slate-400 dark:border-slate-700 px-2 py-3 text-center tabular-nums text-xs text-rose-200">
+                  {summaryStats.mouTidakCount} Tdk
+                </td>
+                <td className="border border-slate-400 dark:border-slate-700 px-2 py-3 text-center tabular-nums text-xs text-[#EADBC8]">
+                  {summaryStats.pemilahanYaCount} Ya
+                </td>
+                <td className="border border-slate-400 dark:border-slate-700 px-2 py-3 text-center tabular-nums text-xs text-rose-200">
+                  {summaryStats.pemilahanTidakCount} Tdk
+                </td>
+                <td className="border border-slate-400 dark:border-slate-700 px-2 py-3 text-center tabular-nums text-xs text-[#EADBC8]">
+                  {summaryStats.pengawasanYaCount} Ya
+                </td>
+                <td className="border border-slate-400 dark:border-slate-700 px-2 py-3 text-center tabular-nums text-xs text-rose-200">
+                  {summaryStats.pengawasanTidakCount} Tdk
+                </td>
+                <td className="border border-slate-400 dark:border-slate-700 px-4 py-3 text-center tabular-nums text-sm text-[#D2B48C]">
+                  {summaryStats.avgCapaian}%
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* 3. VISUALISASI GRAFIK INTERAKTIF PENYELENGGARAAN LINEN */}
+      <section
+        aria-label="Grafik Capaian Penyelenggaraan Linen"
+        className="grid grid-cols-1 lg:grid-cols-12 gap-5"
+      >
+        {/* Grafik 1: Tren Capaian Bulanan */}
+        <div className="lg:col-span-7 rounded-[28px] bg-white/95 dark:bg-[#001835]/90 backdrop-blur-sm border-[1.5px] border-[#D2B48C]/50 dark:border-white/15 shadow-[0_14px_38px_rgba(0,33,71,0.08)] p-5 sm:p-6 flex flex-col justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+            <div>
+              <div className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-[#002147] dark:text-[#D2B48C] mb-1">
+                <BarChart3 className="w-4 h-4" />
+                <span>Visualisasi Capaian Bulanan</span>
+              </div>
+              <h3 className="text-base sm:text-lg font-black text-[#002147] dark:text-white">
+                Grafik Capaian Penyelenggaraan Linen ({selectedYear})
+              </h3>
+            </div>
+            <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#002147] text-[#D2B48C] self-start sm:self-auto">
+              Rata-rata: {summaryStats.avgCapaian}%
+            </span>
+          </div>
+
+          <div className="h-[310px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart
+                data={monthlyChartData}
+                margin={{ top: 12, right: 16, left: 0, bottom: 5 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={isDark ? '#334155' : '#E2E8F0'}
+                />
+                <XAxis
+                  dataKey="name"
+                  tick={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    fill: isDark ? '#E2E8F0' : '#002147',
+                  }}
+                />
+                <YAxis
+                  domain={[0, 108]}
+                  tickFormatter={(v) => `${v}%`}
+                  tick={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    fill: isDark ? '#E2E8F0' : '#002147',
+                  }}
+                />
+                <Tooltip
+                  formatter={(value) => [`${value}%`, '']}
+                  contentStyle={{
+                    backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
+                    borderRadius: '16px',
+                    border: '1px solid #D2B48C',
+                    color: isDark ? '#F8FAFC' : '#002147',
+                    boxShadow: '0 10px 25px rgba(0,33,71,0.12)',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                  }}
+                />
+                <Legend
+                  wrapperStyle={{
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: isDark ? '#E2E8F0' : '#002147',
+                  }}
+                />
+                <ReferenceLine
+                  y={100}
+                  stroke={isDark ? '#34D399' : '#0D9488'}
+                  strokeDasharray="4 4"
+                  label={{
+                    value: 'Target 100%',
+                    position: 'insideTopRight',
+                    fill: isDark ? '#34D399' : '#0F766E',
+                    fontSize: 10,
+                    fontWeight: 700,
+                  }}
+                />
+                <Bar
+                  dataKey="Capaian Penyelenggaraan Linen (%)"
+                  fill={isDark ? '#38BDF8' : '#002147'}
+                  radius={[6, 6, 0, 0]}
+                  barSize={26}
+                >
+                  {monthlyChartData.map((entry, index) => (
+                    <Cell
+                      key={`cell-linen-${index}`}
+                      fill={
+                        entry['Capaian Penyelenggaraan Linen (%)'] >= 100
+                          ? isDark
+                            ? '#38BDF8'
+                            : '#002147'
+                          : entry['Capaian Penyelenggaraan Linen (%)'] >= 67
+                          ? isDark
+                            ? '#FBBF24'
+                            : '#C69C6D'
+                          : isDark
+                          ? '#F87171'
+                          : '#E11D48'
+                      }
+                    />
+                  ))}
+                </Bar>
+                <Line
+                  type="monotone"
+                  dataKey="Capaian Penyelenggaraan Linen (%)"
+                  stroke={isDark ? '#FBBF24' : '#8C6D46'}
+                  strokeWidth={2.5}
+                  dot={{ r: 3.5, fill: isDark ? '#FBBF24' : '#002147' }}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Grafik 2: Pemenuhan per Indikator */}
+        <div className="lg:col-span-5 rounded-[28px] bg-white/95 dark:bg-[#001835]/90 backdrop-blur-sm border-[1.5px] border-[#D2B48C]/50 dark:border-white/15 shadow-[0_14px_38px_rgba(0,33,71,0.08)] p-5 sm:p-6 flex flex-col justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+            <div>
+              <div className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-[#002147] dark:text-[#D2B48C] mb-1">
+                <TrendingUp className="w-4 h-4" />
+                <span>Komparasi Indikator</span>
+              </div>
+              <h3 className="text-base sm:text-lg font-black text-[#002147] dark:text-white">
+                Pemenuhan 3 Indikator Utama Linen
+              </h3>
+            </div>
+            <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#F5EDE0] dark:bg-[#002147] text-[#002147] dark:text-[#D2B48C] border border-[#D2B48C]/60 self-start sm:self-auto">
+              {visibleRows.length} Bulan Pantau
+            </span>
+          </div>
+
+          <div className="h-[310px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={indicatorChartData}
+                layout="vertical"
+                margin={{ top: 10, right: 24, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={isDark ? '#334155' : '#E2E8F0'}
+                />
+                <XAxis
+                  type="number"
+                  domain={[0, 100]}
+                  tickFormatter={(v) => `${v}%`}
+                  tick={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    fill: isDark ? '#E2E8F0' : '#002147',
+                  }}
+                />
+                <YAxis
+                  type="category"
+                  dataKey="indikator"
+                  width={125}
+                  tick={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    fill: isDark ? '#E2E8F0' : '#002147',
+                  }}
+                />
+                <Tooltip
+                  formatter={(value) => [`${value}%`, 'Tingkat Pemenuhan']}
+                  contentStyle={{
+                    backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
+                    borderRadius: '16px',
+                    border: '1px solid #D2B48C',
+                    color: isDark ? '#F8FAFC' : '#002147',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                  }}
+                />
+                <Bar dataKey="kepatuhan" radius={[0, 8, 8, 0]} barSize={30}>
+                  {indicatorChartData.map((entry, index) => (
+                    <Cell key={`cell-ind-${index}`} fill={entry.color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. ANALISA, REKOMENDASI, DAN RENCANA TINDAK LANJUT OTOMATIS */}
+      <section
+        aria-label="Analisa Data, Rekomendasi, dan Rencana Tindak Lanjut Penyelenggaraan Linen"
+        className="rounded-[28px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border-[1.5px] border-[#D2B48C]/50 dark:border-white/15 shadow-[0_14px_38px_rgba(21,62,117,0.08)] p-6 sm:p-8 text-slate-900 dark:text-slate-100 space-y-6"
+      >
+        {/* Analisa Otomatis */}
+        <div className="space-y-2.5">
+          <h3 className="text-sm sm:text-base font-black underline underline-offset-4 decoration-2 text-slate-950 dark:text-white">
+            Analisa :
+          </h3>
+          <p className="text-xs sm:text-sm leading-relaxed text-slate-800 dark:text-slate-200 text-justify indent-8">
+            {summaryStats.analysisText}
+          </p>
+        </div>
+
+        {/* Rekomendasi Otomatis */}
+        <div className="space-y-2.5">
+          <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white underline underline-offset-4 decoration-2 decoration-slate-900 dark:decoration-white">
+            Rekomendasi :
+          </h3>
+          <ol className="list-none pl-1 space-y-2 text-xs sm:text-[13.5px] text-slate-800 dark:text-slate-200 leading-relaxed">
+            {summaryStats.recommendations.map((rec, idx) => (
+              <li
+                key={`rec-${idx}`}
+                className="grid grid-cols-[1.5rem_1fr] items-baseline"
+              >
+                <span className="font-semibold tabular-nums select-none">
+                  {idx + 1}.
+                </span>
+                <span className="text-justify">{rec}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        {/* Rencana Tindak Lanjut Otomatis */}
+        <div className="space-y-2.5">
+          <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white underline underline-offset-4 decoration-2 decoration-slate-900 dark:decoration-white">
+            Rencana Tindak Lanjut :
+          </h3>
+          <ol className="list-none pl-1 space-y-2 text-xs sm:text-[13.5px] text-slate-800 dark:text-slate-200 leading-relaxed">
+            {summaryStats.followUpPlans.map((plan, idx) => (
+              <li
+                key={`rtl-${idx}`}
+                className="grid grid-cols-[1.5rem_1fr] items-baseline"
+              >
+                <span className="font-semibold tabular-nums select-none">
+                  {idx + 1}.
+                </span>
+                <span className="text-justify">{plan}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* Tombol Simpan Data Melayang di Kanan Bawah dengan Efek Jelly */}
+      <FloatingSaveButton
+        hasUnsavedChanges={hasUnsavedChanges}
+        onSave={async () => {
+          let nextRows = rows;
+          if (editingRowNo !== null) {
+            const parsed = Math.min(
+              100,
+              Math.max(0, Math.round(Number(editCapaianValue) || 0))
+            );
+            nextRows = rows.map((r) =>
+              r.no === editingRowNo ? { ...r, capaian: parsed } : r
+            );
+            setEditingRowNo(null);
+            setRows(nextRows);
+          }
+          await updateLinenRows(nextRows);
+          setHasUnsavedChanges(false);
+          pushToast({
+            type: 'success',
+            title: 'Data Penyelenggaraan Linen Tersimpan',
+            message:
+              'Data tabel Monitoring Penyelenggaraan Linen berhasil disimpan dan disinkronkan ke database Supabase.',
+          });
+        }}
+      />
+    </PageContainer>
+  );
+}

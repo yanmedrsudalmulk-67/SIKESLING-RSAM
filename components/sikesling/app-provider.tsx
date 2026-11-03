@@ -52,6 +52,14 @@ import {
   SaranaPrasaranaDataset,
   createInitialSaranaPrasaranaData,
 } from '@/lib/sarana-prasarana';
+import {
+  LinenMonitoringRow,
+  createInitialLinenMonitoringData,
+} from '@/lib/linen-monitoring';
+import {
+  RadiationMonitoringRow,
+  createInitialRadiationMonitoringData,
+} from '@/lib/radiation-monitoring';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -158,6 +166,10 @@ interface AppContextValue {
   updateFoodRows: (rows: FoodSanitationSnapshotRow[]) => Promise<boolean>;
   saranaPrasaranaData: SaranaPrasaranaDataset;
   updateSaranaPrasaranaData: (data: SaranaPrasaranaDataset) => Promise<boolean>;
+  linenRows: LinenMonitoringRow[];
+  updateLinenRows: (rows: LinenMonitoringRow[]) => Promise<boolean>;
+  radiationRows: RadiationMonitoringRow[];
+  updateRadiationRows: (rows: RadiationMonitoringRow[]) => Promise<boolean>;
 
   // Supabase Cloud Diagnostics & Manual Sync Controls
   supabaseDiagnostic: SupabaseSyncDiagnostic | null;
@@ -229,6 +241,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [saranaPrasaranaData, setSaranaPrasaranaData] = useState<SaranaPrasaranaDataset>(() =>
     createInitialSaranaPrasaranaData(2026)
   );
+  const [linenRows, setLinenRows] = useState<LinenMonitoringRow[]>(() =>
+    createInitialLinenMonitoringData()
+  );
+  const [radiationRows, setRadiationRows] = useState<RadiationMonitoringRow[]>(() =>
+    createInitialRadiationMonitoringData()
+  );
 
   const [supabaseDiagnostic, setSupabaseDiagnostic] =
     useState<SupabaseSyncDiagnostic | null>(null);
@@ -291,6 +309,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
     if (cloud.sarana_prasarana && typeof cloud.sarana_prasarana === 'object') {
       setSaranaPrasaranaData(cloud.sarana_prasarana);
+    }
+    if (
+      Array.isArray(cloud.linen_monitoring) &&
+      cloud.linen_monitoring.length > 0
+    ) {
+      setLinenRows(cloud.linen_monitoring);
+    }
+    if (
+      Array.isArray(cloud.radiation_monitoring) &&
+      cloud.radiation_monitoring.length > 0
+    ) {
+      setRadiationRows(cloud.radiation_monitoring);
     }
     if (Array.isArray(cloud.activities)) {
       setActivities(cloud.activities);
@@ -516,6 +546,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     async (data: SaranaPrasaranaDataset): Promise<boolean> => {
       setSaranaPrasaranaData(data);
       await persistCollectionToSupabase('sarana_prasarana', data);
+      return true;
+    },
+    [persistCollectionToSupabase]
+  );
+
+  const updateLinenRows = useCallback(
+    async (rows: LinenMonitoringRow[]): Promise<boolean> => {
+      setLinenRows(rows);
+      await persistCollectionToSupabase('linen_monitoring', rows);
+      return true;
+    },
+    [persistCollectionToSupabase]
+  );
+
+  const updateRadiationRows = useCallback(
+    async (rows: RadiationMonitoringRow[]): Promise<boolean> => {
+      setRadiationRows(rows);
+      await persistCollectionToSupabase('radiation_monitoring', rows);
       return true;
     },
     [persistCollectionToSupabase]
@@ -826,6 +874,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         updateFoodRows,
         saranaPrasaranaData,
         updateSaranaPrasaranaData,
+        linenRows,
+        updateLinenRows,
+        radiationRows,
+        updateRadiationRows,
         supabaseDiagnostic,
         isSyncingSupabase,
         syncAllToSupabase,

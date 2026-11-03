@@ -249,16 +249,16 @@ export const MAIN_NAVIGATION: MainMenuItem[] = [
         ],
       },
       {
-        id: 'higiene-sanitasi',
-        title: 'Higiene dan Sanitasi Lingkungan',
-        href: '/monitoring/higiene-sanitasi',
-        description:
-          'Wadah monitoring kebersihan ruang, fasilitas sanitasi, toilet, pengelolaan linen, dan desinfeksi lingkungan.',
-        status: 'Placeholder',
+        id: 'penyelenggaraan-linen',
+        title: 'Monitoring Penyelenggaraan Linen',
+        href: '/monitoring/penyelenggaraan-linen',
+        description: '',
+        status: 'Functional',
         plannedFeatures: [
-          'Inspeksi kebersihan permukaan lantai, dinding, dan fasilitas sanitasi ruangan',
-          'Monitoring ketersediaan sarana cuci tangan dan tempat sampah terpilah',
-          'Pencatatan kegiatan pembersihan umum (general cleaning) dan desinfeksi',
+          'Tabel Penyelenggaraan Linen Januari–Desember (Adanya MoU dengan Pihak Ke tiga, Dilakukan pemilahan antara linen infeksius dan non infeksius, Dilakukan pengawasan, dan Capaian)',
+          'Input dan pembaruan data secara realtime per bulan (Ya/Tidak & Capaian %)',
+          'Visualisasi grafik interaktif capaian penyelenggaraan linen bulanan dan pemenuhan indikator',
+          'Analisa, rekomendasi, dan rencana tindak lanjut otomatis sesuai data yang ditampilkan',
         ],
       },
       {
@@ -275,15 +275,16 @@ export const MAIN_NAVIGATION: MainMenuItem[] = [
         ],
       },
       {
-        id: 'monitoring-lainnya',
-        title: 'Monitoring Lainnya',
-        href: '/monitoring/lainnya',
-        description:
-          'Wadah fleksibel yang dapat dikonfigurasi untuk jenis pemantauan kesehatan lingkungan tambahan sesuai kebutuhan RSUD Al-Mulk.',
-        status: 'Placeholder',
+        id: 'pengamanan-radiasi',
+        title: 'Monitoring Pengamanan Radiasi',
+        href: '/monitoring/pengamanan-radiasi',
+        description: '',
+        status: 'Functional',
         plannedFeatures: [
-          'Pembuatan modul pemantauan kustom berbasis kategori master data',
-          'Konfigurasi field pemeriksaan dinamis tanpa perubahan kode inti',
+          'Tabel Pengamanan Radiasi Januari–Desember (Izin penggunaan alat dari BAPETEN, Kepemilikan peralatan proteksi radiasi, Pemantauan pekerja radiasi menggunakan alat proteksi diri, dan Capaian)',
+          'Input dan pembaruan data secara realtime per bulan (Ya/Tidak & Capaian %)',
+          'Visualisasi grafik interaktif capaian pengamanan radiasi bulanan dan pemenuhan indikator',
+          'Analisa, rekomendasi, dan rencana tindak lanjut otomatis sesuai data yang ditampilkan',
         ],
       },
     ],
@@ -826,7 +827,13 @@ export function resolveRouteMeta(pathname: string): {
   parentMenu?: MainMenuItem;
   subMenu?: SubMenuItem;
 } {
-  const cleanPath = pathname.split('?')[0].replace(/\/$/, '') || '/dashboard';
+  const rawCleanPath = pathname.split('?')[0].replace(/\/$/, '') || '/dashboard';
+  const cleanPath =
+    rawCleanPath === '/monitoring/higiene-sanitasi'
+      ? '/monitoring/penyelenggaraan-linen'
+      : rawCleanPath === '/monitoring/lainnya'
+        ? '/monitoring/pengamanan-radiasi'
+        : rawCleanPath;
 
   for (const menu of MAIN_NAVIGATION) {
     if (menu.href === cleanPath) {

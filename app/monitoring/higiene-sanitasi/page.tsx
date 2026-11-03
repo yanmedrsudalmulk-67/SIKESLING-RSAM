@@ -1,10 +1,5 @@
-import { MonitoringSubmoduleView } from '@/components/sikesling/monitoring-views';
+import { LinenMonitoringView } from '@/components/sikesling/linen-monitoring-view';
 
 export default function MonitoringHigieneSanitasiPage() {
-  return (
-    <MonitoringSubmoduleView
-      routePath="/monitoring/higiene-sanitasi"
-      subCategories={['Kebersihan Ruangan', 'Fasilitas Sanitasi & Toilet', 'Pengelolaan Linen']}
-    />
-  );
+  return <LinenMonitoringView />;
 }

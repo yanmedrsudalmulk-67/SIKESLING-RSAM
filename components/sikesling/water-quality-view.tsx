@@ -433,10 +433,16 @@ export function WaterQualityMonitoringView() {
                 <th className="border border-slate-400 dark:border-slate-700 bg-[#EFE4D2] dark:bg-[#002147] px-4 py-3 text-center font-bold w-32 align-middle">
                   BULAN
                 </th>
-                <th className="border border-slate-400 dark:border-slate-700 bg-[#EFE4D2] dark:bg-[#002147] px-4 py-3 text-center font-bold w-40 align-middle">
+                <th
+                  style={{ fontSize: '13px' }}
+                  className="border border-slate-400 dark:border-slate-700 bg-[#EFE4D2] dark:bg-[#002147] px-4 py-3 text-center font-bold w-40 align-middle text-[13px]"
+                >
                   NAMA
                 </th>
-                <th className="border border-slate-400 dark:border-slate-700 bg-[#EFE4D2] dark:bg-[#002147] px-4 py-3 text-center font-bold min-w-[170px] align-middle">
+                <th
+                  style={{ fontSize: '13px' }}
+                  className="border border-slate-400 dark:border-slate-700 bg-[#EFE4D2] dark:bg-[#002147] px-4 py-3 text-center font-bold min-w-[170px] align-middle text-[13px]"
+                >
                   Indikator Mutu AIR BERSIH
                 </th>
                 <th className="border border-slate-400 dark:border-slate-700 bg-[#EFE4D2] dark:bg-[#002147] px-4 py-3 text-center font-bold w-36 align-middle">

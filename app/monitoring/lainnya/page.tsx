@@ -1,10 +1,5 @@
-import { MonitoringSubmoduleView } from '@/components/sikesling/monitoring-views';
+import { RadiationMonitoringView } from '@/components/sikesling/radiation-monitoring-view';
 
-export default function MonitoringLainnyaPage() {
-  return (
-    <MonitoringSubmoduleView
-      routePath="/monitoring/lainnya"
-      subCategories={['Monitoring Tambahan Kustom']}
-    />
-  );
+export default function MonitoringLainnyaAliasPage() {
+  return <RadiationMonitoringView />;
 }
