@@ -334,7 +334,7 @@ test('air quality and indoor physical environment dataset is populated with requ
   assert.ok(meta.breadcrumbs.length >= 2);
 });
 
-test('supabase integration normalizes REST v1 URLs and defines all 20 application collections', () => {
+test('supabase integration normalizes REST v1 URLs and defines all 21 application collections', () => {
   const parsed = normalizeSupabaseUrls('https://zwsshqpenadbpytvwkje.supabase.co/rest/v1/');
   assert.equal(parsed.projectUrl, 'https://zwsshqpenadbpytvwkje.supabase.co');
   assert.equal(parsed.restUrl, 'https://zwsshqpenadbpytvwkje.supabase.co/rest/v1');
@@ -344,7 +344,7 @@ test('supabase integration normalizes REST v1 URLs and defines all 20 applicatio
   assert.ok(cfg.anonKey.startsWith('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'));
 
   const initialState = createInitialSikeslingCloudState();
-  assert.equal(Object.keys(initialState).length, 20);
+  assert.equal(Object.keys(initialState).length, 21);
 });
 
 

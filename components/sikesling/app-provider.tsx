@@ -20,8 +20,11 @@ import {
 } from '@/lib/domain';
 import {
   WaterQualityRow,
+  WaterPeriodicReportRow,
   createInitialWaterQualityData,
   ensureCompleteWaterQualityRows,
+  createInitialWaterPeriodicReports,
+  ensureCompleteWaterPeriodicReports,
 } from '@/lib/water-quality';
 import {
   WastewaterRow,
@@ -150,6 +153,8 @@ interface AppContextValue {
   // Environmental Monitoring Datasets (Synced with Supabase — No Local Storage)
   waterRows: WaterQualityRow[];
   updateWaterRows: (rows: WaterQualityRow[]) => Promise<boolean>;
+  waterPeriodicReports: WaterPeriodicReportRow[];
+  updateWaterPeriodicReports: (rows: WaterPeriodicReportRow[]) => Promise<boolean>;
   airItems: AirQualitySnapshotItem[];
   updateAirItems: (items: AirQualitySnapshotItem[]) => Promise<boolean>;
   wastewaterRows: WastewaterRow[];
@@ -217,6 +222,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [waterRows, setWaterRows] = useState<WaterQualityRow[]>(() =>
     createInitialWaterQualityData(2026)
   );
+  const [waterPeriodicReports, setWaterPeriodicReports] = useState<WaterPeriodicReportRow[]>(
+    () => createInitialWaterPeriodicReports(2026)
+  );
   const [airItems, setAirItems] = useState<AirQualitySnapshotItem[]>(
     initialMonitoringDefaults.airItems
   );
@@ -273,6 +281,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       cloud.water_quality_2026.length > 0
     ) {
       setWaterRows(ensureCompleteWaterQualityRows(cloud.water_quality_2026));
+    }
+    if (
+      Array.isArray(cloud.water_periodic_reports) &&
+      cloud.water_periodic_reports.length > 0
+    ) {
+      setWaterPeriodicReports(
+        ensureCompleteWaterPeriodicReports(cloud.water_periodic_reports)
+      );
     }
     if (Array.isArray(cloud.air_quality_items)) {
       setAirItems(cloud.air_quality_items);
@@ -474,6 +490,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     async (rows: WaterQualityRow[]): Promise<boolean> => {
       setWaterRows(rows);
       await persistCollectionToSupabase('water_quality_2026', rows);
+      return true;
+    },
+    [persistCollectionToSupabase]
+  );
+
+  const updateWaterPeriodicReports = useCallback(
+    async (rows: WaterPeriodicReportRow[]): Promise<boolean> => {
+      setWaterPeriodicReports(rows);
+      await persistCollectionToSupabase('water_periodic_reports', rows);
       return true;
     },
     [persistCollectionToSupabase]
@@ -858,6 +883,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         updateHospitalProfile,
         waterRows,
         updateWaterRows,
+        waterPeriodicReports,
+        updateWaterPeriodicReports,
         airItems,
         updateAirItems,
         wastewaterRows,

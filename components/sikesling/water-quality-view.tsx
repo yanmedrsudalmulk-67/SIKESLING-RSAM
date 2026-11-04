@@ -20,6 +20,7 @@ import {
   Building2,
   ClipboardCheck,
   ChevronDown,
+  FileSpreadsheet,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -58,12 +59,26 @@ import {
   buildSourceComplianceBreakdown,
   generateDeterministicWaterAnalysis,
   WaterAIAnalysisResult,
+  WaterPeriodicReportRow,
 } from '@/lib/water-quality';
+import { WaterPeriodicReportSheet } from '@/components/sikesling/water-periodic-report-sheet';
+
+type WaterSheetTab = 'baku-mutu' | 'laporan-berkala';
 
 export function WaterQualityMonitoringView() {
   const meta = resolveRouteMeta('/monitoring/kualitas-air');
-  const { resolvedTheme, pushToast, addFinding, waterRows: rows, updateWaterRows } = useApp();
+  const {
+    resolvedTheme,
+    pushToast,
+    addFinding,
+    waterRows: rows,
+    updateWaterRows,
+    waterPeriodicReports,
+    updateWaterPeriodicReports,
+  } = useApp();
   const isDark = resolvedTheme === 'dark';
+
+  const [activeSheet, setActiveSheet] = useState<WaterSheetTab>('baku-mutu');
 
   const [selectedYear, setSelectedYear] = useState<number>(2026);
   const [selectedPeriod, setSelectedPeriod] = useState<WaterPeriodFilter>('FULL_YEAR');
@@ -80,6 +95,14 @@ export function WaterQualityMonitoringView() {
       void updateWaterRows(updated);
     },
     [updateWaterRows]
+  );
+
+  const savePeriodicReports = useCallback(
+    (updated: WaterPeriodicReportRow[]) => {
+      setHasUnsavedChanges(true);
+      void updateWaterPeriodicReports(updated);
+    },
+    [updateWaterPeriodicReports]
   );
 
   // Inline editing state
@@ -411,6 +434,53 @@ export function WaterQualityMonitoringView() {
         }
       />
 
+      {/* SHEET MENU TABS: Indikator Baku Mutu Air Bersih & Laporan Berkala Pengambilan Air (SIPA) */}
+      <div
+        role="tablist"
+        aria-label="Pilih Sheet Monitoring Kualitas Air"
+        className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full"
+      >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeSheet === 'baku-mutu'}
+          onClick={() => setActiveSheet('baku-mutu')}
+          className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-xs sm:text-sm font-bold text-center transition-all cursor-pointer whitespace-nowrap ${
+            activeSheet === 'baku-mutu'
+              ? 'bg-[#002147] text-[#D2B48C] shadow-md ring-2 ring-[#D2B48C]/60'
+              : 'bg-white/90 dark:bg-[#001835]/80 text-[#002147] dark:text-slate-200 border border-[#D2B48C]/50 hover:bg-[#F7F1E7]'
+          }`}
+        >
+          <Droplets className="w-4 h-4 shrink-0" />
+          <span>Indikator Baku Mutu Air Bersih</span>
+        </button>
+
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeSheet === 'laporan-berkala'}
+          onClick={() => setActiveSheet('laporan-berkala')}
+          className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-xs sm:text-sm font-bold text-center transition-all cursor-pointer whitespace-nowrap ${
+            activeSheet === 'laporan-berkala'
+              ? 'bg-[#002147] text-[#D2B48C] shadow-md ring-2 ring-[#D2B48C]/60'
+              : 'bg-white/90 dark:bg-[#001835]/80 text-[#002147] dark:text-slate-200 border border-[#D2B48C]/50 hover:bg-[#F7F1E7]'
+          }`}
+        >
+          <FileSpreadsheet className="w-4 h-4 shrink-0" />
+          <span>Laporan Berkala Pengambilan Air (SIPA)</span>
+        </button>
+      </div>
+
+      {activeSheet === 'laporan-berkala' ? (
+        <WaterPeriodicReportSheet
+          rows={waterPeriodicReports}
+          selectedYear={selectedYear}
+          isDark={isDark}
+          onUpdateRows={savePeriodicReports}
+          pushToast={pushToast}
+        />
+      ) : (
+        <>
       {/* 2. TABEL INDIKATOR BAKU MUTU AIR BERSIH DENGAN TEMA OXFORD & TAN */}
       <section
         aria-label="Tabel Indikator Baku Mutu Air Bersih"
@@ -968,6 +1038,8 @@ export function WaterQualityMonitoringView() {
           </ol>
         </div>
       </section>
+        </>
+      )}
 
       {/* MODAL INPUT / EDIT HASIL PEMERIKSAAN BULANAN */}
       {isInputModalOpen && (
@@ -1166,12 +1238,13 @@ export function WaterQualityMonitoringView() {
             setEditingRowId(null);
           }
           await updateWaterRows(nextRows);
+          await updateWaterPeriodicReports(waterPeriodicReports);
           setHasUnsavedChanges(false);
           pushToast({
             type: 'success',
             title: 'Data Monitoring Kualitas Air Tersimpan',
             message:
-              'Data tabel Monitoring Kualitas Air telah disimpan dalam aplikasi dan disinkronkan ke database Supabase.',
+              'Seluruh sheet Monitoring Kualitas Air telah disimpan dalam aplikasi dan disinkronkan ke database Supabase.',
           });
         }}
       />

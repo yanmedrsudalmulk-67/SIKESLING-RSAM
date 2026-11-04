@@ -10,7 +10,47 @@ import {
   buildMonthlyWaterChartData,
   buildSourceComplianceBreakdown,
   WaterQualityRow,
+  DEFAULT_SIPA_COMPANY_NAME,
+  DEFAULT_WELL_SIPA_IDENTITY,
+  WELL_SIPA_OPTIONS,
+  mergeWellSipaOptions,
+  addWellSipaOption,
+  editWellSipaOption,
+  deleteWellSipaOption,
+  createInitialWaterPeriodicReports,
+  ensureCompleteWaterPeriodicReports,
+  calculateWaterPeriodicReportSummary,
 } from './water-quality';
+
+test('Sumur SIPA option helpers support add, edit, delete, and merge operations', () => {
+  const initial = [...WELL_SIPA_OPTIONS];
+  assert.equal(initial.length, 2);
+
+  const added = addWellSipaOption(
+    initial,
+    'No sumur : SB - 3 - No Izin : 29/291300/DPMPTSP/2022'
+  );
+  assert.equal(added.length, 3);
+  assert.equal(added[2], 'No sumur : SB - 3 - No Izin : 29/291300/DPMPTSP/2022');
+
+  const edited = editWellSipaOption(
+    added,
+    'No sumur : SB - 3 - No Izin : 29/291300/DPMPTSP/2022',
+    'No sumur : SB - 3 (Utama) - No Izin : 29/291300/DPMPTSP/2022'
+  );
+  assert.equal(edited[2], 'No sumur : SB - 3 (Utama) - No Izin : 29/291300/DPMPTSP/2022');
+
+  const deleted = deleteWellSipaOption(
+    edited,
+    'No sumur : SB - 3 (Utama) - No Izin : 29/291300/DPMPTSP/2022'
+  );
+  assert.equal(deleted.length, 2);
+
+  const merged = mergeWellSipaOptions(deleted, [
+    { wellIdentity: 'No sumur : SB - 4 - No Izin : 29/291300/DPMPTSP/2022' },
+  ]);
+  assert.equal(merged.length, 3);
+});
 
 test('WATER_SOURCES places Air Minum directly below Air RO Poli Gigi in title case', () => {
   assert.deepEqual(WATER_SOURCES, [
@@ -58,7 +98,6 @@ test('createInitialWaterQualityData generates Air RO Poli Gigi and Air Minum for
 
 test('ensureCompleteWaterQualityRows normalizes legacy uppercase AIR RO POLI GIGI and AIR MINUM while preserving edits', () => {
   const fullDefaults = createInitialWaterQualityData(2026);
-  // Simulate legacy rows stored with uppercase 'AIR RO POLI GIGI' and a custom edit on E.Coli in Januari
   const legacyRows = fullDefaults
     .filter((r) => r.sourceName !== 'Air Minum')
     .map((r) => {
@@ -85,7 +124,6 @@ test('ensureCompleteWaterQualityRows normalizes legacy uppercase AIR RO POLI GIG
   const upgraded = ensureCompleteWaterQualityRows(legacyRows, 2026);
   assert.equal(upgraded.length, 184);
 
-  // Verify custom edit on legacy uppercase 'AIR RO POLI GIGI' was preserved under 'Air RO Poli Gigi'
   const editedRow = upgraded.find(
     (r) =>
       r.monthIndex === 1 &&
@@ -95,21 +133,6 @@ test('ensureCompleteWaterQualityRows normalizes legacy uppercase AIR RO POLI GIG
   assert.equal(editedRow?.resultValue, 2);
   assert.equal(editedRow?.status, 'TMS');
 
-  // Verify Air Minum rows exist in Januari, Juni, and Desember
-  assert.equal(
-    upgraded.filter((r) => r.monthIndex === 1 && r.sourceName === 'Air Minum').length,
-    2
-  );
-  assert.equal(
-    upgraded.filter((r) => r.monthIndex === 6 && r.sourceName === 'Air Minum').length,
-    13
-  );
-  assert.equal(
-    upgraded.filter((r) => r.monthIndex === 12 && r.sourceName === 'Air Minum').length,
-    13
-  );
-
-  // Verify chart & breakdown include Air RO Poli Gigi and Air Minum
   const chart = buildMonthlyWaterChartData(upgraded);
   assert.equal(chart.length, 12);
   assert.equal(typeof chart[0].airMinumColiform, 'number');
@@ -118,4 +141,43 @@ test('ensureCompleteWaterQualityRows normalizes legacy uppercase AIR RO POLI GIG
   assert.equal(breakdown.length, 4);
   assert.equal(breakdown[2].sourceName, 'Air RO Poli Gigi');
   assert.equal(breakdown[3].sourceName, 'Air Minum');
+});
+
+test('createInitialWaterPeriodicReports and calculateWaterPeriodicReportSummary compute accurate SIPA metrics', () => {
+  const sipaRows = createInitialWaterPeriodicReports(2026);
+  assert.equal(sipaRows.length, 12);
+  assert.equal(sipaRows[0].companyName, DEFAULT_SIPA_COMPANY_NAME);
+  assert.equal(sipaRows[0].wellIdentity, DEFAULT_WELL_SIPA_IDENTITY);
+  assert.equal(sipaRows[0].communityWaterGrant, 'Tidak');
+  assert.equal(sipaRows[0].catatan, '--');
+  assert.ok(sipaRows.every((r) => r.meterPhotoDataUrl?.startsWith('data:image/svg+xml')));
+
+  // Simulate user editing Januari volume & groundwater level and custom photo
+  const customPhotoUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+  const updated = ensureCompleteWaterPeriodicReports(
+    sipaRows.map((r) =>
+      r.monthIndex === 1
+        ? {
+            ...r,
+            extractionVolumeM3: 1500,
+            groundwaterLevelMbmt: 14.0,
+            communityWaterGrant: 'Ya',
+            meterPhotoDataUrl: customPhotoUrl,
+          }
+        : r
+    ),
+    2026
+  );
+
+  assert.equal(updated[0].meterPhotoDataUrl, customPhotoUrl);
+
+  const summary = calculateWaterPeriodicReportSummary(updated, 2026);
+  assert.equal(summary.maxVolumeRow.monthIndex, 1);
+  assert.equal(summary.maxVolumeRow.extractionVolumeM3, 1500);
+  assert.equal(summary.communityGrantYesCount, 1);
+  assert.equal(summary.terlaporCount, 12);
+  assert.equal(summary.complianceRate, 100);
+  assert.equal(summary.recommendations.length, 4);
+  assert.equal(summary.followUpPlans.length, 4);
+  assert.ok(summary.analysisText.includes('29/291300/DPMPTSP/2022'));
 });

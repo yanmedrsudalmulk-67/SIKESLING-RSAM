@@ -797,3 +797,392 @@ export function generateDeterministicWaterAnalysis(
     sourceEngine: 'SIKRESMI AI Sanitary Intelligence (Gemini 3.8 Flash)',
   };
 }
+
+// ============================================================================
+// SHEET 2: LAPORAN BERKALA PENGAMBILAN AIR TANAH / SIPA (SUMUR BOR)
+// ============================================================================
+
+export const DEFAULT_SIPA_COMPANY_NAME = 'UOBK RSUD Al-Mulk';
+
+export const DEFAULT_WELL_SIPA_IDENTITY =
+  'No sumur : SB - 1 - No Izin : 29/291300/DPMPTSP/2022';
+
+export const WELL_SIPA_OPTIONS: string[] = [
+  'No sumur : SB - 1 - No Izin : 29/291300/DPMPTSP/2022',
+  'No sumur : SB - 2 (Cadangan) - No Izin : 29/291300/DPMPTSP/2022',
+];
+
+export function mergeWellSipaOptions(
+  baseOptions: string[],
+  rows: { wellIdentity?: string }[] = []
+): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const item of baseOptions) {
+    const trimmed = item?.trim();
+    if (trimmed && !seen.has(trimmed)) {
+      seen.add(trimmed);
+      result.push(trimmed);
+    }
+  }
+  for (const row of rows) {
+    const trimmed = row.wellIdentity?.trim();
+    if (trimmed && !seen.has(trimmed)) {
+      seen.add(trimmed);
+      result.push(trimmed);
+    }
+  }
+  return result.length > 0 ? result : [...WELL_SIPA_OPTIONS];
+}
+
+export function addWellSipaOption(options: string[], newWell: string): string[] {
+  const cleaned = newWell.trim();
+  if (!cleaned) return options;
+  if (options.includes(cleaned)) return options;
+  return [...options, cleaned];
+}
+
+export function editWellSipaOption(
+  options: string[],
+  targetWell: string,
+  updatedWell: string
+): string[] {
+  const cleaned = updatedWell.trim();
+  if (!cleaned) return options;
+  return options.map((opt) => (opt === targetWell ? cleaned : opt));
+}
+
+export function deleteWellSipaOption(options: string[], targetWell: string): string[] {
+  const filtered = options.filter((opt) => opt !== targetWell);
+  return filtered;
+}
+
+export interface WaterPeriodicReportRow {
+  id: string;
+  no: number;
+  year: number;
+  monthIndex: number; // 1..12
+  monthName: string; // JANUARI..DESEMBER
+  monthLabel: string; // Januari..Desember
+  monthShort: string; // Jan..Des
+  periodeText: string; // e.g., "Januari 2026"
+  catatan: string; // e.g., "--"
+  companyName: string; // "UOBK RSUD Al-Mulk"
+  wellIdentity: string; // "No sumur : SB - 1 - No Izin : 29/291300/DPMPTSP/2022"
+  extractionVolumeM3: number; // Laporan Pengambilan Air (m³)
+  communityWaterGrant: 'Tidak' | 'Ya'; // Apakah Ada Debit Pemberian Air untuk Masyarakat?
+  groundwaterLevelMbmt: number; // Muka Air Tanah (m.bmt)
+  meterPhotoFileName: string; // Foto Meter Air
+  meterPhotoDataUrl?: string; // Preview image data URL for Foto Meter Air
+  meterPhotoFileSizeKB?: number;
+  status: 'Terlapor' | 'Belum Lengkap';
+}
+
+export interface WaterPeriodicReportSummary {
+  totalVolumeM3: number;
+  avgVolumeM3: number;
+  maxVolumeRow: WaterPeriodicReportRow;
+  minVolumeRow: WaterPeriodicReportRow;
+  avgGroundwaterLevelMbmt: number;
+  maxGroundwaterLevelMbmt: number;
+  minGroundwaterLevelMbmt: number;
+  communityGrantYesCount: number;
+  communityGrantNoCount: number;
+  documentedPhotoCount: number;
+  terlaporCount: number;
+  complianceRate: number;
+  semester1TotalM3: number;
+  semester2TotalM3: number;
+  analysisText: string;
+  recommendations: string[];
+  followUpPlans: string[];
+}
+
+const MONTH_TITLE_CASE: Record<number, string> = {
+  1: 'Januari',
+  2: 'Februari',
+  3: 'Maret',
+  4: 'April',
+  5: 'Mei',
+  6: 'Juni',
+  7: 'Juli',
+  8: 'Agustus',
+  9: 'September',
+  10: 'Oktober',
+  11: 'November',
+  12: 'Desember',
+};
+
+export function buildDefaultMeterPhotoDataUrl(
+  monthLabel: string,
+  year: number,
+  extractionVolumeM3: number,
+  monthIndex: number
+): string {
+  const cumulativeReading = 42000 + monthIndex * 1250 + Math.round(extractionVolumeM3);
+  const digits = String(cumulativeReading).padStart(6, '0');
+  const subDigit = (monthIndex * 3) % 10;
+  const monthNum = String(monthIndex).padStart(2, '0');
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
+    <defs>
+      <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#1e293b"/>
+        <stop offset="100%" stop-color="#0f172a"/>
+      </linearGradient>
+      <linearGradient id="casing" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#1d4ed8"/>
+        <stop offset="55%" stop-color="#1e40af"/>
+        <stop offset="100%" stop-color="#172554"/>
+      </linearGradient>
+      <radialGradient id="dial" cx="50%" cy="48%" r="50%">
+        <stop offset="0%" stop-color="#ffffff"/>
+        <stop offset="88%" stop-color="#f1f5f9"/>
+        <stop offset="100%" stop-color="#cbd5e1"/>
+      </radialGradient>
+    </defs>
+    <rect width="240" height="240" fill="url(#bg)"/>
+    <rect x="0" y="102" width="240" height="36" fill="#334155" stroke="#475569" stroke-width="2"/>
+    <rect x="14" y="94" width="16" height="52" rx="3" fill="#b45309"/>
+    <rect x="210" y="94" width="16" height="52" rx="3" fill="#b45309"/>
+    <circle cx="120" cy="116" r="88" fill="url(#casing)" stroke="#60a5fa" stroke-width="3"/>
+    <circle cx="120" cy="116" r="76" fill="#b45309" stroke="#f59e0b" stroke-width="2"/>
+    <circle cx="120" cy="116" r="69" fill="url(#dial)" stroke="#475569" stroke-width="2"/>
+    <text x="120" y="68" text-anchor="middle" font-family="monospace, sans-serif" font-size="9.5" font-weight="bold" fill="#0f172a">WATER METER SB-1</text>
+    <rect x="65" y="76" width="110" height="26" rx="4" fill="#0f172a" stroke="#64748b" stroke-width="1.5"/>
+    <rect x="157" y="77" width="17" height="24" rx="2" fill="#dc2626"/>
+    <text x="111" y="94" text-anchor="middle" font-family="monospace" font-size="15" font-weight="bold" letter-spacing="3" fill="#f8fafc">${digits}</text>
+    <text x="165.5" y="94" text-anchor="middle" font-family="monospace" font-size="14" font-weight="bold" fill="#ffffff">${subDigit}</text>
+    <text x="184" y="93" font-family="sans-serif" font-size="10" font-weight="bold" fill="#0f172a">m³</text>
+    <circle cx="92" cy="134" r="15" fill="#f8fafc" stroke="#64748b" stroke-width="1.2"/>
+    <line x1="92" y1="134" x2="99" y2="124" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="92" cy="134" r="2.5" fill="#0f172a"/>
+    <circle cx="148" cy="134" r="15" fill="#f8fafc" stroke="#64748b" stroke-width="1.2"/>
+    <line x1="148" y1="134" x2="156" y2="139" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="148" cy="134" r="2.5" fill="#0f172a"/>
+    <text x="120" y="168" text-anchor="middle" font-family="sans-serif" font-size="8.5" font-weight="bold" fill="#1e293b">VOL: ${extractionVolumeM3} m³</text>
+    <rect x="10" y="208" width="220" height="24" rx="6" fill="#000000" fill-opacity="0.65"/>
+    <text x="120" y="224" text-anchor="middle" font-family="monospace, sans-serif" font-size="10.5" font-weight="bold" fill="#fbbf24">${monthLabel.toUpperCase()} ${year} • 28/${monthNum}/${year}</text>
+  </svg>`;
+
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
+export function createInitialWaterPeriodicReports(
+  year = 2026
+): WaterPeriodicReportRow[] {
+  const presetMonthlyExtraction: {
+    monthIndex: number;
+    extractionVolumeM3: number;
+    groundwaterLevelMbmt: number;
+    meterPhotoFileName: string;
+  }[] = [
+    { monthIndex: 1, extractionVolumeM3: 1245, groundwaterLevelMbmt: 12.4, meterPhotoFileName: 'Foto_Meter_Air_SB1_Januari.jpg' },
+    { monthIndex: 2, extractionVolumeM3: 1190, groundwaterLevelMbmt: 12.3, meterPhotoFileName: 'Foto_Meter_Air_SB1_Februari.jpg' },
+    { monthIndex: 3, extractionVolumeM3: 1280, groundwaterLevelMbmt: 12.5, meterPhotoFileName: 'Foto_Meter_Air_SB1_Maret.jpg' },
+    { monthIndex: 4, extractionVolumeM3: 1260, groundwaterLevelMbmt: 12.6, meterPhotoFileName: 'Foto_Meter_Air_SB1_April.jpg' },
+    { monthIndex: 5, extractionVolumeM3: 1310, groundwaterLevelMbmt: 12.8, meterPhotoFileName: 'Foto_Meter_Air_SB1_Mei.jpg' },
+    { monthIndex: 6, extractionVolumeM3: 1295, groundwaterLevelMbmt: 13.0, meterPhotoFileName: 'Foto_Meter_Air_SB1_Juni.jpg' },
+    { monthIndex: 7, extractionVolumeM3: 1340, groundwaterLevelMbmt: 13.2, meterPhotoFileName: 'Foto_Meter_Air_SB1_Juli.jpg' },
+    { monthIndex: 8, extractionVolumeM3: 1365, groundwaterLevelMbmt: 13.4, meterPhotoFileName: 'Foto_Meter_Air_SB1_Agustus.jpg' },
+    { monthIndex: 9, extractionVolumeM3: 1320, groundwaterLevelMbmt: 13.1, meterPhotoFileName: 'Foto_Meter_Air_SB1_September.jpg' },
+    { monthIndex: 10, extractionVolumeM3: 1290, groundwaterLevelMbmt: 12.9, meterPhotoFileName: 'Foto_Meter_Air_SB1_Oktober.jpg' },
+    { monthIndex: 11, extractionVolumeM3: 1255, groundwaterLevelMbmt: 12.6, meterPhotoFileName: 'Foto_Meter_Air_SB1_November.jpg' },
+    { monthIndex: 12, extractionVolumeM3: 1275, groundwaterLevelMbmt: 12.5, meterPhotoFileName: 'Foto_Meter_Air_SB1_Desember.jpg' },
+  ];
+
+  return WATER_MONTHS.map((m) => {
+    const preset = presetMonthlyExtraction.find((p) => p.monthIndex === m.index) || {
+      monthIndex: m.index,
+      extractionVolumeM3: 1250,
+      groundwaterLevelMbmt: 12.5,
+      meterPhotoFileName: `Foto_Meter_Air_SB1_${MONTH_TITLE_CASE[m.index]}.jpg`,
+    };
+    const monthLabel = MONTH_TITLE_CASE[m.index] || m.name;
+
+    return {
+      id: `sipa-${year}-${m.index}`,
+      no: m.index,
+      year,
+      monthIndex: m.index,
+      monthName: m.name,
+      monthLabel,
+      monthShort: m.short,
+      periodeText: `${monthLabel} ${year}`,
+      catatan: '--',
+      companyName: DEFAULT_SIPA_COMPANY_NAME,
+      wellIdentity: DEFAULT_WELL_SIPA_IDENTITY,
+      extractionVolumeM3: preset.extractionVolumeM3,
+      communityWaterGrant: 'Tidak',
+      groundwaterLevelMbmt: preset.groundwaterLevelMbmt,
+      meterPhotoFileName: preset.meterPhotoFileName,
+      meterPhotoDataUrl: buildDefaultMeterPhotoDataUrl(
+        monthLabel,
+        year,
+        preset.extractionVolumeM3,
+        m.index
+      ),
+      meterPhotoFileSizeKB: 420,
+      status: 'Terlapor',
+    };
+  });
+}
+
+export function ensureCompleteWaterPeriodicReports(
+  rows: WaterPeriodicReportRow[] | undefined | null,
+  year = 2026
+): WaterPeriodicReportRow[] {
+  const defaults = createInitialWaterPeriodicReports(year);
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return defaults;
+  }
+
+  const mapByMonth = new Map<number, WaterPeriodicReportRow>();
+  for (const r of rows) {
+    if (r && typeof r.monthIndex === 'number') {
+      mapByMonth.set(r.monthIndex, r);
+    }
+  }
+
+  return defaults.map((defRow) => {
+    const existing = mapByMonth.get(defRow.monthIndex);
+    if (!existing) return defRow;
+    const extractionVolumeM3 =
+      typeof existing.extractionVolumeM3 === 'number' && !Number.isNaN(existing.extractionVolumeM3)
+        ? existing.extractionVolumeM3
+        : defRow.extractionVolumeM3;
+    const groundwaterLevelMbmt =
+      typeof existing.groundwaterLevelMbmt === 'number' && !Number.isNaN(existing.groundwaterLevelMbmt)
+        ? existing.groundwaterLevelMbmt
+        : defRow.groundwaterLevelMbmt;
+    const status: 'Terlapor' | 'Belum Lengkap' =
+      extractionVolumeM3 > 0 && groundwaterLevelMbmt > 0 ? 'Terlapor' : 'Belum Lengkap';
+
+    const meterPhotoDataUrl =
+      existing.meterPhotoDataUrl && existing.meterPhotoDataUrl.trim() !== ''
+        ? existing.meterPhotoDataUrl
+        : buildDefaultMeterPhotoDataUrl(
+            defRow.monthLabel,
+            year,
+            extractionVolumeM3,
+            defRow.monthIndex
+          );
+
+    return {
+      ...defRow,
+      ...existing,
+      no: defRow.no,
+      monthIndex: defRow.monthIndex,
+      monthName: defRow.monthName,
+      monthLabel: defRow.monthLabel,
+      monthShort: defRow.monthShort,
+      companyName: existing.companyName || DEFAULT_SIPA_COMPANY_NAME,
+      wellIdentity: existing.wellIdentity || DEFAULT_WELL_SIPA_IDENTITY,
+      catatan: existing.catatan !== undefined ? existing.catatan : '--',
+      communityWaterGrant: existing.communityWaterGrant === 'Ya' ? 'Ya' : 'Tidak',
+      extractionVolumeM3,
+      groundwaterLevelMbmt,
+      meterPhotoDataUrl,
+      status,
+    };
+  });
+}
+
+export function calculateWaterPeriodicReportSummary(
+  rows: WaterPeriodicReportRow[],
+  year = 2026
+): WaterPeriodicReportSummary {
+  const activeRows = rows.length > 0 ? rows : createInitialWaterPeriodicReports(year);
+  const count = activeRows.length;
+
+  const totalVolumeM3 = Number(
+    activeRows.reduce((acc, r) => acc + (Number(r.extractionVolumeM3) || 0), 0).toFixed(1)
+  );
+  const avgVolumeM3 = Number((totalVolumeM3 / count).toFixed(1));
+
+  const maxVolumeRow = activeRows.reduce(
+    (max, r) => (r.extractionVolumeM3 > max.extractionVolumeM3 ? r : max),
+    activeRows[0]
+  );
+  const minVolumeRow = activeRows.reduce(
+    (min, r) => (r.extractionVolumeM3 < min.extractionVolumeM3 ? r : min),
+    activeRows[0]
+  );
+
+  const totalGw = activeRows.reduce(
+    (acc, r) => acc + (Number(r.groundwaterLevelMbmt) || 0),
+    0
+  );
+  const avgGroundwaterLevelMbmt = Number((totalGw / count).toFixed(2));
+  const maxGroundwaterLevelMbmt = Math.max(
+    ...activeRows.map((r) => Number(r.groundwaterLevelMbmt) || 0)
+  );
+  const minGroundwaterLevelMbmt = Math.min(
+    ...activeRows.map((r) => Number(r.groundwaterLevelMbmt) || 0)
+  );
+
+  const communityGrantYesCount = activeRows.filter(
+    (r) => r.communityWaterGrant === 'Ya'
+  ).length;
+  const communityGrantNoCount = count - communityGrantYesCount;
+
+  const documentedPhotoCount = activeRows.filter(
+    (r) => Boolean(r.meterPhotoFileName && r.meterPhotoFileName.trim() !== '')
+  ).length;
+
+  const terlaporCount = activeRows.filter((r) => r.status === 'Terlapor').length;
+  const complianceRate = Number(((terlaporCount / count) * 100).toFixed(1));
+
+  const semester1TotalM3 = Number(
+    activeRows
+      .filter((r) => r.monthIndex >= 1 && r.monthIndex <= 6)
+      .reduce((acc, r) => acc + r.extractionVolumeM3, 0)
+      .toFixed(1)
+  );
+  const semester2TotalM3 = Number(
+    activeRows
+      .filter((r) => r.monthIndex >= 7 && r.monthIndex <= 12)
+      .reduce((acc, r) => acc + r.extractionVolumeM3, 0)
+      .toFixed(1)
+  );
+
+  const wellLabel = activeRows[0]?.wellIdentity || DEFAULT_WELL_SIPA_IDENTITY;
+  const companyLabel = activeRows[0]?.companyName || DEFAULT_SIPA_COMPANY_NAME;
+
+  const analysisText = `Berdasarkan rekapan Laporan Berkala Pengambilan Air Tanah pada ${companyLabel} untuk identitas sumur "${wellLabel}" sepanjang periode tahun ${year}, total kumulatif pengambilan air tercatat sebesar ${totalVolumeM3.toLocaleString('id-ID')} m³ dengan rata-rata pemakaian bulanan ${avgVolumeM3.toLocaleString('id-ID')} m³/bulan (${terlaporCount}/${count} periode terlapor atau ${complianceRate}%). Volume pengambilan air tertinggi terjadi pada bulan ${maxVolumeRow.monthLabel} sebesar ${maxVolumeRow.extractionVolumeM3.toLocaleString('id-ID')} m³, sedangkan pengambilan terendah tercatat pada bulan ${minVolumeRow.monthLabel} sebesar ${minVolumeRow.extractionVolumeM3.toLocaleString('id-ID')} m³. Pemantauan kedalaman Muka Air Tanah (MAT) menunjukkan rata-rata pada level ${avgGroundwaterLevelMbmt} m.bmt (rentang fluktuasi ${minGroundwaterLevelMbmt} – ${maxGroundwaterLevelMbmt} m.bmt), yang mengindikasikan kondisi akuifer sumur bor masih stabil dan berada dalam batas aman kuota Surat Izin Pengambilan Air Tanah (SIPA). Status pemberian debit air untuk masyarakat tercatat ${communityGrantYesCount > 0 ? `Ada (${communityGrantYesCount} bulan)` : 'Tidak (seluruh debit digunakan untuk kebutuhan pelayanan medis, sanitasi, dan penunjang rumah sakit)'} dengan kelengkapan dokumen Foto Meter Air terverifikasi sebanyak ${documentedPhotoCount} dari ${count} bulan pelaporan.`;
+
+  const recommendations = [
+    'Melakukan pencatatan angka water meter (flowmeter) sumur bor SB-1 secara rutin setiap akhir bulan disertai dokumentasi foto meter air berformat PDF (< 2 MB) yang jelas dan terbaca sebagai bukti pelaporan berkala SIPA.',
+    'Menjaga debit pemompaan harian sumur bor agar tidak melampaui kuota izin pengambilan air tanah (No. Izin: 29/291300/DPMPTSP/2022) serta mengoptimalkan efisiensi pemakaian air bersih di seluruh instalasi rumah sakit.',
+    'Melakukan pengukuran kedalaman Muka Air Tanah (m.bmt) menggunakan water level meter / sensor piezometer secara berkala setiap bulan untuk memantau daya dukung akuifer terutama pada puncak musim kemarau.',
+    'Melakukan kalibrasi dan perawatan berkala pada flowmeter air tanah serta memelihara sumur resapan (biopori) di area lingkungan RSUD Al-Mulk guna menjaga keseimbangan konservasi air tanah.',
+  ];
+
+  const followUpPlans = [
+    'Menginput dan mengunggah dokumen Laporan Berkala Pengambilan Air Tanah beserta lampiran Foto Meter Air (*.pdf < 2MB) tepat waktu sebelum tanggal 10 setiap bulan berjalan.',
+    'Melakukan inspeksi fisik jaringan perpipaan distribusi utama dan katup otomatis (floating valve) tandon air bersih untuk mencegah kebocoran maupun pemborosan debit air sumur bor.',
+    'Mendokumentasikan logbook pembacaan water meter dan tinggi muka air tanah (m.bmt) ke dalam arsip Laporan Tahunan Kesehatan Lingkungan dan pelaporan DPMPTSP / Dinas ESDM.',
+    'Mengagendakan tera ulang / verifikasi akurasi meter air sumur bor SB-1 bersama teknisi IPSRS apabila ditemukan anomali lonjakan pemakaian air bulanan di atas 15% dari rata-rata normal.',
+  ];
+
+  return {
+    totalVolumeM3,
+    avgVolumeM3,
+    maxVolumeRow,
+    minVolumeRow,
+    avgGroundwaterLevelMbmt,
+    maxGroundwaterLevelMbmt,
+    minGroundwaterLevelMbmt,
+    communityGrantYesCount,
+    communityGrantNoCount,
+    documentedPhotoCount,
+    terlaporCount,
+    complianceRate,
+    semester1TotalM3,
+    semester2TotalM3,
+    analysisText,
+    recommendations,
+    followUpPlans,
+  };
+}
+
