@@ -18,6 +18,20 @@ import {
   buildMonthlyWaterChartData,
   generateDeterministicWaterAnalysis,
 } from './water-quality';
+import {
+  createInitialWastewaterData,
+  filterWastewaterRows,
+  evaluateWastewaterCompliance,
+  calculateWastewaterMetrics,
+  buildMonthlyWastewaterChartData,
+  generateDeterministicWastewaterAnalysis,
+  WastewaterRow,
+} from './wastewater-quality';
+import {
+  normalizeSupabaseUrls,
+  getSupabaseConfig,
+  createInitialSikeslingCloudState,
+} from './supabase';
 
 test('navigation structure includes all 11 main menus and required routes', () => {
   assert.equal(MAIN_NAVIGATION.length, 11);
@@ -158,15 +172,16 @@ test('dashboard summary returns zero values on empty state and never invents fak
 
 test('water quality dataset matches reference image and period filters accurately', () => {
   const rows = createInitialWaterQualityData(2026);
-  // 10 regular months * 3 sources * 2 indicators (60) + 2 full months (July & Dec) * 3 sources * 13 indicators (78) = 138 rows
-  assert.equal(rows.length, 138);
+  // 10 regular months * 4 sources * 2 indicators (80) + 2 full months (June & Dec) * 4 sources * 13 indicators (104) = 184 rows
+  assert.equal(rows.length, 184);
 
   // Verify JANUARI values match screenshot:
   // Artesis: Total Coliform = 0 (MS), E.Coli = 0 (MS)
   // Air RO Lab: Total Coliform = 7 (TMS), E.Coli = 0 (MS)
-  // AIR RO POLI GIGI: Total Coliform = 4 (TMS), E.Coli = 0 (MS)
+  // Air RO Poli Gigi: Total Coliform = 4 (TMS), E.Coli = 0 (MS)
+  // Air Minum: Total Coliform = 0 (MS), E.Coli = 0 (MS)
   const janRows = filterWaterQualityRows(rows, { period: 'MONTH_1' });
-  assert.equal(janRows.length, 6);
+  assert.equal(janRows.length, 8);
   const janRoLabColiform = janRows.find(
     (r) => r.sourceName === 'Air RO Lab' && r.indicator === 'Total Coliform'
   );
@@ -174,7 +189,7 @@ test('water quality dataset matches reference image and period filters accuratel
   assert.equal(janRoLabColiform?.status, 'TMS');
 
   const janPoliGigiColiform = janRows.find(
-    (r) => r.sourceName === 'AIR RO POLI GIGI' && r.indicator === 'Total Coliform'
+    (r) => r.sourceName === 'Air RO Poli Gigi' && r.indicator === 'Total Coliform'
   );
   assert.equal(janPoliGigiColiform?.resultValue, 4);
   assert.equal(janPoliGigiColiform?.status, 'TMS');
@@ -191,10 +206,10 @@ test('water quality dataset matches reference image and period filters accuratel
   assert.equal(aprArtesisColiform?.resultValue, 9);
   assert.equal(aprArtesisColiform?.status, 'TMS');
 
-  // Verify JUNI (MONTH_6) & DESEMBER (MONTH_12) have 13 indicators per source (39 rows per month) matching Images 1-3
+  // Verify JUNI (MONTH_6) & DESEMBER (MONTH_12) have 13 indicators per source (52 rows per month) matching Images 1-3
   for (const mPeriod of ['MONTH_6', 'MONTH_12'] as const) {
     const fullMonthRows = filterWaterQualityRows(rows, { period: mPeriod });
-    assert.equal(fullMonthRows.length, 39);
+    assert.equal(fullMonthRows.length, 52);
     assert.equal(fullMonthRows.every((r) => r.status === 'MS'), true);
 
     const artesisRows = fullMonthRows.filter((r) => r.sourceName === 'Artesis');
@@ -211,22 +226,27 @@ test('water quality dataset matches reference image and period filters accuratel
     assert.equal(roLabRows.find((r) => r.indicator === 'Nitrat')?.resultDisplay, '16');
     assert.equal(roLabRows.find((r) => r.indicator === 'Besi')?.resultDisplay, '<0,0025');
 
-    const roGigiRows = fullMonthRows.filter((r) => r.sourceName === 'AIR RO POLI GIGI');
+    const roGigiRows = fullMonthRows.filter((r) => r.sourceName === 'Air RO Poli Gigi');
     assert.equal(roGigiRows.length, 13);
     assert.equal(roGigiRows.find((r) => r.indicator === 'Suhu')?.resultDisplay, '21,8');
     assert.equal(roGigiRows.find((r) => r.indicator === 'PH')?.resultDisplay, '6,99');
     assert.equal(roGigiRows.find((r) => r.indicator === 'Nitrat')?.resultDisplay, '15,600');
     assert.equal(roGigiRows.find((r) => r.indicator === 'Besi')?.resultDisplay, '<0,0025');
+
+    const airMinumRows = fullMonthRows.filter((r) => r.sourceName === 'Air Minum');
+    assert.equal(airMinumRows.length, 13);
+    assert.equal(airMinumRows.find((r) => r.indicator === 'Suhu')?.resultDisplay, '22,0');
+    assert.equal(airMinumRows.find((r) => r.indicator === 'PH')?.resultDisplay, '7,00');
   }
 
-  // Verify JULI (MONTH_7) is a regular microbiological month with 6 rows
+  // Verify JULI (MONTH_7) is a regular microbiological month with 8 rows
   const julyRows = filterWaterQualityRows(rows, { period: 'MONTH_7' });
-  assert.equal(julyRows.length, 6);
+  assert.equal(julyRows.length, 8);
   assert.equal(julyRows.every((r) => r.indicator === 'Total Coliform' || r.indicator === 'E.Coli'), true);
 
-  // Verify Q1 filter returns 3 months (18 rows)
+  // Verify Q1 filter returns 3 months (24 rows)
   const q1Rows = filterWaterQualityRows(rows, { period: 'Q1' });
-  assert.equal(q1Rows.length, 18);
+  assert.equal(q1Rows.length, 24);
 
   // Verify chart aggregation and AI deterministic analysis
   const chartData = buildMonthlyWaterChartData(rows);
@@ -237,26 +257,17 @@ test('water quality dataset matches reference image and period filters accuratel
 
   const metrics = calculateWaterQualityMetrics(rows);
   assert.equal(metrics.tmsCount, 4);
-  assert.equal(metrics.msCount, 134);
+  assert.equal(metrics.msCount, 180);
   assert.equal(evaluateWaterCompliance(0), 'MS');
   assert.equal(evaluateWaterCompliance(1), 'TMS');
 
   const analysis = generateDeterministicWaterAnalysis(rows, '1 Tahun Penuh (2026)');
-  assert.equal(analysis.sourceDiagnoses.length, 3);
+  assert.equal(analysis.sourceDiagnoses.length, 4);
   assert.ok(analysis.recommendations.length >= 3);
 });
 
 test('wastewater quality dataset matches reference image and calculations accurately', () => {
-  const {
-    createInitialWastewaterData,
-    filterWastewaterRows,
-    evaluateWastewaterCompliance,
-    calculateWastewaterMetrics,
-    buildMonthlyWastewaterChartData,
-    generateDeterministicWastewaterAnalysis,
-  } = require('./wastewater-quality');
-
-  const rows = createInitialWastewaterData(2026);
+  const rows: WastewaterRow[] = createInitialWastewaterData(2026);
   // 12 months * 2 points * 11 indicators = 264 rows
   assert.equal(rows.length, 264);
 
@@ -318,19 +329,12 @@ test('wastewater quality dataset matches reference image and calculations accura
 
 test('air quality and indoor physical environment dataset is populated with required groups and parameters', () => {
   // Test navigation route metadata for /monitoring/kualitas-udara
-  const { resolveRouteMeta } = require('./navigation');
   const meta = resolveRouteMeta('/monitoring/kualitas-udara');
   assert.equal(meta.title, 'Monitoring Kualitas Udara');
   assert.ok(meta.breadcrumbs.length >= 2);
 });
 
-test('supabase integration normalizes REST v1 URLs and defines all 18 application collections', () => {
-  const {
-    normalizeSupabaseUrls,
-    getSupabaseConfig,
-    createInitialSikeslingCloudState,
-  } = require('./supabase');
-
+test('supabase integration normalizes REST v1 URLs and defines all 20 application collections', () => {
   const parsed = normalizeSupabaseUrls('https://zwsshqpenadbpytvwkje.supabase.co/rest/v1/');
   assert.equal(parsed.projectUrl, 'https://zwsshqpenadbpytvwkje.supabase.co');
   assert.equal(parsed.restUrl, 'https://zwsshqpenadbpytvwkje.supabase.co/rest/v1');
@@ -340,7 +344,7 @@ test('supabase integration normalizes REST v1 URLs and defines all 18 applicatio
   assert.ok(cfg.anonKey.startsWith('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'));
 
   const initialState = createInitialSikeslingCloudState();
-  assert.equal(Object.keys(initialState).length, 18);
+  assert.equal(Object.keys(initialState).length, 20);
 });
 
 
