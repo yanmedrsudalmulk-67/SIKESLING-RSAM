@@ -5,6 +5,7 @@ cd /d "%~dp0"
 echo ========================================================
 echo   SIKRESMI — SISTEM INFORMASI KESEHATAN LINGKUNGAN
 echo   UOBK RSUD Al-Mulk Kota Sukabumi
+echo   Mode: Produksi (Cepat, Ringan & Tanpa Tombol N)
 echo ========================================================
 echo.
 
@@ -18,14 +19,20 @@ if %ERRORLEVEL% equ 0 (
     exit
 )
 
-echo [*] Memulai server SIKRESMI di background (port 3005)...
-start "SIKRESMI Server (Port 3005)" /min cmd /c "npm run dev"
+:: Pastikan direktori .next sudah tersedia
+if not exist ".next" (
+    echo [*] Membangun paket produksi (.next)...
+    call npm run build
+)
+
+echo [*] Menyalakan server produksi SIKRESMI (port 3005)...
+start "SIKRESMI Production Server (Port 3005)" /min cmd /c "npm start"
 
 echo [*] Menunggu server siap...
 powershell -NoProfile -Command "for ($i=0; $i -lt 30; $i++) { if (Test-NetConnection -ComputerName 127.0.0.1 -Port 3005 -InformationLevel Quiet) { exit 0 }; Start-Sleep -Seconds 1 }; exit 1"
 
 if %ERRORLEVEL% equ 0 (
-    echo [OK] Server berhasil aktif! Membuka browser...
+    echo [OK] Server siap! Membuka aplikasi di browser...
     start http://localhost:3005
     timeout /t 2 >nul
     exit
