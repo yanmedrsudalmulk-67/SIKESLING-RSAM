@@ -9,7 +9,9 @@ import {
 } from './domain';
 import {
   WaterQualityRow,
+  WaterPeriodicReportRow,
   createInitialWaterQualityData,
+  createInitialWaterPeriodicReports,
 } from './water-quality';
 import {
   WastewaterRow,
@@ -153,6 +155,7 @@ export interface MasterOfficerItem {
 
 export interface SikeslingCloudState {
   water_quality_2026: WaterQualityRow[];
+  water_periodic_reports: WaterPeriodicReportRow[];
   air_quality_items: AirQualitySnapshotItem[];
   wastewater_quality_2026: WastewaterRow[];
   solid_waste_b3: SolidWasteSnapshotRow[];
@@ -313,6 +316,7 @@ export function createInitialSikeslingCloudState(): SikeslingCloudState {
   const defaultMonitoring = createDefaultMonitoringDataset(2026, []);
   return {
     water_quality_2026: createInitialWaterQualityData(2026),
+    water_periodic_reports: createInitialWaterPeriodicReports(2026),
     air_quality_items: defaultMonitoring.airItems,
     wastewater_quality_2026: createInitialWastewaterData(2026),
     solid_waste_b3: defaultMonitoring.solidWasteRows,
@@ -341,7 +345,11 @@ export const CLOUD_COLLECTION_META: Record<
 > = {
   water_quality_2026: {
     category: 'MONITORING',
-    title: 'Monitoring Kualitas Air Bersih (Artesis, RO Lab, RO Poli Gigi)',
+    title: 'Monitoring Kualitas Air Bersih (Artesis, Air RO Lab, Air RO Poli Gigi, Air Minum)',
+  },
+  water_periodic_reports: {
+    category: 'MONITORING',
+    title: 'Laporan Berkala Pengambilan Air Tanah SIPA (Sumur Bor SB-1 RSUD Al-Mulk)',
   },
   air_quality_items: {
     category: 'MONITORING',

@@ -3,12 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3005",
+    "dev": "next dev",
     "build": "next build",
-    "start": "next start -p 3005",
+    "start": "next start",
     "lint": "eslint .",
-    "clean": "next clean",
-    "sync": "git add . && git commit -m \"chore: auto sync update\" && git push origin main"
+    "clean": "next clean"
   },
   "dependencies": {
     "@google/genai": "^2.32.0",
