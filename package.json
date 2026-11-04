@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start -p 3005",
     "lint": "eslint .",
-    "clean": "next clean"
+    "clean": "next clean",
+    "sync": "git add . && git commit -m \"chore: auto sync update\" && git push origin main"
   },
   "dependencies": {
     "@google/genai": "^2.32.0",
