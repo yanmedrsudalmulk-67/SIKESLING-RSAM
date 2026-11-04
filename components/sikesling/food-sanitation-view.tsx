@@ -460,22 +460,22 @@ export function FoodSanitationView() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-xs sm:text-sm">
+          <table className="w-full min-w-[820px] table-fixed border-collapse text-xs sm:text-sm">
             <thead>
               <tr className="bg-[#EFE4D2] dark:bg-[#002147] text-[#002147] dark:text-[#D2B48C] font-bold">
-                <th className="border border-slate-400 dark:border-slate-700 px-3 py-3 text-center w-14 align-middle">
+                <th className="border border-slate-400 dark:border-slate-700 px-3 py-3 text-center w-[5%] align-middle">
                   No
                 </th>
-                <th className="border border-slate-400 dark:border-slate-700 px-4 py-3 text-center w-36 align-middle">
+                <th className="border border-slate-400 dark:border-slate-700 px-4 py-3 text-center w-[11%] align-middle">
                   Bulan
                 </th>
-                <th className="border border-slate-400 dark:border-slate-700 px-4 py-3 text-center align-middle max-w-[260px]">
+                <th className="border border-slate-400 dark:border-slate-700 px-4 py-3 text-center align-middle w-[37%] whitespace-nowrap">
                   Rumah sakit memiliki sertifikat jasa boga golongan B
                 </th>
-                <th className="border border-slate-400 dark:border-slate-700 px-4 py-3 text-center align-middle max-w-[280px]">
+                <th className="border border-slate-400 dark:border-slate-700 px-4 py-3 text-center align-middle w-[37%] whitespace-nowrap">
                   Hasil IKL memenuhi syarat jasaboga golongan B
                 </th>
-                <th className="border border-slate-400 dark:border-slate-700 px-4 py-3 text-center w-32 align-middle bg-[#D2B48C]/55 dark:bg-[#001630]">
+                <th className="border border-slate-400 dark:border-slate-700 px-4 py-3 text-center w-[10%] align-middle bg-[#D2B48C]/55 dark:bg-[#001630]">
                   Nilai
                 </th>
               </tr>

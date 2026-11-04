@@ -305,7 +305,7 @@ export function compileAnnualKeslingReport(
   );
 
   const getWaterMonthVal = (
-    sourceName: 'Artesis' | 'Air RO Lab' | 'AIR RO POLI GIGI',
+    sourceName: 'Artesis' | 'Air RO Lab' | 'Air RO Poli Gigi',
     indicator: 'Total Coliform' | 'E.Coli',
     monthIndex: number,
     pdfDefault: string
@@ -520,7 +520,7 @@ export function compileAnnualKeslingReport(
       normalValue: '0/100 ml',
       monthlyValues: Array.from({ length: 12 }, (_, idx) =>
         getWaterMonthVal(
-          'AIR RO POLI GIGI',
+          'Air RO Poli Gigi',
           'Total Coliform',
           idx + 1,
           defaultRoGigiColiform[idx]
@@ -532,7 +532,7 @@ export function compileAnnualKeslingReport(
       indicator: 'E.Coli',
       normalValue: '0/100 ml',
       monthlyValues: Array.from({ length: 12 }, (_, idx) =>
-        getWaterMonthVal('AIR RO POLI GIGI', 'E.Coli', idx + 1, defaultRoGigiEColi[idx])
+        getWaterMonthVal('Air RO Poli Gigi', 'E.Coli', idx + 1, defaultRoGigiEColi[idx])
       ),
     },
     {

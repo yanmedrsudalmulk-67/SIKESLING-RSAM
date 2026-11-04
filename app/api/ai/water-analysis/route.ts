@@ -44,8 +44,8 @@ Total Parameter Diuji: ${metrics.totalTests}
 Memenuhi Syarat (MS): ${metrics.msCount}
 Tidak Memenuhi Syarat (TMS): ${metrics.tmsCount}
 Persentase Kepatuhan: ${metrics.complianceRate}%
-Titik Sampel Air: Artesis, Air RO Lab, AIR RO POLI GIGI
-Parameter Uji: Total Coliform (Nilai Normal 0/100 ml) dan E.Coli (Nilai Normal 0/100 ml)
+Titik Sampel Air: Artesis, Air RO Lab, Air RO Poli Gigi, Air Minum
+Parameter Uji: Total Coliform (Nilai Normal 0/100 ml) dan E.Coli (Nilai Normal 0/100 ml), serta parameter fisik & kimia lengkap pada Bulan Juni dan Desember
 
 Rincian Temuan TMS (Tidak Memenuhi Syarat):
 ${tmsDetails || 'Tidak ada temuan TMS. Seluruh parameter bernilai 0/100 ml (MS).'}
@@ -81,7 +81,7 @@ Berikan respons JSON terstruktur dalam Bahasa Indonesia yang formal, teknis, dan
                 properties: {
                   sourceName: {
                     type: Type.STRING,
-                    description: 'Nama titik air: Artesis, Air RO Lab, atau AIR RO POLI GIGI',
+                    description: 'Nama titik air: Artesis, Air RO Lab, Air RO Poli Gigi, atau Air Minum',
                   },
                   status: {
                     type: Type.STRING,

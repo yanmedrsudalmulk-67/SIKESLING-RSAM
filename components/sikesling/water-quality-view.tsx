@@ -280,7 +280,7 @@ export function WaterQualityMonitoringView() {
         date: today,
         location:
           selectedSource === 'ALL'
-            ? 'Instalasi Air Bersih (Artesis, RO Lab, RO Poli Gigi)'
+            ? 'Instalasi Air Bersih (Artesis, RO Lab, RO Poli Gigi, Air Minum)'
             : selectedSource,
         category: 'Monitoring Kualitas Air Bersih',
         description: `Tindak lanjut temuan parameter mikrobiologi air bersih (${metrics.tmsCount} parameter TMS pada periode ${currentPeriodLabel}).`,
@@ -341,7 +341,7 @@ export function WaterQualityMonitoringView() {
     <PageContainer>
       <PageHeader
         title="Monitoring Kualitas Air Bersih"
-        description="Rekapitulasi Indikator Baku Mutu Air Bersih (Artesis, Air RO Lab, dan AIR RO POLI GIGI)"
+        description="Rekapitulasi Indikator Baku Mutu Air Bersih (Artesis, Air RO Lab, Air RO Poli Gigi, dan Air Minum)"
         breadcrumbs={meta.breadcrumbs}
         actions={
           <div className="flex flex-wrap items-center gap-2.5">
@@ -717,8 +717,16 @@ export function WaterQualityMonitoringView() {
                   />
                   <Bar
                     dataKey="roPoliGigiColiform"
-                    name="AIR RO POLI GIGI (Total Coliform)"
+                    name="Air RO Poli Gigi (Total Coliform)"
                     fill="#1D7AFC"
+                    radius={[6, 6, 0, 0]}
+                    barSize={16}
+                    isAnimationActive={false}
+                  />
+                  <Bar
+                    dataKey="airMinumColiform"
+                    name="Air Minum (Total Coliform)"
+                    fill="#10B981"
                     radius={[6, 6, 0, 0]}
                     barSize={16}
                     isAnimationActive={false}
@@ -787,8 +795,18 @@ export function WaterQualityMonitoringView() {
                   <Line
                     type="monotone"
                     dataKey="roPoliGigiColiform"
-                    name="AIR RO POLI GIGI (Total Coliform)"
+                    name="Air RO Poli Gigi (Total Coliform)"
                     stroke="#1D7AFC"
+                    strokeWidth={2.5}
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                    isAnimationActive={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="airMinumColiform"
+                    name="Air Minum (Total Coliform)"
+                    stroke="#10B981"
                     strokeWidth={2.5}
                     dot={{ r: 4 }}
                     activeDot={{ r: 6 }}
@@ -880,7 +898,7 @@ export function WaterQualityMonitoringView() {
             Analisa :
           </h3>
           <p className="text-xs sm:text-[13.5px] text-slate-800 dark:text-slate-200 leading-relaxed text-justify indent-6 sm:indent-8 font-normal">
-            Berdasarkan hasil pemantauan dan pengujian laboratorium terhadap parameter mikrobiologi (Total Coliform dan Escherichia Coli) pada 3 titik instalasi air bersih (Artesis, Air RO Lab, dan Air RO Poli Gigi) di UOBK RSUD Al-Mulk sepanjang periode tahun {selectedYear}, secara umum kualitas air bersih berada dalam kondisi terkendali dan higienis. Parameter E.Coli pada seluruh titik uji secara konsisten menunjukkan angka 0/100 ml sampel (100% Memenuhi Syarat baku mutu sesuai Permenkes No. 2 Tahun 2023), sehingga bebas dari kontaminasi feses patogen. Pada titik Air RO Lab dan Air RO Poli Gigi, hasil pemeriksaan Total Coliform stabil 0/100 ml (MS) berkat sistem filtrasi membran dan sterilisasi ultraviolet yang berfungsi prima. Sementara itu, pada titik sumur Artesis teridentifikasi fluktuasi Total Coliform pada beberapa bulan musim hujan dengan rentang 4–8/100 ml (TMS), yang dipicu oleh tingginya muka air tanah permukaan di sekitar sumur resapan sebelum dialirkan ke proses klorinasi tandon utama.
+            Berdasarkan hasil pemantauan dan pengujian laboratorium terhadap parameter mikrobiologi (Total Coliform dan Escherichia Coli) serta parameter fisik dan kimia lengkap pada Bulan Juni dan Desember pada 4 titik pemeriksaan (Artesis, Air RO Lab, Air RO Poli Gigi, dan Air Minum) di UOBK RSUD Al-Mulk sepanjang periode tahun {selectedYear}, secara umum kualitas air bersih dan air minum berada dalam kondisi terkendali dan higienis. Parameter E.Coli pada seluruh titik uji secara konsisten menunjukkan angka 0/100 ml sampel (100% Memenuhi Syarat baku mutu sesuai Permenkes No. 2 Tahun 2023), sehingga bebas dari kontaminasi feses patogen. Pada titik Air RO Lab, Air RO Poli Gigi, dan Air Minum, hasil pemeriksaan parameter fisik, kimia, maupun mikrobiologi terkendali berkat sistem filtrasi membran dan sterilisasi ultraviolet yang berfungsi prima. Sementara itu, pada titik sumur Artesis teridentifikasi fluktuasi Total Coliform pada beberapa bulan musim hujan dengan rentang 4–8/100 ml (TMS), yang dipicu oleh tingginya muka air tanah permukaan di sekitar sumur resapan sebelum dialirkan ke proses klorinasi tandon utama.
           </p>
         </div>
 
