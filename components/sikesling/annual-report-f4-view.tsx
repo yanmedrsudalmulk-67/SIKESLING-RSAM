@@ -1616,76 +1616,70 @@ export function AnnualReportF4View() {
                     <span>RINGKASAN USAHA DAN ATAU KEGIATAN</span>
                   </div>
 
-                  <div className="pl-6 space-y-1 text-left">
-                    <div className="grid grid-cols-[36px_190px_18px_1fr] items-baseline">
+                  <div className="pl-6 space-y-1.5 text-left">
+                    <div className="grid grid-cols-[28px_225px_16px_1fr] items-baseline">
                       <span>a.</span>
                       <span>Nama Usaha/ Kegiatan</span>
-                      <span>:</span>
-                      <span className="pl-4">UOBK RSUD Al Mulk</span>
+                      <span className="text-center">:</span>
+                      <span>UOBK RSUD Al Mulk</span>
                     </div>
-                    <div className="grid grid-cols-[36px_190px_18px_1fr] items-baseline">
+                    <div className="grid grid-cols-[28px_225px_16px_1fr] items-baseline">
                       <span>b.</span>
                       <span>Lokasi Usaha/ Kegiatan</span>
                       <span />
                       <span />
                     </div>
-                    <div className="pl-9 space-y-1">
-                      <div className="grid grid-cols-[24px_154px_18px_1fr] items-baseline">
-                        <span>1.</span>
-                        <span>Nama Jalan</span>
-                        <span>:</span>
+                    <div className="space-y-1">
+                      <div className="grid grid-cols-[28px_225px_16px_1fr] items-baseline">
+                        <span />
+                        <span className="pl-4">1. Nama Jalan</span>
+                        <span className="text-center">:</span>
                         <span>Pelabuhan II KM 6</span>
                       </div>
-                      <div className="grid grid-cols-[24px_154px_18px_1fr] items-baseline">
-                        <span>2.</span>
-                        <span>Kelurahan</span>
-                        <span>:</span>
+                      <div className="grid grid-cols-[28px_225px_16px_1fr] items-baseline">
+                        <span />
+                        <span className="pl-4">2. Kelurahan</span>
+                        <span className="text-center">:</span>
                         <span>Lembursitu</span>
                       </div>
-                      <div className="grid grid-cols-[24px_154px_18px_1fr] items-baseline">
-                        <span>3.</span>
-                        <span>Kecamatan</span>
-                        <span>:</span>
+                      <div className="grid grid-cols-[28px_225px_16px_1fr] items-baseline">
+                        <span />
+                        <span className="pl-4">3. Kecamatan</span>
+                        <span className="text-center">:</span>
                         <span>Lembursitu</span>
                       </div>
-                      <div className="grid grid-cols-[24px_154px_18px_1fr] items-baseline">
-                        <span>4.</span>
-                        <span>Titik koordinat</span>
-                        <span>:</span>
+                      <div className="grid grid-cols-[28px_225px_16px_1fr] items-baseline">
+                        <span />
+                        <span className="pl-4">4. Titik koordinat</span>
+                        <span className="text-center">:</span>
                         <span>-6.95868, 106.89784</span>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-[36px_190px_18px_1fr] items-baseline pt-0.5">
+                    <div className="grid grid-cols-[28px_225px_16px_1fr] items-baseline pt-1">
                       <span>c.</span>
                       <span>Jumlah Pegawai</span>
-                      <span>:</span>
-                      <span className="pl-4">179 orang</span>
+                      <span className="text-center">:</span>
+                      <span>179 orang</span>
                     </div>
-                    <div className="pl-9 space-y-1">
-                      <div className="grid grid-cols-[24px_154px_18px_1fr] items-baseline">
-                        <span>1.</span>
-                        <span>Waktu Operasi</span>
-                        <span>:</span>
+                    <div className="space-y-1">
+                      <div className="grid grid-cols-[28px_225px_16px_1fr] items-baseline">
+                        <span />
+                        <span className="pl-4">1. Waktu Operasi</span>
+                        <span className="text-center">:</span>
                         <span>24 Jam/ 3 Shift</span>
                       </div>
-                      <div className="grid grid-cols-[24px_154px_18px_1fr] items-baseline">
-                        <span>2.</span>
-                        <span>Jenis Kegiatan</span>
-                        <span>:</span>
+                      <div className="grid grid-cols-[28px_225px_16px_1fr] items-baseline">
+                        <span />
+                        <span className="pl-4">2. Jenis Kegiatan</span>
+                        <span className="text-center">:</span>
                         <span>Pelayanan Kesehatan</span>
                       </div>
-                      <div className="grid grid-cols-[24px_154px_18px_1fr] items-baseline">
-                        <span>3.</span>
-                        <span>Luas Lahan/</span>
-                        <span>:</span>
+                      <div className="grid grid-cols-[28px_225px_16px_1fr] items-baseline">
+                        <span />
+                        <span className="pl-4">3. Luas Lahan / Bangunan</span>
+                        <span className="text-center">:</span>
                         <span>4667 m2</span>
-                      </div>
-                      <div className="grid grid-cols-[24px_154px_18px_1fr] items-baseline">
-                        <span>4.</span>
-                        <span>Bangunan</span>
-                        <span />
-                        <span />
                       </div>
                     </div>
                   </div>

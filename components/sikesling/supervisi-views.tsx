@@ -114,3 +114,5 @@ export function SupervisiPlaceholderSubView({
     </PageContainer>
   );
 }
+
+export { SupervisiKeslingView } from '@/components/sikesling/supervisi-kesling-view';

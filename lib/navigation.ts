@@ -323,6 +323,20 @@ export const MAIN_NAVIGATION: MainMenuItem[] = [
           'Navigasi tab per ruangan (Rawat Jalan, IGD, Ranap ICU & IBS, Usman, Aisyah, Fatimah, Khadijah, Manajemen, Halaman, Supervisi)',
         ],
       },
+      {
+        id: 'supervisi-kesling',
+        title: 'Supervisi Kesling',
+        href: '/supervisi/kesling',
+        description:
+          'Input dan monitoring 8 kegiatan dokumentasi kesehatan lingkungan utama (maksimal 6 foto per kegiatan) terintegrasi tabel rekapitulasi.',
+        status: 'Functional',
+        plannedFeatures: [
+          '8 Card isian dokumentasi kegiatan kesehatan lingkungan utama',
+          'Unggah & kelola hingga 6 foto dokumentasi per kegiatan',
+          'Tabel dokumentasi kegiatan terintegrasi dengan keterangan dan tanggal kegiatan',
+          'Penyimpanan persisten lokal dan tampilan responsif mobile',
+        ],
+      },
     ],
   },
   {
