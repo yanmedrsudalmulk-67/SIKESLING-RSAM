@@ -137,47 +137,47 @@ export const JUNE_DECEMBER_SOURCE_PRESETS: Record<
   FullWaterParameterPreset[]
 > = {
   Artesis: [
-    { indicator: 'Total Coliform', normalValue: '0/100 ml', resultValue: 0, resultDisplay: '0', status: 'MS' },
+    { indicator: 'Total Coliform', normalValue: '50/100 ml', resultValue: 4, resultDisplay: '4', status: 'MS' },
     { indicator: 'E.Coli', normalValue: '0/100 ml', resultValue: 0, resultDisplay: '0', status: 'MS' },
-    { indicator: 'Suhu', normalValue: 'suhu udara ±3°C', resultValue: 21.3, resultDisplay: '21,3', status: 'MS' },
+    { indicator: 'Suhu', normalValue: 'suhu udara ±3°C', resultValue: 24.3, resultDisplay: '24,3', status: 'MS' },
     { indicator: 'Bau', normalValue: 'Tidak Berbau', resultValue: 0, resultDisplay: 'Tidak Berbau', status: 'MS' },
     { indicator: 'Kekeruhan', normalValue: '25', resultValue: 0, resultDisplay: '0', status: 'MS' },
     { indicator: 'Warna', normalValue: '50', resultValue: 0, resultDisplay: '0', status: 'MS' },
-    { indicator: 'PH', normalValue: '6,5 - 8,5', resultValue: 6.9, resultDisplay: '6,90', status: 'MS' },
-    { indicator: 'TDS', normalValue: '<300', resultValue: 30, resultDisplay: '30,0', status: 'MS' },
+    { indicator: 'PH', normalValue: '6,5 - 8,5', resultValue: 6.74, resultDisplay: '6,74', status: 'MS' },
+    { indicator: 'TDS', normalValue: '<300', resultValue: 40, resultDisplay: '40', status: 'MS' },
     { indicator: 'Cromium', normalValue: '0,05', resultValue: 0.01, resultDisplay: '<0,01', status: 'MS' },
     { indicator: 'Nitrit', normalValue: '1', resultValue: 0.01, resultDisplay: '<0,01', status: 'MS' },
-    { indicator: 'Nitrat', normalValue: '10', resultValue: 9.1, resultDisplay: '9,100', status: 'MS' },
-    { indicator: 'Besi', normalValue: '1', resultValue: 0.73, resultDisplay: '0,73', status: 'MS' },
-    { indicator: 'Mangan', normalValue: '0,5', resultValue: 0.01, resultDisplay: '<0,01', status: 'MS' },
-  ],
-  'Air RO Lab': [
-    { indicator: 'Total Coliform', normalValue: '0/100 ml', resultValue: 0, resultDisplay: '0', status: 'MS' },
-    { indicator: 'E.Coli', normalValue: '0/100 ml', resultValue: 0, resultDisplay: '0', status: 'MS' },
-    { indicator: 'Suhu', normalValue: 'suhu udara ±3°C', resultValue: 22.4, resultDisplay: '22,4', status: 'MS' },
-    { indicator: 'Bau', normalValue: 'Tidak Berbau', resultValue: 0, resultDisplay: 'Tidak Berbau', status: 'MS' },
-    { indicator: 'Kekeruhan', normalValue: '25', resultValue: 0, resultDisplay: '0', status: 'MS' },
-    { indicator: 'Warna', normalValue: '50', resultValue: 0, resultDisplay: '0', status: 'MS' },
-    { indicator: 'PH', normalValue: '6,5 - 8,5', resultValue: 6.73, resultDisplay: '6,73', status: 'MS' },
-    { indicator: 'TDS', normalValue: '<300', resultValue: 30, resultDisplay: '30,0', status: 'MS' },
-    { indicator: 'Cromium', normalValue: '0,05', resultValue: 0.01, resultDisplay: '<0,01', status: 'MS' },
-    { indicator: 'Nitrit', normalValue: '1', resultValue: 0.01, resultDisplay: '<0,01', status: 'MS' },
-    { indicator: 'Nitrat', normalValue: '10', resultValue: 16, resultDisplay: '16', status: 'MS' },
+    { indicator: 'Nitrat', normalValue: '10', resultValue: 4.3, resultDisplay: '4,3', status: 'MS' },
     { indicator: 'Besi', normalValue: '1', resultValue: 0.0025, resultDisplay: '<0,0025', status: 'MS' },
     { indicator: 'Mangan', normalValue: '0,5', resultValue: 0.01, resultDisplay: '<0,01', status: 'MS' },
   ],
-  'Air RO Poli Gigi': [
-    { indicator: 'Total Coliform', normalValue: '0/100 ml', resultValue: 0, resultDisplay: '0', status: 'MS' },
+  'Air RO Lab': [
+    { indicator: 'Total Coliform', normalValue: '50/100 ml', resultValue: 4, resultDisplay: '4', status: 'MS' },
     { indicator: 'E.Coli', normalValue: '0/100 ml', resultValue: 0, resultDisplay: '0', status: 'MS' },
-    { indicator: 'Suhu', normalValue: 'suhu udara ±3°C', resultValue: 21.8, resultDisplay: '21,8', status: 'MS' },
+    { indicator: 'Suhu', normalValue: 'suhu udara ±3°C', resultValue: 24.1, resultDisplay: '24,1', status: 'MS' },
     { indicator: 'Bau', normalValue: 'Tidak Berbau', resultValue: 0, resultDisplay: 'Tidak Berbau', status: 'MS' },
     { indicator: 'Kekeruhan', normalValue: '25', resultValue: 0, resultDisplay: '0', status: 'MS' },
     { indicator: 'Warna', normalValue: '50', resultValue: 0, resultDisplay: '0', status: 'MS' },
-    { indicator: 'PH', normalValue: '6,5 - 8,5', resultValue: 6.99, resultDisplay: '6,99', status: 'MS' },
-    { indicator: 'TDS', normalValue: '<300', resultValue: 30, resultDisplay: '30,0', status: 'MS' },
+    { indicator: 'PH', normalValue: '6,5 - 8,5', resultValue: 6.75, resultDisplay: '6,75', status: 'MS' },
+    { indicator: 'TDS', normalValue: '<300', resultValue: 50, resultDisplay: '50', status: 'MS' },
     { indicator: 'Cromium', normalValue: '0,05', resultValue: 0.01, resultDisplay: '<0,01', status: 'MS' },
     { indicator: 'Nitrit', normalValue: '1', resultValue: 0.01, resultDisplay: '<0,01', status: 'MS' },
-    { indicator: 'Nitrat', normalValue: '10', resultValue: 15.6, resultDisplay: '15,600', status: 'MS' },
+    { indicator: 'Nitrat', normalValue: '10', resultValue: 7.2, resultDisplay: '7,2', status: 'MS' },
+    { indicator: 'Besi', normalValue: '1', resultValue: 0.19, resultDisplay: '0,19', status: 'MS' },
+    { indicator: 'Mangan', normalValue: '0,5', resultValue: 0.044, resultDisplay: '0,044', status: 'MS' },
+  ],
+  'Air RO Poli Gigi': [
+    { indicator: 'Total Coliform', normalValue: '50/100 ml', resultValue: 4, resultDisplay: '4', status: 'MS' },
+    { indicator: 'E.Coli', normalValue: '0/100 ml', resultValue: 0, resultDisplay: '0', status: 'MS' },
+    { indicator: 'Suhu', normalValue: 'suhu udara ±3°C', resultValue: 24.3, resultDisplay: '24,3', status: 'MS' },
+    { indicator: 'Bau', normalValue: 'Tidak Berbau', resultValue: 0, resultDisplay: 'Tidak Berbau', status: 'MS' },
+    { indicator: 'Kekeruhan', normalValue: '25', resultValue: 0, resultDisplay: '0', status: 'MS' },
+    { indicator: 'Warna', normalValue: '50', resultValue: 0, resultDisplay: '0', status: 'MS' },
+    { indicator: 'PH', normalValue: '6,5 - 8,5', resultValue: 6.74, resultDisplay: '6,74', status: 'MS' },
+    { indicator: 'TDS', normalValue: '<300', resultValue: 50, resultDisplay: '50', status: 'MS' },
+    { indicator: 'Cromium', normalValue: '0,05', resultValue: 0.01, resultDisplay: '<0,01', status: 'MS' },
+    { indicator: 'Nitrit', normalValue: '1', resultValue: 0.01, resultDisplay: '<0,01', status: 'MS' },
+    { indicator: 'Nitrat', normalValue: '10', resultValue: 0.1, resultDisplay: '<0,1', status: 'MS' },
     { indicator: 'Besi', normalValue: '1', resultValue: 0.0025, resultDisplay: '<0,0025', status: 'MS' },
     { indicator: 'Mangan', normalValue: '0,5', resultValue: 0.01, resultDisplay: '<0,01', status: 'MS' },
   ],
@@ -300,16 +300,30 @@ export function getWaterRowDisplayValue(row: WaterQualityRow): string {
 }
 
 export function createInitialWaterQualityData(year = 2026): WaterQualityRow[] {
-  const presetAbnormalValues: Record<string, number> = {
-    // JANUARI: Air RO Lab Total Coliform = 7 (TMS), Air RO Poli Gigi Total Coliform = 4 (TMS)
-    '1-Air RO Lab-Total Coliform': 7,
-    '1-Air RO Poli Gigi-Total Coliform': 4,
-    // FEBRUARI: All 0 (MS)
-    // MARET: All 0 (MS)
-    // APRIL: Artesis Total Coliform = 9 (TMS)
-    '4-Artesis-Total Coliform': 9,
-    // OKTOBER: Air RO Lab Total Coliform = 2 (TMS)
-    '10-Air RO Lab-Total Coliform': 2,
+  // Official Laboratory Examination Values from Excel "LAPORAN__BULANAN_KESLING_TAHUN_2026.xlsx"
+  // Inspected by: Fitria Wulandari, A.M.KL (UOBK RSUD Al-Mulk)
+  const presetSpecificValues: Record<
+    string,
+    { resultValue: number; resultDisplay?: string; status?: WaterComplianceStatus }
+  > = {
+    // JANUARI: Artesis E.Coli = 4 (TMS)
+    '1-Artesis-E.Coli': { resultValue: 4, resultDisplay: '4', status: 'TMS' },
+    // FEBRUARI: Artesis E.Coli = 7 (TMS)
+    '2-Artesis-E.Coli': { resultValue: 7, resultDisplay: '7', status: 'TMS' },
+    // MARET: Air RO Poli Gigi E.Coli = 4 (TMS)
+    '3-Air RO Poli Gigi-E.Coli': { resultValue: 4, resultDisplay: '4', status: 'TMS' },
+    // MEI: Artesis Total Coliform = 150 (TMS), Artesis E.Coli = 150 (TMS); Air RO Lab Total Coliform = 4 (MS), E.Coli = 4 (MS)
+    '5-Artesis-Total Coliform': { resultValue: 150, resultDisplay: '150', status: 'TMS' },
+    '5-Artesis-E.Coli': { resultValue: 150, resultDisplay: '150', status: 'TMS' },
+    '5-Air RO Lab-Total Coliform': { resultValue: 4, resultDisplay: '4', status: 'MS' },
+    '5-Air RO Lab-E.Coli': { resultValue: 4, resultDisplay: '4', status: 'MS' },
+    // JULI: Artesis Total Coliform = 15 (MS), Artesis E.Coli = 15 (TMS)
+    '7-Artesis-Total Coliform': { resultValue: 15, resultDisplay: '15', status: 'MS' },
+    '7-Artesis-E.Coli': { resultValue: 15, resultDisplay: '15', status: 'TMS' },
+    // AGUSTUS: Air RO Poli Gigi E.Coli = 4 (TMS)
+    '8-Air RO Poli Gigi-E.Coli': { resultValue: 4, resultDisplay: '4', status: 'TMS' },
+    // SEPTEMBER: Artesis E.Coli = 23 (TMS)
+    '9-Artesis-E.Coli': { resultValue: 23, resultDisplay: '23', status: 'TMS' },
   };
 
   const rows: WaterQualityRow[] = [];
@@ -337,7 +351,11 @@ export function createInitialWaterQualityData(year = 2026): WaterQualityRow[] {
       } else {
         for (const indicator of WATER_MICROBIOLOGY_INDICATORS) {
           const key = `${month.index}-${sourceName}-${indicator}`;
-          const resultValue = presetAbnormalValues[key] ?? 0;
+          const custom = presetSpecificValues[key];
+          const resultValue = custom ? custom.resultValue : 0;
+          const resultDisplay = custom && custom.resultDisplay ? custom.resultDisplay : String(resultValue);
+          const status = custom && custom.status ? custom.status : evaluateWaterCompliance(resultValue);
+
           rows.push({
             id: `${year}-${month.index}-${sourceName}-${indicator}`,
             year,
@@ -347,8 +365,8 @@ export function createInitialWaterQualityData(year = 2026): WaterQualityRow[] {
             indicator,
             normalValue: '0/100 ml',
             resultValue,
-            resultDisplay: String(resultValue),
-            status: evaluateWaterCompliance(resultValue),
+            resultDisplay,
+            status,
           });
         }
       }
