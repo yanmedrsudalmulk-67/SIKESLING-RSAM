@@ -613,7 +613,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {
             id: 'laporan',
             label: 'Laporan',
-            href: '/laporan/bulanan',
+            href: '/laporan/kesling',
             hasPopup: true,
             isRouteActive: pathname.startsWith('/laporan'),
             Icon: FileSpreadsheet,

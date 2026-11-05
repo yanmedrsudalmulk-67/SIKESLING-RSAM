@@ -45,7 +45,8 @@ test('navigation structure includes all 11 main menus and required routes', () =
   assert.ok(allRoutes.includes('/supervisi/dashboard'));
   assert.ok(allRoutes.includes('/tindak-lanjut/temuan'));
   assert.ok(allRoutes.includes('/analisis/kegiatan'));
-  assert.ok(allRoutes.includes('/laporan/bulanan'));
+  assert.ok(allRoutes.includes('/laporan/kesling'));
+  assert.ok(allRoutes.includes('/laporan/upl-ukl'));
   assert.ok(allRoutes.includes('/dokumentasi/galeri'));
   assert.ok(allRoutes.includes('/master-data/ruangan'));
   assert.ok(allRoutes.includes('/master-data/standar'));

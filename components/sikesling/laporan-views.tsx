@@ -40,7 +40,14 @@ export function LaporanView({ routePath }: { routePath: string }) {
   const [selectedUnit, setSelectedUnit] = useState('Semua Unit / Ruangan');
   const [previewGenerated, setPreviewGenerated] = useState(true);
 
-  if (routePath === '/laporan/tahunan') {
+  if (
+    routePath === '/laporan/kesling' ||
+    routePath === '/laporan/tahunan' ||
+    routePath === '/laporan/bulanan' ||
+    routePath === '/laporan/triwulanan' ||
+    routePath === '/laporan/semesteran' ||
+    routePath === '/laporan'
+  ) {
     return (
       <PageContainer>
         <AnnualReportF4View />

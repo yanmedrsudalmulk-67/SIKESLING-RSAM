@@ -85,8 +85,8 @@ const INITIAL_CHECKLIST_ITEMS: QuickChecklistItem[] = [
   {
     id: 'chk-5',
     title: 'Analisis Tren & Laporan Berkala',
-    subtitle: 'Grafik Evaluasi · Rekap Bulanan–Tahunan',
-    href: '/laporan/bulanan',
+    subtitle: 'Laporan Kesling · Laporan UPL UKL',
+    href: '/laporan/kesling',
     completed: false,
     iconType: 'laporan',
   },
@@ -830,22 +830,16 @@ export function DashboardView() {
               {openAccordion === 'laporan' && (
                 <div className="pt-1 pb-0.5 flex flex-wrap gap-1">
                   <Link
-                    href="/laporan/bulanan"
-                    className="px-2.5 py-1 rounded-full bg-[#F5EDE0] dark:bg-[#002147] text-[10px] font-semibold text-[#002147] dark:text-[#D2B48C]"
+                    href="/laporan/kesling"
+                    className="px-2.5 py-1 rounded-full bg-[#002147] text-[#D2B48C] text-[10px] font-semibold border border-[#D2B48C]/40"
                   >
-                    Bulanan
+                    Laporan Kesling
                   </Link>
                   <Link
-                    href="/laporan/triwulanan"
+                    href="/laporan/upl-ukl"
                     className="px-2.5 py-1 rounded-full bg-[#F5EDE0] dark:bg-[#002147] text-[10px] font-semibold text-[#002147] dark:text-[#D2B48C]"
                   >
-                    Triwulanan
-                  </Link>
-                  <Link
-                    href="/laporan/tahunan"
-                    className="px-2.5 py-1 rounded-full bg-[#F5EDE0] dark:bg-[#002147] text-[10px] font-semibold text-[#002147] dark:text-[#D2B48C]"
-                  >
-                    Tahunan
+                    Laporan UPL UKL
                   </Link>
                 </div>
               )}

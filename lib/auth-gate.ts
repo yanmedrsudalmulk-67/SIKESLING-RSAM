@@ -47,19 +47,16 @@ export function readAuthStageFromStorage(): AuthFlowStage {
   if (typeof window === 'undefined') return 'welcome';
   try {
     const params = new URLSearchParams(window.location.search);
+    // Jalur khusus untuk automated test runner / headless verification
     if (params.get('autostart') === '1') {
-      window.sessionStorage.setItem(AUTH_STAGE_STORAGE_KEY, 'authenticated');
-      window.localStorage.setItem(AUTH_STAGE_STORAGE_KEY, 'authenticated');
       return 'authenticated';
     }
-    const sessionVal = window.sessionStorage.getItem(AUTH_STAGE_STORAGE_KEY);
-    if (sessionVal === 'welcome' || sessionVal === 'login' || sessionVal === 'authenticated') {
-      return sessionVal;
-    }
-    const localVal = window.localStorage.getItem(AUTH_STAGE_STORAGE_KEY);
-    if (localVal === 'welcome' || localVal === 'login' || localVal === 'authenticated') {
-      return localVal;
-    }
+    // Sesuai permintaan pengguna: setiap kali aplikasi dibuka atau di-refresh (reload),
+    // urutan SELALU dimulai dari tahapan awal:
+    // 1. Welcome Screen (animasi/video) -> 2. Login Page -> 3. Halaman Utama.
+    // Bersihkan session & local storage agar tidak langsung bypass ke halaman utama.
+    window.sessionStorage.removeItem(AUTH_STAGE_STORAGE_KEY);
+    window.localStorage.removeItem(AUTH_STAGE_STORAGE_KEY);
     return 'welcome';
   } catch {
     return 'welcome';
@@ -69,8 +66,13 @@ export function readAuthStageFromStorage(): AuthFlowStage {
 export function writeAuthStageToStorage(stage: AuthFlowStage): void {
   if (typeof window === 'undefined') return;
   try {
-    window.sessionStorage.setItem(AUTH_STAGE_STORAGE_KEY, stage);
-    window.localStorage.setItem(AUTH_STAGE_STORAGE_KEY, stage);
+    // Stage hanya disimpan sementara untuk autostart jika diperlukan
+    if (stage !== 'authenticated') {
+      window.sessionStorage.setItem(AUTH_STAGE_STORAGE_KEY, stage);
+    } else {
+      window.sessionStorage.removeItem(AUTH_STAGE_STORAGE_KEY);
+      window.localStorage.removeItem(AUTH_STAGE_STORAGE_KEY);
+    }
   } catch {
     // ignore storage errors
   }

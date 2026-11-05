@@ -484,90 +484,33 @@ export const MAIN_NAVIGATION: MainMenuItem[] = [
     group: 'Pelaporan & Arsip',
     description:
       'Sistem penyusunan laporan berkala dengan prinsip Single Data Entry, Multiple Reporting Outputs.',
-    status: 'UI Ready',
+    status: 'Functional',
     subItems: [
       {
-        id: 'laporan-bulanan',
-        title: 'Laporan Bulanan',
-        href: '/laporan/bulanan',
+        id: 'laporan-kesling',
+        title: 'Laporan Kesling',
+        href: '/laporan/kesling',
         description:
-          'Rekapitulasi bulanan kegiatan operasional, monitoring, supervisi, dan tindak lanjut temuan.',
-        status: 'UI Ready',
-        plannedFeatures: [
-          'Filter tahun, bulan, kategori laporan, dan unit/ruangan',
-          'Preview rekapitulasi otomatis dari data operasional aktual',
-          'Ekspor PDF dan Excel sesuai format resmi RSUD Al-Mulk (tahap berikutnya)',
-        ],
-      },
-      {
-        id: 'laporan-triwulanan',
-        title: 'Laporan Triwulanan',
-        href: '/laporan/triwulanan',
-        description:
-          'Kompilasi capaian kesehatan lingkungan per triwulan (Q1–Q4) untuk evaluasi manajemen.',
-        status: 'UI Ready',
-        plannedFeatures: [
-          'Agregasi data 3 bulanan secara otomatis tanpa input ulang',
-          'Preview ringkasan eksekutif triwulanan',
-        ],
-      },
-      {
-        id: 'laporan-semesteran',
-        title: 'Laporan Semesteran',
-        href: '/laporan/semesteran',
-        description:
-          'Laporan evaluasi paruh tahun (Semester I dan Semester II) pengelolaan kesehatan lingkungan rumah sakit.',
-        status: 'UI Ready',
-        plannedFeatures: [
-          'Filter tahun dan semester (Semester 1 / Semester 2)',
-          'Kompilasi data monitoring lingkungan dan pelaporan instansi terkait',
-        ],
-      },
-      {
-        id: 'laporan-tahunan',
-        title: 'Laporan Tahunan',
-        href: '/laporan/tahunan',
-        description:
-          'Laporan Tahunan Kesehatan Lingkungan UOBK RSUD Al-Mulk (Ukuran Resmi F4) yang terintegrasi realtime dengan Menu Monitoring, Analisa & Rekomendasi KRIS, serta unduhan Microsoft Word (.doc) Editable.',
+          'Laporan Terpadu Kesehatan Lingkungan UOBK RSUD Al-Mulk (Ukuran Resmi F4) mencakup periode Tahunan, Bulanan, Triwulanan, dan Semesteran yang terintegrasi realtime dengan Menu Monitoring, Supervisi, dan Tindak Lanjut.',
         status: 'Functional',
         plannedFeatures: [
-          'Narasi lengkap 165 halaman (Kata Pengantar, BAB I–IV, Lampiran 1–6 & Dokumentasi)',
-          'Integrasi realtime tabel & grafik dari 6 modul Monitoring & Tindak Lanjut Temuan',
-          'Ekspor dokumen Microsoft Word (.doc) ukuran F4 (21,59 x 33,02 cm) yang dapat diedit kapan saja',
+          'Kompilasi satu kesatuan dokumen resmi F4 (Tahunan, Bulanan, Triwulanan, Semesteran)',
+          'Filter interaktif pemilihan periode Tahunan, 12 Bulan, 4 Triwulan, dan 2 Semester',
+          'Integrasi realtime data asli monitoring kualitas air, udara & fisik ruangan, limbah cair IPAL, limbah medis B3, sarana prasarana, pengamanan radiasi, linen, dan vektor',
+          'Ekspor dokumen Microsoft Word (.doc) F4 dan fitur edit teks langsung di layar',
         ],
       },
       {
-        id: 'laporan-supervisi',
-        title: 'Laporan Supervisi',
-        href: '/laporan/supervisi',
+        id: 'laporan-upl-ukl',
+        title: 'Laporan UPL UKL',
+        href: '/laporan/upl-ukl',
         description:
-          'Laporan khusus hasil pelaksanaan inspeksi dan supervisi lingkungan per unit/ruangan.',
+          'Laporan Upaya Pengelolaan Lingkungan dan Upaya Pemantauan Lingkungan Hidup (UKL-UPL) RSUD Al-Mulk berkala ke Dinas Lingkungan Hidup (DLH).',
         status: 'UI Ready',
         plannedFeatures: [
-          'Cetak berita acara atau rekap hasil supervisi beserta lampiran foto',
-          'Filter berdasarkan periode, petugas, dan ruangan',
-        ],
-      },
-      {
-        id: 'laporan-monitoring',
-        title: 'Laporan Monitoring',
-        href: '/laporan/monitoring',
-        description:
-          'Laporan khusus hasil pemantauan kualitas air, udara, limbah, IPAL, vektor, dan sanitasi.',
-        status: 'UI Ready',
-        plannedFeatures: [
-          'Kompilasi tabel hasil pemeriksaan parameter monitoring per kategori',
-        ],
-      },
-      {
-        id: 'laporan-tindak-lanjut',
-        title: 'Laporan Tindak Lanjut',
-        href: '/laporan/tindak-lanjut',
-        description:
-          'Laporan progres dan verifikasi penyelesaian temuan kesehatan lingkungan.',
-        status: 'UI Ready',
-        plannedFeatures: [
-          'Rekapitulasi daftar temuan, status penyelesaian, dan dokumentasi perbaikan',
+          'Format pelaporan berkala dokumen lingkungan hidup sesuai regulasi DLH Kota Sukabumi',
+          'Rekapitulasi parameter kepatuhan dokumen lingkungan RSUD Al-Mulk',
+          'Format resmi sedang disiapkan dan diselaraskan bersama Dinas Lingkungan Hidup',
         ],
       },
     ],
@@ -833,7 +776,15 @@ export function resolveRouteMeta(pathname: string): {
       ? '/monitoring/penyelenggaraan-linen'
       : rawCleanPath === '/monitoring/lainnya'
         ? '/monitoring/pengamanan-radiasi'
-        : rawCleanPath;
+        : rawCleanPath === '/laporan/tahunan' ||
+          rawCleanPath === '/laporan/bulanan' ||
+          rawCleanPath === '/laporan/triwulanan' ||
+          rawCleanPath === '/laporan/semesteran' ||
+          rawCleanPath === '/laporan/supervisi' ||
+          rawCleanPath === '/laporan/monitoring' ||
+          rawCleanPath === '/laporan/tindak-lanjut'
+          ? '/laporan/kesling'
+          : rawCleanPath;
 
   for (const menu of MAIN_NAVIGATION) {
     if (menu.href === cleanPath) {
