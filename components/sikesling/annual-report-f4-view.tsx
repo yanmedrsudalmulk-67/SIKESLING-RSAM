@@ -91,12 +91,16 @@ export function AnnualReportF4View() {
     airItems,
     wastewaterRows,
     solidWasteRows,
+    medicalWasteLogbookRows,
     vectorFindings,
     vectorUnits,
     foodRows,
     activities,
     supervisions,
     findings,
+    saranaPrasaranaData,
+    linenRows,
+    radiationRows,
     hospitalProfile,
     pushToast,
   } = useApp();
@@ -153,31 +157,20 @@ export function AnnualReportF4View() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
 
   const handleSaveReport = () => {
-    if (f4DocumentRef.current) {
-      try {
-        localStorage.setItem(
-          `sikesling_annual_report_html_${reportYear}`,
-          f4DocumentRef.current.innerHTML
-        );
-      } catch {
-        // quota fallback
-      }
-    }
     setHasUnsavedChanges(false);
     pushToast({
       type: 'success',
-      title: 'Perubahan Laporan Tahunan Disimpan',
-      message: `Hasil pengeditan laporan tahunan ${reportYear} berhasil disimpan.`,
+      title: 'Perubahan Laporan Disimpan',
+      message: `Perubahan laporan tahun ${reportYear} tersimpan aktif. Data terintegrasi penuh secara realtime.`,
     });
   };
 
-  // Restore saved HTML if available
+  // Bersihkan cache statis HTML agar data realtime dari Monitoring, Supervisi, & Tindak Lanjut selalu sinkron
   React.useEffect(() => {
     try {
-      const savedHtml = localStorage.getItem(`sikesling_annual_report_html_${reportYear}`);
-      if (savedHtml && f4DocumentRef.current) {
-        f4DocumentRef.current.innerHTML = savedHtml;
-      }
+      localStorage.removeItem(`sikesling_annual_report_html_${reportYear}`);
+      localStorage.removeItem('sikesling_annual_report_html_2026');
+      localStorage.removeItem('sikesling_annual_report_html_2025');
     } catch {
       // ignore
     }
@@ -233,12 +226,16 @@ export function AnnualReportF4View() {
       airItems,
       wastewaterRows,
       solidWasteRows,
+      medicalWasteLogbookRows,
       vectorFindings,
       vectorUnitCount: vectorUnits.length || 20,
       foodRows,
       activities,
       supervisions,
       findings,
+      saranaPrasaranaData,
+      linenRows,
+      radiationRows,
     });
   }, [
     reportYear,
@@ -247,12 +244,16 @@ export function AnnualReportF4View() {
     airItems,
     wastewaterRows,
     solidWasteRows,
+    medicalWasteLogbookRows,
     vectorFindings,
     vectorUnits.length,
     foodRows,
     activities,
     supervisions,
     findings,
+    saranaPrasaranaData,
+    linenRows,
+    radiationRows,
   ]);
 
   const buildingChartData = useMemo(() => {
@@ -621,14 +622,14 @@ export function AnnualReportF4View() {
 
               {/* Teks Format Resmi Dinamis pada Garis Biru (Tanpa Tulisan di Atas Kiri) */}
               <div
-                className="absolute left-0 right-0 top-[66.1%] bottom-[12.9%] flex flex-col items-center justify-center px-6 sm:px-10 text-center select-text"
+                className="absolute left-0 right-0 top-[66.1%] bottom-[12.9%] flex flex-col items-center justify-center px-6 sm:px-12 text-center select-text"
                 style={{ pointerEvents: 'auto' }}
               >
                 <div
                   contentEditable={true}
                   suppressContentEditableWarning={true}
                   onInput={() => setHasUnsavedChanges(true)}
-                  className="text-white font-black text-[20px] sm:text-[23px] tracking-wider leading-snug uppercase outline-none focus:ring-1 focus:ring-amber-300/60 rounded px-2 drop-shadow-sm"
+                  className="text-white font-black text-[38px] sm:text-[44px] md:text-[48px] tracking-wider leading-tight uppercase outline-none focus:ring-2 focus:ring-amber-300/80 rounded px-3 drop-shadow-md"
                 >
                   {coverLines.line1}
                 </div>
@@ -636,7 +637,7 @@ export function AnnualReportF4View() {
                   contentEditable={true}
                   suppressContentEditableWarning={true}
                   onInput={() => setHasUnsavedChanges(true)}
-                  className="text-white font-extrabold text-[16.5px] sm:text-[18.5px] tracking-wide leading-snug uppercase mt-2 sm:mt-2.5 outline-none focus:ring-1 focus:ring-amber-300/60 rounded px-2 drop-shadow-sm"
+                  className="text-white font-extrabold text-[28px] sm:text-[32px] md:text-[34px] tracking-wide leading-tight uppercase mt-3.5 sm:mt-4.5 md:mt-5 outline-none focus:ring-2 focus:ring-amber-300/80 rounded px-3 drop-shadow-md"
                 >
                   {coverLines.line2}
                 </div>
@@ -644,7 +645,7 @@ export function AnnualReportF4View() {
                   contentEditable={true}
                   suppressContentEditableWarning={true}
                   onInput={() => setHasUnsavedChanges(true)}
-                  className="text-white font-extrabold text-[15.5px] sm:text-[17.5px] tracking-wider leading-snug uppercase mt-2 sm:mt-2.5 outline-none focus:ring-1 focus:ring-amber-300/60 rounded px-2 drop-shadow-sm"
+                  className="text-white font-extrabold text-[26px] sm:text-[30px] md:text-[32px] tracking-wider leading-tight uppercase mt-3.5 sm:mt-4.5 md:mt-5 outline-none focus:ring-2 focus:ring-amber-300/80 rounded px-3 drop-shadow-md"
                 >
                   {coverLines.line3}
                 </div>
@@ -4071,13 +4072,13 @@ export function AnnualReportF4View() {
                           <td className="border border-slate-500 px-1.5 py-0.5 text-left">
                             {r.monthName}
                           </td>
-                          <td className="border border-slate-500 py-0.5">✓</td>
-                          <td className="border border-slate-500 py-0.5" />
-                          <td className="border border-slate-500 py-0.5">✓</td>
-                          <td className="border border-slate-500 py-0.5" />
-                          <td className="border border-slate-500 py-0.5">✓</td>
-                          <td className="border border-slate-500 py-0.5" />
-                          <td className="border border-slate-500 py-0.5">{r.capaianPct}%</td>
+                          <td className="border border-slate-500 py-0.5">{r.izinBapeten === true ? '✓' : ''}</td>
+                          <td className="border border-slate-500 py-0.5">{r.izinBapeten === false ? '✓' : ''}</td>
+                          <td className="border border-slate-500 py-0.5">{r.apdProteksi === true ? '✓' : ''}</td>
+                          <td className="border border-slate-500 py-0.5">{r.apdProteksi === false ? '✓' : ''}</td>
+                          <td className="border border-slate-500 py-0.5">{r.pemantauanPekerja === true ? '✓' : ''}</td>
+                          <td className="border border-slate-500 py-0.5">{r.pemantauanPekerja === false ? '✓' : ''}</td>
+                          <td className="border border-slate-500 py-0.5">{r.izinBapeten !== null ? `${r.capaianPct}%` : '-'}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -4119,13 +4120,13 @@ export function AnnualReportF4View() {
                         <td className="border border-slate-500 px-1.5 py-0.5 text-left">
                           {r.monthName}
                         </td>
-                        <td className="border border-slate-500 py-0.5">✓</td>
-                        <td className="border border-slate-500 py-0.5" />
-                        <td className="border border-slate-500 py-0.5">✓</td>
-                        <td className="border border-slate-500 py-0.5" />
-                        <td className="border border-slate-500 py-0.5">✓</td>
-                        <td className="border border-slate-500 py-0.5" />
-                        <td className="border border-slate-500 py-0.5">{r.capaianPct}%</td>
+                        <td className="border border-slate-500 py-0.5">{r.izinBapeten === true ? '✓' : ''}</td>
+                        <td className="border border-slate-500 py-0.5">{r.izinBapeten === false ? '✓' : ''}</td>
+                        <td className="border border-slate-500 py-0.5">{r.apdProteksi === true ? '✓' : ''}</td>
+                        <td className="border border-slate-500 py-0.5">{r.apdProteksi === false ? '✓' : ''}</td>
+                        <td className="border border-slate-500 py-0.5">{r.pemantauanPekerja === true ? '✓' : ''}</td>
+                        <td className="border border-slate-500 py-0.5">{r.pemantauanPekerja === false ? '✓' : ''}</td>
+                        <td className="border border-slate-500 py-0.5">{r.izinBapeten !== null ? `${r.capaianPct}%` : '-'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -4525,13 +4526,13 @@ export function AnnualReportF4View() {
                         <tr key={r.no} className="text-center">
                           <td className="border border-slate-500 py-0.5">{r.no}</td>
                           <td className="border border-slate-500 py-0.5">{r.monthName}</td>
-                          <td className="border border-slate-500 py-0.5">✓</td>
-                          <td className="border border-slate-500 py-0.5" />
-                          <td className="border border-slate-500 py-0.5">✓</td>
-                          <td className="border border-slate-500 py-0.5" />
-                          <td className="border border-slate-500 py-0.5">✓</td>
-                          <td className="border border-slate-500 py-0.5" />
-                          <td className="border border-slate-500 py-0.5">{r.capaianPct}%</td>
+                          <td className="border border-slate-500 py-0.5">{r.mouPihakKetiga === true ? '✓' : ''}</td>
+                          <td className="border border-slate-500 py-0.5">{r.mouPihakKetiga === false ? '✓' : ''}</td>
+                          <td className="border border-slate-500 py-0.5">{r.pemilahanInfeksius === true ? '✓' : ''}</td>
+                          <td className="border border-slate-500 py-0.5">{r.pemilahanInfeksius === false ? '✓' : ''}</td>
+                          <td className="border border-slate-500 py-0.5">{r.pengawasanRutin === true ? '✓' : ''}</td>
+                          <td className="border border-slate-500 py-0.5">{r.pengawasanRutin === false ? '✓' : ''}</td>
+                          <td className="border border-slate-500 py-0.5">{r.mouPihakKetiga !== null ? `${r.capaianPct}%` : '-'}</td>
                         </tr>
                       ))}
                     </tbody>

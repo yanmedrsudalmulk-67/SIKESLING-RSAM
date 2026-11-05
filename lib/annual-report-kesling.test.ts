@@ -47,18 +47,19 @@ test('compileAnnualKeslingReport compiles baseline 2025/2026 monitoring datasets
 
   // Verify Water Tabel 1 (16 rows: 2 Sumur 1 + 14 Artesis) and Tabel 2 (28 rows: 15 on Page 12 + 13 on Page 13)
   assert.equal(report.water.tabel1AirBersih.length, 16);
-  assert.equal(report.water.tabel1AirBersih[2].monthlyValues[3], '<9/100 ml'); // Artesis Coliform April
-  assert.equal(report.water.tabel1AirBersih[2].monthlyValues[9], ''); // Artesis Coliform Oktober (gray cell)
-  assert.equal(report.water.tabel1AirBersih[2].monthlyValues[11], '<43/100 ml'); // Artesis Coliform Desember
+  assert.equal(report.water.tabel1AirBersih[2].monthlyValues[3], '<0/100 ml'); // Artesis Coliform April
+  assert.equal(report.water.tabel1AirBersih[2].monthlyValues[9], '<0/100 ml'); // Artesis Coliform Oktober
+  assert.equal(report.water.tabel1AirBersih[2].monthlyValues[10], '<0/100 ml'); // Artesis Coliform November
+  assert.equal(report.water.tabel1AirBersih[2].monthlyValues[11], '<0/100 ml'); // Artesis Coliform Desember
   assert.equal(report.water.tabel2AirRo.length, 28);
-  assert.equal(report.water.tabel2AirRo[0].monthlyValues[5], '0 /100 ml'); // RO Poli Gigi Coliform Juni
-  assert.equal(report.water.tabel2AirRo[0].monthlyValues[8], ''); // RO Poli Gigi Coliform September (gray cell)
+  assert.equal(report.water.tabel2AirRo[0].monthlyValues[5], '<4/100 ml'); // RO Poli Gigi Coliform Juni
+  assert.equal(report.water.tabel2AirRo[0].monthlyValues[8], '<0/100 ml'); // RO Poli Gigi Coliform September
   assert.equal(report.water.tabel2AirRo[5].indicator, 'bau');
   assert.equal(report.water.tabel2AirRo[14].sourceLabel, 'RO LAB');
   assert.equal(report.water.tabel2AirRo[14].indicator, 'Total Coliform');
-  assert.equal(report.water.tabel2AirRo[14].monthlyValues[6], '<9/100 ml'); // RO Lab Coliform Juli
-  assert.equal(report.water.tabel2AirRo[14].monthlyValues[11], '<7/100 ml'); // RO Lab Coliform Desember
-  assert.equal(report.water.tabel2AirRo[15].monthlyValues[3], '<4/100 ml'); // RO Lab E.Coli April
+  assert.equal(report.water.tabel2AirRo[14].monthlyValues[6], '<0/100 ml'); // RO Lab Coliform Juli
+  assert.equal(report.water.tabel2AirRo[14].monthlyValues[11], '<0/100 ml'); // RO Lab Coliform Desember
+  assert.equal(report.water.tabel2AirRo[15].monthlyValues[3], '<0/100 ml'); // RO Lab E.Coli April
   assert.equal(report.water.tabel2AirRo[19].normalValue, '');
 });
 

@@ -2,6 +2,7 @@ import {
   WaterQualityRow,
   calculateWaterQualityMetrics,
   generateDeterministicWaterAnalysis,
+  normalizeWaterSourceName,
 } from './water-quality';
 import {
   WastewaterRow,
@@ -22,6 +23,13 @@ import {
   SupervisionRecord,
   FindingFollowUpRecord,
 } from './domain';
+import { MedicalWasteLogRow } from './medical-waste-logbook';
+import {
+  SaranaPrasaranaDataset,
+  calculateSaranaPrasaranaSummary,
+} from './sarana-prasarana';
+import { LinenMonitoringRow } from './linen-monitoring';
+import { RadiationMonitoringRow } from './radiation-monitoring';
 
 export interface AnnualReportInputState {
   year: number;
@@ -30,9 +38,13 @@ export interface AnnualReportInputState {
   airItems: AirQualitySnapshotItem[];
   wastewaterRows: WastewaterRow[];
   solidWasteRows: SolidWasteSnapshotRow[];
+  medicalWasteLogbookRows?: MedicalWasteLogRow[];
   vectorFindings: VectorFindingsSnapshotMap;
   vectorUnitCount: number;
   foodRows: FoodSanitationSnapshotRow[];
+  saranaPrasaranaData?: SaranaPrasaranaDataset;
+  linenRows?: LinenMonitoringRow[];
+  radiationRows?: RadiationMonitoringRow[];
   activities: DailyActivityRecord[];
   supervisions: SupervisionRecord[];
   findings: FindingFollowUpRecord[];
@@ -167,9 +179,9 @@ export interface CompiledAnnualReport {
     monthlyRows: {
       no: number;
       monthName: string;
-      izinBapeten: boolean;
-      apdProteksi: boolean;
-      pemantauanPekerja: boolean;
+      izinBapeten: boolean | null;
+      apdProteksi: boolean | null;
+      pemantauanPekerja: boolean | null;
       capaianPct: number;
     }[];
   };
@@ -181,9 +193,9 @@ export interface CompiledAnnualReport {
     monthlyRows: {
       no: number;
       monthName: string;
-      mouPihakKetiga: boolean;
-      pemilahanInfeksius: boolean;
-      pengawasanRutin: boolean;
+      mouPihakKetiga: boolean | null;
+      pemilahanInfeksius: boolean | null;
+      pengawasanRutin: boolean | null;
       capaianPct: number;
     }[];
   };
@@ -305,23 +317,45 @@ export function compileAnnualKeslingReport(
   );
 
   const getWaterMonthVal = (
-    sourceName: 'Artesis' | 'Air RO Lab' | 'Air RO Poli Gigi',
-    indicator: 'Total Coliform' | 'E.Coli',
+    sourceName: 'Artesis' | 'Air RO Lab' | 'Air RO Poli Gigi' | 'Air Minum',
+    indicator: string,
     monthIndex: number,
     pdfDefault: string
   ): string => {
-    if (year === 2025 || pdfDefault === '') {
-      return pdfDefault;
-    }
     const found = waterRows.find(
       (r) =>
         r.year === year &&
-        r.sourceName === sourceName &&
-        r.indicator === indicator &&
+        (r.sourceName === sourceName || normalizeWaterSourceName(r.sourceName) === sourceName) &&
+        r.indicator.toLowerCase() === indicator.toLowerCase() &&
         r.monthIndex === monthIndex
     );
-    if (!found) return pdfDefault;
-    return formatMicrobiologyCell(found.resultValue, pdfDefault);
+    if (!found) {
+      if (year === 2026 && (monthIndex === 11 || monthIndex === 12)) return '';
+      return pdfDefault;
+    }
+    if (
+      year === 2026 &&
+      (monthIndex === 11 || monthIndex === 12) &&
+      found.resultDisplay === '' &&
+      found.resultValue === 0
+    ) {
+      return '';
+    }
+    if (found.resultDisplay !== undefined && found.resultDisplay !== '') {
+      if (indicator === 'Total Coliform' || indicator === 'E.Coli') {
+        return found.resultDisplay.includes('/100 ml')
+          ? found.resultDisplay
+          : `<${found.resultDisplay}/100 ml`;
+      }
+      return found.resultDisplay;
+    }
+    if (found.resultValue !== undefined && !Number.isNaN(found.resultValue)) {
+      if (indicator === 'Total Coliform' || indicator === 'E.Coli') {
+        return `<${found.resultValue}/100 ml`;
+      }
+      return String(found.resultValue);
+    }
+    return pdfDefault;
   };
 
   const defaultArtesisColiform = [
@@ -750,13 +784,16 @@ export function compileAnnualKeslingReport(
       ? Math.round(foodVals.reduce((a, b) => a + b, 0) / foodVals.length)
       : 81;
 
-  // 4. BUILDING & FACILITY SANITATION (3.4)
+  // 4. BUILDING & FACILITY SANITATION (3.4) — Realtime integrated with saranaPrasaranaData
+  const saranaSummary = input.saranaPrasaranaData
+    ? calculateSaranaPrasaranaSummary(input.saranaPrasaranaData)
+    : null;
   const buildingChartItems = [
-    { label: 'TOILET DISABILITAS (%)', valuePct: 32 },
-    { label: 'LANTAI RS (%)', valuePct: 100 },
-    { label: 'PINTU RS (%)', valuePct: 100 },
-    { label: 'ATAP RS (%)', valuePct: 98 },
-    { label: 'LANGIT2 RS (%)', valuePct: 93 },
+    { label: 'TOILET DISABILITAS (%)', valuePct: saranaSummary ? (saranaSummary.chartData[0]?.rate ?? 32) : 32 },
+    { label: 'LANTAI RS (%)', valuePct: saranaSummary ? (saranaSummary.chartData[1]?.rate ?? 100) : 100 },
+    { label: 'PINTU RS (%)', valuePct: saranaSummary ? (saranaSummary.chartData[2]?.rate ?? 100) : 100 },
+    { label: 'ATAP RS (%)', valuePct: saranaSummary ? (saranaSummary.chartData[3]?.rate ?? 98) : 98 },
+    { label: 'LANGIT2 RS (%)', valuePct: saranaSummary ? (saranaSummary.chartData[4]?.rate ?? 93) : 93 },
   ];
 
   // 5. SOLID WASTE B3 PADAT (3.5) — Realtime integrated with solidWasteRows
@@ -858,15 +895,43 @@ export function compileAnnualKeslingReport(
     });
   };
 
-  // 7. RADIATION (3.7)
-  const radiationRows = MONTH_NAMES_ID.map((mName, idx) => ({
-    no: idx + 1,
-    monthName: mName,
-    izinBapeten: true,
-    apdProteksi: true,
-    pemantauanPekerja: true,
-    capaianPct: 100,
-  }));
+  // 7. RADIATION (3.7) — Realtime integrated with radiationRows
+  const radiationRows = MONTH_NAMES_ID.map((mName, idx) => {
+    const found = input.radiationRows?.find((r) => r.no === idx + 1);
+    if (found) {
+      return {
+        no: idx + 1,
+        monthName: mName,
+        izinBapeten:
+          found.izinBapeten === 'ya'
+            ? true
+            : found.izinBapeten === 'tidak'
+            ? false
+            : null,
+        apdProteksi:
+          found.peralatanProteksi === 'ya'
+            ? true
+            : found.peralatanProteksi === 'tidak'
+            ? false
+            : null,
+        pemantauanPekerja:
+          found.pemantauanPekerja === 'ya'
+            ? true
+            : found.pemantauanPekerja === 'tidak'
+            ? false
+            : null,
+        capaianPct: found.capaian,
+      };
+    }
+    return {
+      no: idx + 1,
+      monthName: mName,
+      izinBapeten: null,
+      apdProteksi: null,
+      pemantauanPekerja: null,
+      capaianPct: 0,
+    };
+  });
 
   // 8. VECTOR CONTROL (3.8) — Integrated with vectorFindings
   // Calculate annual compliance per vector indicator from vectorFindings or match PDF Table 6
@@ -961,15 +1026,43 @@ export function compileAnnualKeslingReport(
     ).toFixed(1)
   );
 
-  // 9. LINEN / LAUNDRY (3.9)
-  const linenRows = MONTH_NAMES_ID.map((mName, idx) => ({
-    no: idx + 1,
-    monthName: mName,
-    mouPihakKetiga: true,
-    pemilahanInfeksius: true,
-    pengawasanRutin: true,
-    capaianPct: 100,
-  }));
+  // 9. LINEN / LAUNDRY (3.9) — Realtime integrated with linenRows
+  const linenRows = MONTH_NAMES_ID.map((mName, idx) => {
+    const found = input.linenRows?.find((r) => r.no === idx + 1);
+    if (found) {
+      return {
+        no: idx + 1,
+        monthName: mName,
+        mouPihakKetiga:
+          found.mouPihakKetiga === 'ya'
+            ? true
+            : found.mouPihakKetiga === 'tidak'
+            ? false
+            : null,
+        pemilahanInfeksius:
+          found.pemilahanInfeksius === 'ya'
+            ? true
+            : found.pemilahanInfeksius === 'tidak'
+            ? false
+            : null,
+        pengawasanRutin:
+          found.pengawasan === 'ya'
+            ? true
+            : found.pengawasan === 'tidak'
+            ? false
+            : null,
+        capaianPct: found.capaian,
+      };
+    }
+    return {
+      no: idx + 1,
+      monthName: mName,
+      mouPihakKetiga: null,
+      pemilahanInfeksius: null,
+      pengawasanRutin: null,
+      capaianPct: 0,
+    };
+  });
 
   // 10. EVALUASI KEGIATAN (3.12 Tabel 19) — 6 Official PDF problems + Realtime Findings from Tindak Lanjut
   const baseEvalRows: CompiledEvaluationRow[] = [
@@ -1066,6 +1159,20 @@ export function compileAnnualKeslingReport(
     ],
     sourceBadge: 'Integrasi Tindak Lanjut Supervisi',
   }));
+
+  // Append any live supervisions from APLICLEAN with findings
+  const supervisionEvalRows: CompiledEvaluationRow[] = (input.supervisions || [])
+    .filter((s) => Boolean(s.findings && s.findings.trim().length > 0))
+    .map((s, idx) => ({
+      no: baseEvalRows.length + dynamicFindingRows.length + idx + 1,
+      masalahKesling: `[Supervisi ${s.roomOrUnit}] ${s.findings}. Kategori: ${s.category}. Petugas: ${s.officerName} (${s.date})`,
+      tindakLanjutMasalah: [s.recommendations || 'Tindak lanjut perbaikan sanitasi dan penataan ruangan'],
+      hasilTindakLanjut: [
+        `Verifikasi oleh ${s.officerName}`,
+        `Prioritas: ${s.priority}`,
+      ],
+      sourceBadge: 'Integrasi Supervisi Ruangan APLICLEAN',
+    }));
 
   // 11. LAMPIRAN 2: LOGBOOK LIMBAH MEDIS 12 BULAN (Synced with solidWasteRows)
   const unitWeightsDistribution = [
@@ -1203,7 +1310,7 @@ export function compileAnnualKeslingReport(
       monthlyRows: linenRows,
     },
     evaluasi: {
-      rows: [...baseEvalRows, ...dynamicFindingRows],
+      rows: [...baseEvalRows, ...dynamicFindingRows, ...supervisionEvalRows],
     },
     lampiran2Logbook,
   };
