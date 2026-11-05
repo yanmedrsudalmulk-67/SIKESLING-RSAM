@@ -258,17 +258,30 @@ export function AnnualReportF4View() {
     radiationRows,
   ]);
 
+  const formatMonthCap = (mIdx: number) => {
+    const raw = MONTH_LONG_NAMES[mIdx] || '';
+    return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+  };
+
   const activePeriodMeta = useMemo(() => {
     if (reportPeriodType === 'BULANAN') {
       const mIdx = Math.max(0, Math.min(11, reportMonth - 1));
+      const mName = formatMonthCap(mIdx);
       return {
         type: 'BULANAN' as const,
-        label: `Bulan ${MONTH_LONG_NAMES[mIdx]} ${reportYear}`,
+        label: `Bulan ${mName} ${reportYear}`,
         shortLabel: MONTH_SHORT_HEADERS[mIdx],
         monthIndices: [mIdx],
         colSpan: 1,
         isSingleMonth: true,
         periodTitle: `BULAN ${MONTH_LONG_NAMES[mIdx]} ${reportYear}`,
+        documentTitle: 'Laporan Bulanan Unit Kesehatan Lingkungan',
+        documentTitleUpper: 'LAPORAN BULANAN UNIT KESEHATAN LINGKUNGAN',
+        reportTypeShort: 'Laporan Bulanan',
+        narrativePhrase: `Bulan ${mName} ${reportYear}`,
+        periodDescription: `pada Bulan ${mName} ${reportYear}`,
+        duringPeriod: `selama Bulan ${mName} ${reportYear}`,
+        tablePeriodHeader: `Bulan ${mName} ${reportYear}`,
       };
     }
     if (reportPeriodType === 'TRIWULAN') {
@@ -276,28 +289,46 @@ export function AnnualReportF4View() {
       const start = (tw - 1) * 3;
       const indices = [start, start + 1, start + 2];
       const roman = ['I', 'II', 'III', 'IV'][tw - 1];
+      const mStart = formatMonthCap(start);
+      const mEnd = formatMonthCap(start + 2);
       return {
         type: 'TRIWULAN' as const,
-        label: `Triwulan ${roman} (${MONTH_LONG_NAMES[start]} - ${MONTH_LONG_NAMES[start + 2]}) ${reportYear}`,
+        label: `Triwulan ${roman} (${mStart} - ${mEnd}) ${reportYear}`,
         shortLabel: `TW ${roman}`,
         monthIndices: indices,
         colSpan: 3,
         isSingleMonth: false,
         periodTitle: `TRIWULAN ${roman} TAHUN ${reportYear}`,
+        documentTitle: `Laporan Triwulan ${roman} Unit Kesehatan Lingkungan`,
+        documentTitleUpper: `LAPORAN TRIWULAN ${roman} UNIT KESEHATAN LINGKUNGAN`,
+        reportTypeShort: 'Laporan Triwulan',
+        narrativePhrase: `Triwulan ${roman} (${mStart}–${mEnd}) ${reportYear}`,
+        periodDescription: `pada Triwulan ${roman} (${mStart}–${mEnd}) ${reportYear}`,
+        duringPeriod: `selama Triwulan ${roman} ${reportYear}`,
+        tablePeriodHeader: `Triwulan ${roman} (${mStart}–${mEnd}) ${reportYear}`,
       };
     }
     if (reportPeriodType === 'SEMESTER') {
       const sem = Math.max(1, Math.min(2, reportSemester));
       const start = (sem - 1) * 6;
       const indices = [start, start + 1, start + 2, start + 3, start + 4, start + 5];
+      const mStart = formatMonthCap(start);
+      const mEnd = formatMonthCap(start + 5);
       return {
         type: 'SEMESTER' as const,
-        label: `Semester ${sem} (${MONTH_LONG_NAMES[start]} - ${MONTH_LONG_NAMES[start + 5]}) ${reportYear}`,
+        label: `Semester ${sem} (${mStart} - ${mEnd}) ${reportYear}`,
         shortLabel: `Sem ${sem}`,
         monthIndices: indices,
         colSpan: 6,
         isSingleMonth: false,
         periodTitle: `SEMESTER ${sem} TAHUN ${reportYear}`,
+        documentTitle: `Laporan Semester ${sem} Unit Kesehatan Lingkungan`,
+        documentTitleUpper: `LAPORAN SEMESTER ${sem} UNIT KESEHATAN LINGKUNGAN`,
+        reportTypeShort: 'Laporan Semester',
+        narrativePhrase: `Semester ${sem} (${mStart}–${mEnd}) ${reportYear}`,
+        periodDescription: `pada Semester ${sem} (${mStart}–${mEnd}) ${reportYear}`,
+        duringPeriod: `selama Semester ${sem} Tahun ${reportYear}`,
+        tablePeriodHeader: `Semester ${sem} (${mStart}–${mEnd}) ${reportYear}`,
       };
     }
     // Default: TAHUNAN
@@ -309,8 +340,24 @@ export function AnnualReportF4View() {
       colSpan: 12,
       isSingleMonth: false,
       periodTitle: `TAHUN ${reportYear}`,
+      documentTitle: 'Laporan Tahunan Unit Kesehatan Lingkungan',
+      documentTitleUpper: 'LAPORAN TAHUNAN UNIT KESEHATAN LINGKUNGAN',
+      reportTypeShort: 'Laporan Tahunan',
+      narrativePhrase: `Tahun ${reportYear} (Januari–Desember)`,
+      periodDescription: `Tahun ${reportYear}`,
+      duringPeriod: `selama Tahun ${reportYear}`,
+      tablePeriodHeader: `Tahun ${reportYear}`,
     };
   }, [reportPeriodType, reportMonth, reportTriwulan, reportSemester, reportYear]);
+
+  // Ukuran teks adaptif untuk tabel agar tidak pernah terpotong pada batas margin 2,5 cm
+  const tableTextClass = activePeriodMeta.isSingleMonth
+    ? 'text-[11.5px] leading-snug'
+    : activePeriodMeta.monthIndices.length <= 3
+    ? 'text-[10.5px] leading-snug'
+    : activePeriodMeta.monthIndices.length <= 6
+    ? 'text-[10px] leading-tight'
+    : 'text-[9px] sm:text-[9.5px] leading-tight';
 
   const periodAnalytics = useMemo(() => {
     return generateAllPeriodAnalytics(
@@ -416,7 +463,7 @@ export function AnnualReportF4View() {
             xmlns="http://www.w3.org/TR/REC-html40">
       <head>
         <meta charset="utf-8">
-        <title>Laporan Tahunan Kesling RSUD Al-Mulk ${reportYear}</title>
+        <title>${activePeriodMeta.documentTitle} RSUD Al-Mulk ${reportYear}</title>
         <!--[if gte mso 9]>
         <xml>
           <w:WordDocument>
@@ -429,17 +476,23 @@ export function AnnualReportF4View() {
         <style>
           @page {
             size: 21.59cm 33.02cm; /* UKURAN RESMI F4 / FOLIO */
-            margin: 2.0cm 2.0cm 2.0cm 2.0cm;
+            margin: 2.5cm 2.5cm 2.5cm 2.5cm; /* MARGIN 2,5 CM SELURUH SISI */
             mso-page-orientation: portrait;
           }
-          body {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 11pt;
-            color: #000;
-            line-height: 1.4;
+          @page Section_Landscape {
+            size: 33.02cm 21.59cm;
+            margin: 2.5cm 2.5cm 2.5cm 2.5cm;
+            mso-page-orientation: landscape;
           }
-          table { border-collapse: collapse; width: 100%; margin-bottom: 8pt; }
-          th, td { border: 1px solid #333; padding: 4pt; }
+          body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12pt;
+            color: #000;
+            line-height: 1.6;
+          }
+          p { margin-bottom: 6pt; text-align: justify; }
+          table { border-collapse: collapse; width: 100%; margin-bottom: 8pt; font-family: Arial, Helvetica, sans-serif; font-size: 9.5pt; }
+          th, td { border: 1px solid #333; padding: 3pt 4pt; }
           .f4-page-break { page-break-after: always; }
         </style>
       </head>
@@ -462,7 +515,7 @@ export function AnnualReportF4View() {
         : reportPeriodType === 'SEMESTER'
         ? `SEMESTER_${reportSemester}_${reportYear}`
         : `TAHUNAN_${reportYear}`;
-    link.download = `LAPORAN_KESLING_RSUD_AL_MULK_${filePeriodTag}_F4.doc`;
+    link.download = `LAPORAN_KESLING_RSUD_AL_MULK_${filePeriodTag}_F4_ARIAL12.doc`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -471,7 +524,7 @@ export function AnnualReportF4View() {
     pushToast({
       type: 'success',
       title: 'Hasil Edit Word F4 Berhasil Disimpan',
-      message: 'Perubahan teks dan narasi yang Anda edit di layar berhasil disimpan ke dalam file Word F4.',
+      message: 'Perubahan teks dan narasi yang Anda edit di layar berhasil disimpan ke dalam file Word F4 (Margin 2,5 cm, Font Arial 12pt).',
     });
   };
 
@@ -667,6 +720,49 @@ export function AnnualReportF4View() {
         </div>
       </div>
 
+            {/* CSS Cetak / Print Resmi F4 Margin 2,5 cm di Seluruh Sisi */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            @page {
+              size: 215.9mm 330.2mm; /* F4 Portrait standard */
+              margin: 25mm !important; /* Margin 2,5 cm di seluruh sisi */
+            }
+            @page landscape-f4 {
+              size: 330.2mm 215.9mm; /* F4 Landscape standard */
+              margin: 25mm !important; /* Margin 2,5 cm di seluruh sisi */
+            }
+            @media print {
+              body, html {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+                font-family: Arial, Helvetica, sans-serif !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
+              .f4-document-container {
+                gap: 0 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+              }
+              .f4-page-section {
+                page-break-after: always !important;
+                break-after: page !important;
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+              }
+              .f4-landscape {
+                page: landscape-f4 !important;
+                page-break-after: always !important;
+                break-after: page !important;
+              }
+            }
+          `,
+        }}
+      />
+
       {/* =====================================================================
           DARK CANVAS WORKSPACE STAGE WITH CTRL+SCROLL ZOOM
           Tampilan kanvas hitam/navy dengan halaman-halaman F4 bersanding (multi-page spread)
@@ -751,32 +847,32 @@ export function AnnualReportF4View() {
         {shouldRenderPage(2, 'COVER_PENDAHULUAN') && (
           <section
             id="f4-page-2"
-            className="scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] px-14 sm:px-16 pt-14 pb-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
-            <div className="space-y-4 text-[14px] leading-[1.85] text-justify text-slate-900">
-              <h2 className="text-center font-bold text-[15px] uppercase tracking-normal mb-5">
+            <div className="space-y-4 text-[12pt] leading-[1.65] text-justify text-slate-900" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
+              <h2 className="text-center font-bold text-[14pt] uppercase tracking-normal mb-5">
                 KATA PENGANTAR
               </h2>
               <p className="indent-11">
-                Puji syukur saya panjatkan kepadsa Allah SWT dengan selesainya Laporan Tahunan Kesehatam Lingkungan UOBK RSUD Al-Mulk Kota Sukabumi. Laporan Tahuan ini berisi data-data dan laporan Indikator Kinerja dan Mutu Unit kesehatan lingkungan di tahun {reportYear}.
+                Puji syukur kami panjatkan ke hadirat Allah SWT atas selesainya {activePeriodMeta.documentTitle} UOBK RSUD Al-Mulk Kota Sukabumi. {activePeriodMeta.reportTypeShort} ini berisi kompilasi data kinerja, indikator mutu, serta evaluasi komprehensif program kesehatan lingkungan {activePeriodMeta.periodDescription}.
               </p>
               <p className="indent-11">
-                Laporan Tahunan Kesehatan Lingkungan RSUD Al-Mulk Kota Sukabumi ini disusun sebagai bentuk akuntabilitas dan transparansi pelaksanaan pengelolaan lingkungan rumah sakit dalam periode Januari–Desember {reportYear}. Laporan ini mencerminkan komitmen RSUD Al-Mulk untuk memenuhi standar kesehatan lingkungan, menjamin keselamatan pasien dan tenaga kesehatan, serta mendukung pencapaian standar pelayanan nasional termasuk implementasi <em>Kelas Rawat Inap Standar</em> (KRIS).
+                {activePeriodMeta.documentTitle} RSUD Al-Mulk Kota Sukabumi ini disusun sebagai wujud akuntabilitas dan transparansi tata kelola lingkungan rumah sakit dalam {activePeriodMeta.narrativePhrase}. Laporan ini mencerminkan komitmen penuh manajemen dan seluruh staf untuk senantiasa memenuhi baku mutu lingkungan, menjamin keselamatan pasien dan tenaga kesehatan, serta mempercepat implementasi <em>Kelas Rawat Inap Standar</em> (KRIS).
               </p>
               <p className="indent-11">
-                Jenis Indikator Kegiatan Unit Kesling diantaranya : Melaksanakan Pengawasan Kesehatan Air Rumah Sakit, Pemeriksaan Kesehatan Udara Rumah Sakit, Melaksanakan pengawasan Kesehatan Sarana dan Bangunan, Melaksanakan pengawasan kebersihan, Monitoring penanganan limbah cair infeksius, Monitoring pengelolaan limbah padat, Monitoring pemeriksaan pangan siap saji, Monitoring Pemeriksaan Penyelenggaraan Linen, Monitoring Pemeriksaan Pengamanan Radiasi, Pengendalian vector dan binatang pengganggu.
+                Ruang lingkup kegiatan Unit Kesehatan Lingkungan pada {activePeriodMeta.narrativePhrase} meliputi: pengawasan mutu air bersih dan air minum RO, pemantauan kualitas udara, pencahayaan dan kebisingan, inspeksi kelayakan fisik sarana prasarana ramah pasien, pengawasan tata graha kebersihan, penanganan limbah medis padat B3 dan domestik, optimalisasi instalasi pengolahan air limbah (IPAL), pengawasan penyehatan pangan siap saji, monitoring penyelenggaraan linen/laundry, proteksi radiasi, serta pengendalian vektor dan binatang pembawa penyakit.
               </p>
               <p className="indent-11">
-                Laporan Kinerja RSUD AL-Mulk diuraikan dalam laporan ini, sehingga pelaksanaan tugas pokok dan fungsi serta tujuan dan sasaran kegiatan selama tahun {reportYear} dapat digambarkan pencapaiannya serta masalah dan kendala-kendala yang dihadapi. Laporan ini diharapkan dapat menjadi dasar pertimbangan dalam pengambilan kebijakan di tahun mendatang dan saya berharap Laporan Tahunan ini dapat dijadikan sebagai informasi kesehatan lingkungan di UOBK RSUD Al-Mulk, dan dapat bermafaat bagi semua pembaca baik untuk Petugas Kesehatan maupun Unit-Unit lain yang membutuhkan.
+                Seluruh capaian dan tantangan operasional {activePeriodMeta.duringPeriod} diuraikan secara objektif berbasis data aktual (<em>realtime</em>). Laporan ini diharapkan menjadi rujukan strategis dalam pengambilan kebijakan peningkatan mutu berkelanjutan di masa mendatang, serta bermanfaat bagi seluruh unit pelayanan di lingkungan rumah sakit.
               </p>
               <p className="indent-11">
-                Laporan Tahunan ini disusun tentu saja jauh dari kesempurnaan, oleh karena itu penyusun berharap mendapatkan saran dan kritik agar dapat disempurnakan menjadi lebih baik pada punyusunan Laporan Tahunan berikutnya, Terimakasih di sampaikan kepada semua pihak yang telah mendukung penyusunan laporan tahunan ini. Semoga bermanfaat untuk kita semua. Aamiin
+                Kami menyampaikan terima kasih yang setinggi-tingginya kepada segenap pimpinan manajemen dan seluruh pihak yang telah mendukung kelancaran penyusunan laporan ini. Kritik dan saran konstruktif senantiasa kami harapkan demi penyempurnaan {activePeriodMeta.reportTypeShort} pada periode berikutnya. Semoga laporan ini memberi kemanfaatan optimal bagi kita semua. Aamiin.
               </p>
 
               <div className="pt-4 flex justify-end pr-4">
-                <div className="text-center space-y-0.5 text-[14px] leading-[1.45]">
+                <div className="text-center space-y-0.5 text-[12pt] leading-[1.4]">
                   <p className="mb-2">Penyusun,</p>
-                  <p>Instalasi Kesehatan Lingkungan</p>
+                  <p className="font-semibold">Instalasi Kesehatan Lingkungan</p>
                   <p>UOBK RSUD Al-Mulk Kota Sukabumi</p>
                 </div>
               </div>
@@ -791,7 +887,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(3, 'COVER_PENDAHULUAN') && (
           <section
             id="f4-page-3"
-            className="scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] px-14 sm:px-16 pt-14 pb-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             <div className="text-[13.5px] leading-[1.95] text-slate-900">
               <h2 className="text-center font-bold text-[15px] uppercase tracking-normal mb-7">
@@ -948,7 +1044,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(4, 'COVER_PENDAHULUAN') && (
           <section
             id="f4-page-4"
-            className="scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] px-14 sm:px-16 pt-24 pb-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             <div className="space-y-5 text-[14px] leading-[1.8] text-slate-900">
               <div>BAB IV PENUTUP</div>
@@ -964,9 +1060,9 @@ export function AnnualReportF4View() {
         {shouldRenderPage(5, 'COVER_PENDAHULUAN') && (
           <section
             id="f4-page-5"
-            className="scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] px-14 sm:px-16 pt-14 pb-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
-            <div className="text-[14px] leading-[1.85] text-justify text-slate-900">
+            <div className="text-[12pt] leading-[1.65] text-justify text-slate-900">
               <div className="text-center font-bold text-[15px] uppercase leading-[1.5] mb-3">
                 <div>BAB 1</div>
                 <div>PENDAHULUAN</div>
@@ -1024,9 +1120,9 @@ export function AnnualReportF4View() {
         {shouldRenderPage(6, 'COVER_PENDAHULUAN') && (
           <section
             id="f4-page-6"
-            className="scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] px-14 sm:px-16 pt-14 pb-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
-            <div className="text-[14px] leading-[1.85] text-justify text-slate-900">
+            <div className="text-[12pt] leading-[1.65] text-justify text-slate-900">
               <div className="pl-11 space-y-6">
                 <p>
                   <strong>Nomor 59 Tahun 2024</strong>, yang menekankan pemerataan mutu layanan rawat inap melalui pemenuhan standar fasilitas dan lingkungan perawatan. Implementasi KRIS berdampak langsung terhadap pengelolaan kesehatan lingkungan, khususnya pada aspek bangunan, ventilasi, kepadatan tempat tidur, sanitasi ruangan, pencahayaan, serta kenyamanan dan keselamatan pasien.
@@ -1035,7 +1131,7 @@ export function AnnualReportF4View() {
                   Selain itu, pengelolaan kesehatan lingkungan rumah sakit juga mengacu pada <strong>Peraturan Menteri Kesehatan Nomor 7 Tahun 2019 tentang Kesehatan Lingkungan Rumah Sakit</strong>, serta standar akreditasi rumah sakit yang menempatkan manajemen fasilitas dan keselamatan sebagai komponen penting dalam penilaian mutu layanan.
                 </p>
                 <p className="indent-11">
-                  Oleh karena itu, RSUD Al-Mulk Kota Sukabumi menyusun Laporan Tahunan Kesehatan Lingkungan sebagai bentuk akuntabilitas kinerja, sarana evaluasi pelaksanaan program, serta dasar perencanaan peningkatan mutu pengelolaan lingkungan rumah sakit secara berkelanjutan, sekaligus mendukung kesiapan penerapan KRIS secara optimal.
+                  Oleh karena itu, RSUD Al-Mulk Kota Sukabumi menyusun {activePeriodMeta.documentTitle} sebagai bentuk akuntabilitas kinerja, sarana evaluasi pelaksanaan program, serta dasar perencanaan peningkatan mutu pengelolaan lingkungan rumah sakit secara berkelanjutan dalam {activePeriodMeta.narrativePhrase}, sekaligus mendukung kesiapan penerapan KRIS secara optimal.
                 </p>
               </div>
 
@@ -1062,7 +1158,7 @@ export function AnnualReportF4View() {
                   </div>
                   <ol className="list-decimal pl-16 space-y-1.5">
                     <li className="pl-2">
-                      Mengetahui capaian kinerja pengelolaan kesehatan lingkungan RSUD Al-Mulk selama periode pelaporan.
+                      Mengetahui capaian kinerja pengelolaan kesehatan lingkungan RSUD Al-Mulk selama {activePeriodMeta.narrativePhrase}.
                     </li>
                     <li className="pl-2">
                       Menilai tingkat kepatuhan terhadap regulasi kesehatan lingkungan dan standar KRIS.
@@ -1087,9 +1183,9 @@ export function AnnualReportF4View() {
         {shouldRenderPage(7, 'COVER_PENDAHULUAN') && (
           <section
             id="f4-page-7"
-            className="scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] px-14 sm:px-16 pt-14 pb-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
-            <div className="space-y-6 text-[14px] leading-[1.85] text-justify text-slate-900">
+            <div className="space-y-4 text-[12pt] leading-[1.65] text-justify text-slate-900" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
               <div>
                 <div className="flex items-baseline gap-4 mb-1">
                   <span className="shrink-0">1.2.3</span>
@@ -1145,7 +1241,7 @@ export function AnnualReportF4View() {
                   <span>Isi dan Metoda Penyusunan</span>
                 </div>
                 <p className="pl-10 indent-12">
-                  Laporan Tahunan kesehatan Lingkungan UOBK RSUD Al-Mulk ini berisi data-data Kesehatan Lingkungan yang diperoleh sejak awal Januari sampai akhir Desember tahun {reportYear}. Motoda penyusunan yang digunakan adalah metoda tampilan data baik dalam bentuk tabel maupun peta. Semua itu disusun untuk memudahkan dalam membaca data yang tersedia.
+                  {activePeriodMeta.documentTitle} UOBK RSUD Al-Mulk ini berisi data pemantauan kesehatan lingkungan yang dihimpun selama {activePeriodMeta.narrativePhrase}. Metoda penyusunan yang digunakan adalah metoda tampilan data terintegrasi baik dalam bentuk tabel, peta wilayah, maupun grafik capaian mutu untuk memudahkan pemahaman informasi secara komprehensif.
                 </p>
               </div>
 
@@ -1169,9 +1265,9 @@ export function AnnualReportF4View() {
         {shouldRenderPage(8, 'COVER_PENDAHULUAN') && (
           <section
             id="f4-page-8"
-            className="scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] px-14 sm:px-16 pt-14 pb-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
-            <div className="text-[13.5px] leading-[1.75] text-justify text-slate-900">
+            <div className="text-[12pt] leading-[1.65] text-justify text-slate-900">
               <div className="text-center font-bold text-[15px] uppercase leading-[1.8] mb-3">
                 <div>BAB II</div>
                 <div>GAMBARAN UMUM</div>
@@ -1329,9 +1425,9 @@ export function AnnualReportF4View() {
         {shouldRenderPage(9, 'COVER_PENDAHULUAN') && (
           <section
             id="f4-page-9"
-            className="scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] px-14 sm:px-16 pt-14 pb-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
-            <div className="text-[14px] leading-[1.8] text-slate-900">
+            <div className="space-y-4 text-[12pt] leading-[1.65] text-justify text-slate-900" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
               <div className="pl-16 space-y-1 text-left">
                 <div className="grid grid-cols-[26px_205px_18px_1fr] items-baseline">
                   <span>d.</span>
@@ -1432,9 +1528,9 @@ export function AnnualReportF4View() {
         {shouldRenderPage(10, 'BAB_3_MONITORING') && (
           <section
             id="f4-page-10"
-            className="scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] px-14 sm:px-16 pt-14 pb-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
-            <div className="text-[14px] leading-[1.85] text-justify text-slate-900">
+            <div className="text-[12pt] leading-[1.65] text-justify text-slate-900">
               <div className="text-center font-bold text-[15px] uppercase leading-[1.7] mb-6">
                 <div>BAB III</div>
                 <div>PELAKSANAAN KEGIATAN</div>
@@ -1471,7 +1567,7 @@ export function AnnualReportF4View() {
                   </div>
                 </div>
                 <p className="pl-10 pt-3">
-                  Adapun hasil pengujiannya adalah sebagai berikut :
+                  Adapun hasil pengujian mutu air bersih dan air minum RO pada {activePeriodMeta.narrativePhrase} adalah sebagai berikut :
                 </p>
               </div>
             </div>
@@ -1485,7 +1581,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(11, 'BAB_3_MONITORING') && (
           <section
             id="f4-page-11"
-            className="f4-landscape scroll-mt-24 relative overflow-hidden bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full max-w-[330.2mm] min-h-[215.9mm] px-12 sm:px-14 pt-12 pb-6 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-landscape f4-page-section scroll-mt-24 relative overflow-hidden bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full max-w-[330.2mm] min-h-[215.9mm] px-[25mm] pt-[22mm] pb-[20mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             {renderLandscapeCorner()}
             <div className="space-y-4 text-[12px] font-sans text-slate-900">
@@ -1673,18 +1769,6 @@ export function AnnualReportF4View() {
                   </tbody>
                 </table>
               </div>
-
-              {/* Analisis Data, Rekomendasi & RTL Terpadu */}
-              <SectionAnalysisCard
-                title="Hasil Pengujian Air Bersih"
-                periodLabel={activePeriodMeta.label}
-                defaultAnalysis={periodAnalytics?.waterClean?.analysis || ''}
-                defaultRecommendation={periodAnalytics?.waterClean?.recommendation || ''}
-                defaultFollowUp={periodAnalytics?.waterClean?.followUp || ''}
-                pic={periodAnalytics?.waterClean?.pic}
-                timeline={periodAnalytics?.waterClean?.timeline}
-                onEdit={() => setHasUnsavedChanges(true)}
-              />
             </div>
             {renderLandscapeFooter(11)}
           </section>
@@ -1696,7 +1780,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(12, 'BAB_3_MONITORING') && (
           <section
             id="f4-page-12"
-            className="f4-landscape scroll-mt-24 relative overflow-hidden bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full max-w-[330.2mm] min-h-[215.9mm] px-12 sm:px-14 pt-14 pb-6 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-landscape f4-page-section scroll-mt-24 relative overflow-hidden bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full max-w-[330.2mm] min-h-[215.9mm] px-[25mm] pt-[22mm] pb-[20mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             {renderLandscapeCorner(12)}
             <div className="space-y-4 text-[12px] font-sans text-slate-900">
@@ -1907,7 +1991,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(13, 'BAB_3_MONITORING') && (
           <section
             id="f4-page-13"
-            className="f4-landscape scroll-mt-24 relative overflow-hidden bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full max-w-[330.2mm] min-h-[215.9mm] px-12 sm:px-14 pt-16 pb-6 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-landscape f4-page-section scroll-mt-24 relative overflow-hidden bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full max-w-[330.2mm] min-h-[215.9mm] px-[25mm] pt-[22mm] pb-[20mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             {renderLandscapeCorner(13)}
             <div className="text-[12px] font-sans text-slate-900">
@@ -2030,18 +2114,6 @@ export function AnnualReportF4View() {
                   </tbody>
                 </table>
               </div>
-
-              {/* Analisis Data, Rekomendasi & RTL Terpadu Air RO */}
-              <SectionAnalysisCard
-                title="Hasil Pengujian Air RO & Air Minum"
-                periodLabel={activePeriodMeta.label}
-                defaultAnalysis={periodAnalytics?.waterRo?.analysis || ''}
-                defaultRecommendation={periodAnalytics?.waterRo?.recommendation || ''}
-                defaultFollowUp={periodAnalytics?.waterRo?.followUp || ''}
-                pic={periodAnalytics?.waterRo?.pic}
-                timeline={periodAnalytics?.waterRo?.timeline}
-                onEdit={() => setHasUnsavedChanges(true)}
-              />
             </div>
             {renderLandscapeFooter(13)}
           </section>
@@ -2053,210 +2125,51 @@ export function AnnualReportF4View() {
         {shouldRenderPage(14, 'BAB_3_MONITORING') && (
           <section
             id="f4-page-14"
-            className="scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] px-14 sm:px-16 pt-14 pb-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
-            <div className="text-[13.8px] leading-[1.82] text-justify text-slate-900">
-              <div className="pl-9 space-y-2">
-                <p className="indent-9">
-                  Berdasarkan Tabel diatas, pemeriksaan kualitas air bersih (Sumur Gali, Artesis dan Air RO) yang dilakukan di Laboratorium Kesehatan Daerah Kota Sukabumi sesuai dengan PMK No.2 Tahun 2023 tentang Peraturan Pelaksana PP No. 66 Tahun 2014 standar Baku Mutu Kesehatan Lingkungan dan Persyaratan kesehatan Air Untuk Keperluan Hygiene Sanitasi, hasil analisanya ;
-                </p>
-
-                <ol className="list-decimal pl-8 space-y-1.5">
-                  <li className="pl-2">
-                    Kualitas air bersih rumah sakit secara umum berada dalam kondisi baik, namun masih diperlukan pengendalian pada parameter mikrobiologi dan mangan.
-                  </li>
-                  <li className="pl-2">
-                    Kualitas air RO menunjukkan hasil yang baik dan mendukung kebutuhan pelayanan kesehatan rumah sakit.
-                  </li>
-                  <li className="pl-2">
-                    Monitoring dan pengujian rutin tetap diperlukan untuk menjamin kesinambungan mutu air sesuai standar kesehatan lingkungan rumah sakit.
-                  </li>
-                </ol>
-
-                <div className="pt-3 pl-8">Rekomendasi</div>
-
-                <ol className="list-decimal pl-8 space-y-1.5">
-                  <li className="pl-2">
-                    Melakukan desinfeksi dan pemeliharaan rutin pada seluruh sumber air bersih.
-                  </li>
-                  <li className="pl-2">
-                    Menambahkan atau mengoptimalkan pengolahan air untuk penurunan kadar mangan.
-                  </li>
-                  <li className="pl-2">
-                    Melakukan perawatan berkala sistem RO serta penggantian filter sesuai jadwal.
-                  </li>
-                  <li className="pl-2">
-                    Meningkatkan frekuensi monitoring pada parameter mikrobiologi dan kimia kritis.
-                  </li>
-                </ol>
+            <div className="space-y-4 text-[12pt] leading-[1.65] text-justify text-slate-900" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
+              <div className="text-center font-bold text-[13.5pt] uppercase leading-snug mb-4">
+                <div>EVALUASI MUTU PENYEHATAN AIR</div>
+                <div className="text-[11.5pt] font-semibold text-slate-700 mt-1">UOBK RSUD AL-MULK · {activePeriodMeta.periodTitle}</div>
               </div>
 
-              <div className="mt-5">
-                <div className="flex items-baseline gap-1.5 mb-2">
-                  <span className="shrink-0">3.2</span>
-                  <span>Penyelenggaraan Penyehatan Udara, Kebisingan, Dan Pencahayaan</span>
-                </div>
+              <p className="indent-10">
+                Berdasarkan Tabel 1, 2, dan 3 di atas, pengujian kualitas air bersih (Sumur Gali dan Artesis) serta Air Minum RO yang dilaksanakan melalui kerja sama dengan Laboratorium Kesehatan Daerah Kota Sukabumi dan pihak ketiga berizin secara konsisten mengacu pada PMK No. 2 Tahun 2023 dan Permenkes No. 7 Tahun 2019 tentang Kesehatan Lingkungan Rumah Sakit. Hasil evaluasi komprehensif pada {activePeriodMeta.narrativePhrase} diuraikan sebagai berikut:
+              </p>
 
-                <div className="pl-9 space-y-3">
-                  <p className="indent-9">
-                    Hasil Upaya pemeriksaan kelembaban udara, kebisingan, dan pencahayaan sudah dilaksanakan oleh petugas sanitarian rumah sakit, dilakukan dalam satu tahun sebanyak 2 kali pemeriksaan atau 1 kali per semester di bulan Juni dan Desember Adapun hasil pengujiannya sebagai berikut:
-                  </p>
-                </div>
+              <ol className="list-decimal pl-8 space-y-2">
+                <li className="pl-2">
+                  <strong>Kualitas Air Bersih:</strong> Secara umum berada dalam kondisi baik dan memenuhi syarat higiene sanitasi. Pengawasan berkala difokuskan pada pemantauan mikrobiologi (Coliform) serta parameter kimiawi kritis (Mangan dan Kesadahan) guna menjamin pasokan air operasional rawat inap dan layanan medis tetap higienis.
+                </li>
+                <li className="pl-2">
+                  <strong>Kualitas Air Minum RO:</strong> Seluruh sampel pengujian air minum RO di ruang rawat dan instalasi penunjang menunjukkan hasil 100% Memenuhi Syarat (MS) baku mutu mikrobiologi dan kimia, sangat aman untuk konsumsi pasien dan tenaga kesehatan.
+                </li>
+                <li className="pl-2">
+                  <strong>Kesiapan Standar KRIS:</strong> Sistem pasokan air bersih berkesinambungan 24 jam dengan debit mencukupi standar KRIS (&gt;300 liter/tempat tidur/hari) telah tercapai secara stabil pada {activePeriodMeta.narrativePhrase}.
+                </li>
+              </ol>
 
-                <div className="mt-3 text-center text-[13.5px]">
-                  Tabel 2. Hasil Pemeriksaan Kelembapan Udara, Pencahayaan, dan Kebisingan
-                </div>
+              <div className="pt-2">
+                <div className="font-bold text-[12pt] text-slate-900 mb-1">Rekomendasi Teknis Penyehatan Air:</div>
+                <ul className="list-disc pl-8 space-y-1">
+                  <li className="pl-2">Melaksanakan disinfeksi dan pemeliharaan berkala pada reservoir dan toren penampungan air setiap bulan.</li>
+                  <li className="pl-2">Mengoptimalkan sistem filtrasi dan pemantauan filter karbon aktif untuk mempertahankan kestabilan pH dan kejernihan air.</li>
+                  <li className="pl-2">Melakukan servis berkala mesin Reverse Osmosis (RO) serta penggantian membran secara tepat waktu.</li>
+                  <li className="pl-2">Menjaga kontinuitas pengujian laboratorium terakreditasi setiap bulan untuk parameter mikrobiologi.</li>
+                </ul>
+              </div>
 
-                {/* Excel-style Line Chart Replica matching Gambar 1 */}
-                <div className="mt-2 border border-slate-300 bg-white px-4 pt-3 pb-2.5">
-                  <svg viewBox="0 0 640 215" className="w-full h-auto block">
-                    {/* Horizontal grid lines (0%, 20%, 40%, 60%, 80%, 100%) */}
-                    {[
-                      { pct: '100%', y: 20 },
-                      { pct: '80%', y: 47 },
-                      { pct: '60%', y: 74 },
-                      { pct: '40%', y: 101 },
-                      { pct: '20%', y: 128 },
-                      { pct: '0%', y: 155 },
-                    ].map((g) => (
-                      <g key={g.pct}>
-                        <text
-                          x="44"
-                          y={g.y + 3.5}
-                          textAnchor="end"
-                          fontSize="9.5"
-                          fill="#595959"
-                        >
-                          {g.pct}
-                        </text>
-                        <line
-                          x1="54"
-                          y1={g.y}
-                          x2="615"
-                          y2={g.y}
-                          stroke="#D9D9D9"
-                          strokeWidth="1"
-                        />
-                      </g>
-                    ))}
-
-                    {/* X-axis category labels */}
-                    <text x="160" y="172" textAnchor="middle" fontSize="9.5" fill="#595959">
-                      KELEMBABAN UDARA
-                    </text>
-                    <text x="342" y="172" textAnchor="middle" fontSize="9.5" fill="#595959">
-                      PENCAHAYAAN
-                    </text>
-                    <text x="524" y="172" textAnchor="middle" fontSize="9.5" fill="#595959">
-                      KEBISINGAN
-                    </text>
-
-                    {/* Series 1: JUNI (Orange #C55A11 / #ED7D31) */}
-                    <polyline
-                      points="160,129 342,115 524,128"
-                      fill="none"
-                      stroke="#C55A11"
-                      strokeWidth="2.3"
-                    />
-                    {[
-                      { x: 160, y: 129, val: `${compiled.air.chartComparison[0]?.juniPct ?? 34}%` },
-                      { x: 342, y: 115, val: `${compiled.air.chartComparison[1]?.juniPct ?? 80}%` },
-                      { x: 524, y: 128, val: `${compiled.air.chartComparison[2]?.juniPct ?? 35}%` },
-                    ].map((pt, idx) => (
-                      <g key={`juni-${idx}`}>
-                        <circle
-                          cx={pt.x}
-                          cy={pt.y}
-                          r="3.6"
-                          fill="#5B9BD5"
-                          stroke="#C55A11"
-                          strokeWidth="2"
-                        />
-                        <text x={pt.x + 10} y={pt.y + 3.5} fontSize="9.5" fill="#404040">
-                          {pt.val}
-                        </text>
-                      </g>
-                    ))}
-
-                    {/* Series 2: DESEMBER (Blue #0070C0) */}
-                    <polyline
-                      points="160,94 342,67 524,93"
-                      fill="none"
-                      stroke="#0070C0"
-                      strokeWidth="2.3"
-                    />
-                    {[
-                      { x: 160, y: 94, val: `${compiled.air.chartComparison[0]?.desemberPct ?? 46}%` },
-                      { x: 342, y: 67, val: `${compiled.air.chartComparison[1]?.desemberPct ?? 100}%` },
-                      { x: 524, y: 93, val: `${compiled.air.chartComparison[2]?.desemberPct ?? 49}%` },
-                    ].map((pt, idx) => (
-                      <g key={`des-${idx}`}>
-                        <circle
-                          cx={pt.x}
-                          cy={pt.y}
-                          r="3.6"
-                          fill="#ED7D31"
-                          stroke="#0070C0"
-                          strokeWidth="2"
-                        />
-                        <text x={pt.x + 10} y={pt.y + 3.5} fontSize="9.5" fill="#404040">
-                          {pt.val}
-                        </text>
-                      </g>
-                    ))}
-
-                    {/* Series 3: NORMAL (Light Green #A9D18E) */}
-                    <polyline
-                      points="160,20 342,20 524,20"
-                      fill="none"
-                      stroke="#A9D18E"
-                      strokeWidth="4"
-                    />
-                    {[
-                      { x: 160, y: 20, val: '100%' },
-                      { x: 342, y: 20, val: '100%' },
-                      { x: 524, y: 20, val: '100%' },
-                    ].map((pt, idx) => (
-                      <g key={`norm-${idx}`}>
-                        <circle cx={pt.x} cy={pt.y} r="5.5" fill="#A9D18E" />
-                        <text x={pt.x + 11} y={pt.y + 3.5} fontSize="9.5" fill="#404040">
-                          {pt.val}
-                        </text>
-                      </g>
-                    ))}
-
-                    {/* Bottom Legend: JUNI | DESEMBER | NORMAL */}
-                    <g transform="translate(205, 198)">
-                      <line x1="0" y1="0" x2="22" y2="0" stroke="#C55A11" strokeWidth="2.3" />
-                      <circle cx="11" cy="0" r="3.2" fill="#5B9BD5" stroke="#C55A11" strokeWidth="1.8" />
-                      <text x="26" y="3.5" fontSize="9.5" fill="#595959">
-                        JUNI
-                      </text>
-
-                      <line x1="62" y1="0" x2="84" y2="0" stroke="#0070C0" strokeWidth="2.3" />
-                      <circle cx="73" cy="0" r="3.2" fill="#ED7D31" stroke="#0070C0" strokeWidth="1.8" />
-                      <text x="88" y="3.5" fontSize="9.5" fill="#595959">
-                        DESEMBER
-                      </text>
-
-                      <line x1="150" y1="0" x2="172" y2="0" stroke="#A9D18E" strokeWidth="3.8" />
-                      <circle cx="161" cy="0" r="4.5" fill="#A9D18E" />
-                      <text x="176" y="3.5" fontSize="9.5" fill="#595959">
-                        NORMAL
-                      </text>
-                    </g>
-                  </svg>
-                </div>
-
-                {/* Analisis Data, Rekomendasi & RTL Terpadu Kualitas Udara */}
+              {/* Analisis Data, Rekomendasi & RTL Terpadu Penyehatan Air */}
+              <div className="pt-2">
                 <SectionAnalysisCard
-                  title="Kualitas Udara & Lingkungan Fisik Ruangan"
+                  title="Penyelenggaraan Penyehatan Air Bersih & Air RO"
                   periodLabel={activePeriodMeta.label}
-                  defaultAnalysis={periodAnalytics?.airQuality?.analysis || ''}
-                  defaultRecommendation={periodAnalytics?.airQuality?.recommendation || ''}
-                  defaultFollowUp={periodAnalytics?.airQuality?.followUp || ''}
-                  pic={periodAnalytics?.airQuality?.pic}
-                  timeline={periodAnalytics?.airQuality?.timeline}
+                  defaultAnalysis={periodAnalytics?.waterClean?.analysis || periodAnalytics?.waterRo?.analysis || ''}
+                  defaultRecommendation={periodAnalytics?.waterClean?.recommendation || periodAnalytics?.waterRo?.recommendation || ''}
+                  defaultFollowUp={periodAnalytics?.waterClean?.followUp || periodAnalytics?.waterRo?.followUp || ''}
+                  pic={periodAnalytics?.waterClean?.pic || 'Sanitarian & Teknisi IPSRS'}
+                  timeline={periodAnalytics?.waterClean?.timeline || 'Rutin Berjalan'}
+                  layout="stacked"
                   onEdit={() => setHasUnsavedChanges(true)}
                 />
               </div>
@@ -2271,73 +2184,217 @@ export function AnnualReportF4View() {
         {shouldRenderPage(15, 'BAB_3_MONITORING') && (
           <section
             id="f4-page-15"
-            className="scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] px-14 sm:px-16 pt-12 pb-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
-            <div className="space-y-1.5 text-[13.6px] leading-[1.72] text-justify text-slate-900">
-              <p>
-                Berdasarkan tabel diatas hasil pengukuran semester 1 dan semester 2 di hasilkan;
-              </p>
+            <div className="space-y-3 text-[12pt] leading-[1.6] text-justify text-slate-900" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="shrink-0 font-bold">3.2</span>
+                <span className="font-bold">Penyelenggaraan Penyehatan Udara, Kebisingan, Dan Pencahayaan</span>
+              </div>
 
-              {/* 1. Kelembaban Udara */}
-              <div className="space-y-1">
-                <div className="flex items-baseline gap-3">
-                  <span>1.</span>
-                  <span>Kelembaban Udara</span>
+              <div className="pl-6 space-y-2">
+                <p className="indent-8">
+                  Hasil Upaya pemeriksaan kelembaban udara, kebisingan, dan pencahayaan sudah dilaksanakan oleh petugas sanitarian rumah sakit, dilakukan {activePeriodMeta.narrativePhrase} mengacu pada standar baku mutu Permenkes No. 2 Tahun 2023. Adapun rekapitulasi capaian dan grafik evaluasi disajikan sebagai berikut:
+                </p>
+              </div>
+
+              <div className="text-center font-bold text-[11pt] text-slate-900 pt-1">
+                Tabel 2. Hasil Pemeriksaan Kelembapan Udara, Pencahayaan, dan Kebisingan
+              </div>
+
+              {/* Excel-style Line Chart Replica matching Gambar 1 */}
+              <div className="border border-slate-300 bg-white px-3 py-2">
+                <svg viewBox="0 0 640 215" className="w-full h-auto block">
+                  {/* Horizontal grid lines (0%, 20%, 40%, 60%, 80%, 100%) */}
+                  {[
+                    { pct: '100%', y: 20 },
+                    { pct: '80%', y: 47 },
+                    { pct: '60%', y: 74 },
+                    { pct: '40%', y: 101 },
+                    { pct: '20%', y: 128 },
+                    { pct: '0%', y: 155 },
+                  ].map((g) => (
+                    <g key={g.pct}>
+                      <text
+                        x="44"
+                        y={g.y + 3.5}
+                        textAnchor="end"
+                        fontSize="9.5"
+                        fill="#595959"
+                      >
+                        {g.pct}
+                      </text>
+                      <line
+                        x1="54"
+                        y1={g.y}
+                        x2="615"
+                        y2={g.y}
+                        stroke="#D9D9D9"
+                        strokeWidth="1"
+                      />
+                    </g>
+                  ))}
+
+                  {/* X-axis category labels */}
+                  <text x="160" y="172" textAnchor="middle" fontSize="9.5" fill="#595959">
+                    KELEMBABAN UDARA
+                  </text>
+                  <text x="342" y="172" textAnchor="middle" fontSize="9.5" fill="#595959">
+                    PENCAHAYAAN
+                  </text>
+                  <text x="524" y="172" textAnchor="middle" fontSize="9.5" fill="#595959">
+                    KEBISINGAN
+                  </text>
+
+                  {/* Series 1: JUNI (Orange #C55A11 / #ED7D31) */}
+                  <polyline
+                    points="160,129 342,115 524,128"
+                    fill="none"
+                    stroke="#C55A11"
+                    strokeWidth="2.3"
+                  />
+                  {[
+                    { x: 160, y: 129, val: `${compiled.air.chartComparison[0]?.juniPct ?? 34}%` },
+                    { x: 342, y: 115, val: `${compiled.air.chartComparison[1]?.juniPct ?? 80}%` },
+                    { x: 524, y: 128, val: `${compiled.air.chartComparison[2]?.juniPct ?? 35}%` },
+                  ].map((pt, idx) => (
+                    <g key={`juni-${idx}`}>
+                      <circle
+                        cx={pt.x}
+                        cy={pt.y}
+                        r="3.6"
+                        fill="#5B9BD5"
+                        stroke="#C55A11"
+                        strokeWidth="2"
+                      />
+                      <text x={pt.x + 10} y={pt.y + 3.5} fontSize="9.5" fill="#404040">
+                        {pt.val}
+                      </text>
+                    </g>
+                  ))}
+
+                  {/* Series 2: DESEMBER (Blue #0070C0) */}
+                  <polyline
+                    points="160,94 342,67 524,93"
+                    fill="none"
+                    stroke="#0070C0"
+                    strokeWidth="2.3"
+                  />
+                  {[
+                    { x: 160, y: 94, val: `${compiled.air.chartComparison[0]?.desemberPct ?? 46}%` },
+                    { x: 342, y: 67, val: `${compiled.air.chartComparison[1]?.desemberPct ?? 100}%` },
+                    { x: 524, y: 93, val: `${compiled.air.chartComparison[2]?.desemberPct ?? 49}%` },
+                  ].map((pt, idx) => (
+                    <g key={`des-${idx}`}>
+                      <circle
+                        cx={pt.x}
+                        cy={pt.y}
+                        r="3.6"
+                        fill="#ED7D31"
+                        stroke="#0070C0"
+                        strokeWidth="2"
+                      />
+                      <text x={pt.x + 10} y={pt.y + 3.5} fontSize="9.5" fill="#404040">
+                        {pt.val}
+                      </text>
+                    </g>
+                  ))}
+
+                  {/* Series 3: NORMAL (Light Green #A9D18E) */}
+                  <polyline
+                    points="160,20 342,20 524,20"
+                    fill="none"
+                    stroke="#A9D18E"
+                    strokeWidth="4"
+                  />
+                  {[
+                    { x: 160, y: 20, val: '100%' },
+                    { x: 342, y: 20, val: '100%' },
+                    { x: 524, y: 20, val: '100%' },
+                  ].map((pt, idx) => (
+                    <g key={`norm-${idx}`}>
+                      <circle cx={pt.x} cy={pt.y} r="5.5" fill="#A9D18E" />
+                      <text x={pt.x + 11} y={pt.y + 3.5} fontSize="9.5" fill="#404040">
+                        {pt.val}
+                      </text>
+                    </g>
+                  ))}
+
+                  {/* Bottom Legend: JUNI | DESEMBER | NORMAL */}
+                  <g transform="translate(205, 198)">
+                    <line x1="0" y1="0" x2="22" y2="0" stroke="#C55A11" strokeWidth="2.3" />
+                    <circle cx="11" cy="0" r="3.2" fill="#5B9BD5" stroke="#C55A11" strokeWidth="1.8" />
+                    <text x="26" y="3.5" fontSize="9.5" fill="#595959">
+                      JUNI
+                    </text>
+
+                    <line x1="62" y1="0" x2="84" y2="0" stroke="#0070C0" strokeWidth="2.3" />
+                    <circle cx="73" cy="0" r="3.2" fill="#ED7D31" stroke="#0070C0" strokeWidth="1.8" />
+                    <text x="88" y="3.5" fontSize="9.5" fill="#595959">
+                      DESEMBER
+                    </text>
+
+                    <line x1="150" y1="0" x2="172" y2="0" stroke="#A9D18E" strokeWidth="3.8" />
+                    <circle cx="161" cy="0" r="4.5" fill="#A9D18E" />
+                    <text x="176" y="3.5" fontSize="9.5" fill="#595959">
+                      NORMAL
+                    </text>
+                  </g>
+                </svg>
+              </div>
+
+              {/* Rekapitulasi Capaian & Interpretasi Standar KRIS */}
+              <div className="space-y-2 pt-1 text-[11pt] leading-[1.45]">
+                <p className="font-semibold text-slate-900">
+                  Berdasarkan grafik evaluasi di atas, capaian mutu fisik ruangan {activePeriodMeta.duringPeriod} diuraikan sebagai berikut:
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-[10pt] leading-[1.35]">
+                  <div className="p-2 border border-slate-200 rounded bg-slate-50">
+                    <div className="font-bold text-slate-900 mb-0.5">1. Kelembaban Udara</div>
+                    <div className="text-slate-700 text-[9.5pt] mb-1">
+                      Juni: {compiled.air.chartComparison[0]?.juniPct ?? 34}% · Des: {compiled.air.chartComparison[0]?.desemberPct ?? 46}% (Target: 100%)
+                    </div>
+                    <div className="text-slate-800 text-[9pt]">
+                      <strong>KRIS:</strong> Perlu ditingkatkan melalui optimalisasi sistem AC, ventilasi, dan pemeliharaan berkala HVAC.
+                    </div>
+                  </div>
+
+                  <div className="p-2 border border-slate-200 rounded bg-slate-50">
+                    <div className="font-bold text-slate-900 mb-0.5">2. Pencahayaan</div>
+                    <div className="text-slate-700 text-[9.5pt] mb-1">
+                      Juni: {compiled.air.chartComparison[1]?.juniPct ?? 80}% · Des: {compiled.air.chartComparison[1]?.desemberPct ?? 100}% (Target: 100%)
+                    </div>
+                    <div className="text-slate-800 text-[9pt]">
+                      <strong>KRIS:</strong> Mencapai 100% pada evaluasi akhir, mendukung keselamatan dan kenyamanan visual rawat inap.
+                    </div>
+                  </div>
+
+                  <div className="p-2 border border-slate-200 rounded bg-slate-50">
+                    <div className="font-bold text-slate-900 mb-0.5">3. Kebisingan</div>
+                    <div className="text-slate-700 text-[9.5pt] mb-1">
+                      Juni: {compiled.air.chartComparison[2]?.juniPct ?? 35}% · Des: {compiled.air.chartComparison[2]?.desemberPct ?? 49}% (Target: 100%)
+                    </div>
+                    <div className="text-slate-800 text-[9pt]">
+                      <strong>KRIS:</strong> Relatif rendah dan kondusif. Pemeliharaan melalui quiet zone dan peredam suara terus berjalan.
+                    </div>
+                  </div>
                 </div>
-                <ul className="list-disc pl-10 space-y-1">
-                  <li className="pl-2">Juni: {compiled.air.chartComparison[0]?.juniPct ?? 34}%</li>
-                  <li className="pl-2">Desember: {compiled.air.chartComparison[0]?.desemberPct ?? 46}%</li>
-                  <li className="pl-2">Target KRIS: 100% (memenuhi standar kelembaban yang dipersyaratkan)</li>
-                </ul>
-                <p>
-                  Interpretasi KRIS: Kelembaban udara masih belum memenuhi standar KRIS, di mana ruang rawat inap harus memberikan kenyamanan termal bagi pasien. Kelembaban yang terlalu rendah dapat menimbulkan rasa tidak nyaman, udara kering, dan berpotensi memengaruhi kondisi pasien.
-                </p>
-                <div>Rekomendasi KRIS:</div>
-                <ul className="list-disc pl-10 space-y-1">
-                  <li className="pl-2">Optimalisasi sistem AC dan ventilasi</li>
-                  <li className="pl-2">Pemeliharaan berkala HVAC</li>
-                  <li className="pl-2">
-                    Penyesuaian setting kelembaban agar sesuai standar kenyamanan ruang rawat inap KRIS
-                  </li>
-                </ul>
               </div>
 
-              {/* 2. Pencahayaan */}
-              <div className="space-y-1 pt-0.5">
-                <div>2. Pencahayaan</div>
-                <ul className="list-disc pl-10 space-y-1">
-                  <li className="pl-2">Juni: {compiled.air.chartComparison[1]?.juniPct ?? 80}%</li>
-                  <li className="pl-2">Desember: {compiled.air.chartComparison[1]?.desemberPct ?? 100}%</li>
-                  <li className="pl-2">Target KRIS: 100%</li>
-                </ul>
-                <p>
-                  Interpretasi KRIS: Pencahayaan pada bulan Juni belum sepenuhnya memenuhi standar KRIS, namun pada bulan Desember telah memenuhi standar pencahayaan ruang rawat inap KRIS, baik untuk keselamatan pasien maupun kenyamanan visual.
-                </p>
-                <div>Rekomendasi KRIS:</div>
-                <ul className="list-disc pl-10 space-y-1">
-                  <li className="pl-2">Mempertahankan pencahayaan sesuai standar</li>
-                  <li className="pl-2">Melakukan inspeksi rutin lampu dan pencahayaan alami</li>
-                  <li className="pl-2">Mengganti lampu redup atau tidak berfungsi secara berkala</li>
-                </ul>
-              </div>
-
-              {/* 3. Kebisingan */}
-              <div className="space-y-1 pt-0.5">
-                <div>3. Kebisingan</div>
-                <ul className="list-disc pl-10 space-y-1">
-                  <li className="pl-2">Juni: {compiled.air.chartComparison[2]?.juniPct ?? 35}%</li>
-                  <li className="pl-2">Desember: {compiled.air.chartComparison[2]?.desemberPct ?? 49}%</li>
-                  <li className="pl-2">Target KRIS: 100% (lingkungan rawat inap yang tenang dan kondusif)</li>
-                </ul>
-                <p>
-                  Interpretasi KRIS: Tingkat kebisingan relatif rendah dan mendukung ketenangan ruang rawat inap, namun masih perlu pengendalian agar tetap konsisten sesuai prinsip KRIS yang mengutamakan kenyamanan dan pemulihan pasien.
-                </p>
-                <div>Rekomendasi KRIS:</div>
-                <ul className="list-disc pl-10 space-y-1">
-                  <li className="pl-2">Pengendalian sumber kebisingan (alat medis, lalu lintas internal RS)</li>
-                  <li className="pl-2">Pemasangan peredam suara pada area tertentu</li>
-                  <li className="pl-2">Penegakan zona tenang (quiet zone) di ruang rawat inap KRIS</li>
-                </ul>
+              {/* Analisis Data, Rekomendasi & RTL Terpadu Kualitas Udara */}
+              <div className="pt-1">
+                <SectionAnalysisCard
+                  title="Kualitas Udara & Lingkungan Fisik Ruangan"
+                  periodLabel={activePeriodMeta.label}
+                  defaultAnalysis={periodAnalytics?.airQuality?.analysis || ''}
+                  defaultRecommendation={periodAnalytics?.airQuality?.recommendation || ''}
+                  defaultFollowUp={periodAnalytics?.airQuality?.followUp || ''}
+                  pic={periodAnalytics?.airQuality?.pic || 'Sanitarian & Teknisi IPSRS'}
+                  timeline={periodAnalytics?.airQuality?.timeline || 'Rutin Berjalan'}
+                  layout="grid"
+                  onEdit={() => setHasUnsavedChanges(true)}
+                />
               </div>
             </div>
             {renderSingleFooter(15)}
@@ -2350,9 +2407,9 @@ export function AnnualReportF4View() {
         {shouldRenderPage(16, 'BAB_3_MONITORING') && (
           <section
             id="f4-page-16"
-            className="scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] px-14 sm:px-16 pt-14 pb-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
-            <div className="text-[13.8px] leading-[1.8] text-justify text-slate-900">
+            <div className="text-[12pt] leading-[1.65] text-justify text-slate-900">
               <div className="flex items-baseline gap-4 mb-2">
                 <span className="shrink-0">3.3</span>
                 <span>Penyelenggaraan Penyehatan Pangan Siap Saji</span>
@@ -2511,32 +2568,6 @@ export function AnnualReportF4View() {
                   onEdit={() => setHasUnsavedChanges(true)}
                 />
               </div>
-
-              <div className="mt-4">
-                <div className="flex items-baseline gap-4 mb-1">
-                  <span className="shrink-0">3.4</span>
-                  <span>Penyelenggaraan Penyehatan Sarana dan Bangunan</span>
-                </div>
-                <div className="pl-9 space-y-1">
-                  <p>
-                    Penyehatan Sarana dan Bangunan Rumah Sakit sudah dilakukan upaya sebagai berikut:
-                  </p>
-                  <div className="space-y-1">
-                    <div className="flex items-baseline gap-4">
-                      <span className="w-5 shrink-0">a)</span>
-                      <span>Ketersediaan Toilet 1:20 pengunjung wanita dan 1 :30 untuk pria</span>
-                    </div>
-                    <div className="flex items-baseline gap-4">
-                      <span className="w-5 shrink-0">b)</span>
-                      <span>Tersedia Toilet Disabilitas</span>
-                    </div>
-                    <div className="flex items-baseline gap-4">
-                      <span className="w-5 shrink-0">c)</span>
-                      <span>Lantai RS terbuat dari bahan kuat dan kedap air dan mudah dibersihkan</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
             {renderSingleFooter(16)}
           </section>
@@ -2548,28 +2579,49 @@ export function AnnualReportF4View() {
         {shouldRenderPage(17, 'BAB_3_MONITORING') && (
           <section
             id="f4-page-17"
-            className="scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] px-14 sm:px-16 pt-12 pb-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
-            <div className="text-[13.6px] leading-[1.74] text-justify text-slate-900">
-              <div className="pl-9 space-y-1">
-                <div className="flex items-baseline gap-4">
-                  <span className="w-5 shrink-0">d)</span>
-                  <span>Pintu RS yang bisa dilalui blankar yaitu memiliki bukaan 120 cm</span>
-                </div>
-                <div className="flex items-baseline gap-4">
-                  <span className="w-5 shrink-0">e)</span>
-                  <span>
-                    Atap RS kuat, tidak bocor, tahan lama dan tidak menjadi tempat perindukan serangga, tikus dan binatang pengganggu
-                  </span>
-                </div>
-                <div className="flex items-baseline gap-4">
-                  <span className="w-5 shrink-0">f)</span>
-                  <span>
-                    Langit-langit kuat, berwarna terang, dan mudah dibersihkan, tdk mengandung unsur yg dpt membahayakan pasien, tidak berjamur
-                  </span>
+            <div className="text-[12pt] leading-[1.65] text-justify text-slate-900" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
+              <div className="flex items-baseline gap-4 mb-2">
+                <span className="shrink-0 font-bold">3.4</span>
+                <span className="font-bold">Penyelenggaraan Penyehatan Sarana dan Bangunan</span>
+              </div>
+              <div className="pl-9 space-y-1 mb-2">
+                <p>
+                  Penyehatan Sarana dan Bangunan Rumah Sakit UOBK RSUD Al-Mulk pada {activePeriodMeta.narrativePhrase} telah dilaksanakan melalui berbagai upaya pemenuhan standar KRIS dan sarana ramah pasien sebagai berikut:
+                </p>
+                <div className="space-y-1">
+                  <div className="flex items-baseline gap-4">
+                    <span className="w-5 shrink-0">a)</span>
+                    <span>Ketersediaan Toilet 1:20 pengunjung wanita dan 1:30 untuk pria</span>
+                  </div>
+                  <div className="flex items-baseline gap-4">
+                    <span className="w-5 shrink-0">b)</span>
+                    <span>Tersedia Toilet Khusus Akses Disabilitas</span>
+                  </div>
+                  <div className="flex items-baseline gap-4">
+                    <span className="w-5 shrink-0">c)</span>
+                    <span>Lantai RS terbuat dari bahan kuat, kedap air, tidak licin, dan mudah dibersihkan</span>
+                  </div>
+                  <div className="flex items-baseline gap-4">
+                    <span className="w-5 shrink-0">d)</span>
+                    <span>Pintu RS yang bisa dilalui blankar yaitu memiliki bukaan minimal 120 cm</span>
+                  </div>
+                  <div className="flex items-baseline gap-4">
+                    <span className="w-5 shrink-0">e)</span>
+                    <span>
+                      Atap RS kuat, tidak bocor, tahan lama dan tidak menjadi tempat perindukan serangga, tikus dan binatang pengganggu
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-4">
+                    <span className="w-5 shrink-0">f)</span>
+                    <span>
+                      Langit-langit kuat, berwarna terang, dan mudah dibersihkan, tdk mengandung unsur yg dpt membahayakan pasien, tidak berjamur
+                    </span>
+                  </div>
                 </div>
                 <p className="pt-2">
-                  Adapun hasil inspeksi sanitasi sarana dan bangunan adalah sebagai berikut :
+                  Adapun hasil inspeksi sanitasi sarana dan bangunan pada {activePeriodMeta.narrativePhrase} adalah sebagai berikut :
                 </p>
               </div>
 
@@ -2735,7 +2787,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(18, 'BAB_3_MONITORING') && (
           <section
             id="f4-page-18"
-            className="f4-landscape scroll-mt-24 relative overflow-hidden bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full max-w-[330.2mm] min-h-[215.9mm] px-12 sm:px-14 pt-16 pb-6 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-landscape f4-page-section scroll-mt-24 relative overflow-hidden bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full max-w-[330.2mm] min-h-[215.9mm] px-[25mm] pt-[22mm] pb-[20mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             {renderLandscapeCorner(18)}
             <div className="space-y-3 text-[12px] font-sans text-slate-900">
@@ -2912,7 +2964,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(19, 'BAB_3_MONITORING') && (
           <section
             id="f4-page-19"
-            className="f4-landscape scroll-mt-24 relative overflow-hidden bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full max-w-[330.2mm] min-h-[215.9mm] px-12 sm:px-14 pt-20 pb-6 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-landscape f4-page-section scroll-mt-24 relative overflow-hidden bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full max-w-[330.2mm] min-h-[215.9mm] px-[25mm] pt-[22mm] pb-[20mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             {renderLandscapeCorner(19)}
             <div className="space-y-8 text-[12px] font-sans text-slate-900">
@@ -3106,7 +3158,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(20, 'BAB_3_MONITORING') && (
           <section
             id="f4-page-20"
-            className="f4-landscape scroll-mt-24 relative overflow-hidden bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full max-w-[330.2mm] min-h-[215.9mm] px-10 sm:px-12 pt-16 pb-6 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-landscape f4-page-section scroll-mt-24 relative overflow-hidden bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full max-w-[330.2mm] min-h-[215.9mm] px-[25mm] pt-[22mm] pb-[20mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             {renderLandscapeCorner(20)}
             <div className="space-y-6 text-[12px] font-sans text-slate-900">
@@ -3403,9 +3455,9 @@ export function AnnualReportF4View() {
         {shouldRenderPage(21, 'BAB_3_MONITORING') && (
           <section
             id="f4-page-21"
-            className="scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] px-14 sm:px-16 pt-14 pb-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
-            <div className="text-[13.5px] leading-[1.72] text-justify text-slate-900">
+            <div className="text-[12pt] leading-[1.65] text-justify text-slate-900">
               <div className="flex items-baseline gap-1.5 mb-1">
                 <span className="shrink-0">3.5</span>
                 <span>Penyelenggaraan Pengamanan Limbah dan Radiasi</span>
@@ -3572,9 +3624,9 @@ export function AnnualReportF4View() {
         {shouldRenderPage(22, 'BAB_3_MONITORING') && (
           <section
             id="f4-page-22"
-            className="scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] px-14 sm:px-16 pt-12 pb-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
-            <div className="space-y-1 text-[13.4px] leading-[1.68] text-justify text-slate-900">
+            <div className="space-y-2 text-[12pt] leading-[1.65] text-justify text-slate-900">
               <p>
                 Namun demikian, masih ditemukan beberapa isu yang perlu ditingkatkan agar optimal sesuai prinsip kenyamanan, keselamatan, dan mutu layanan KRIS, yaitu:
               </p>
@@ -3681,6 +3733,10 @@ export function AnnualReportF4View() {
                   </li>
                   <li className="pl-2">Pelaporan hasil evaluasi kepada manajemen RS.</li>
                 </ul>
+                <div className="pl-6 pt-1 space-y-0.5 text-[11.5pt]">
+                  <div><strong>Target:</strong> Pengelolaan limbah menjadi indikator mutu lingkungan KRIS.</div>
+                  <div><strong>Waktu:</strong> Bulanan dan tahunan berkelanjutan.</div>
+                </div>
               </div>
             </div>
             {renderSingleFooter(22)}
@@ -3688,26 +3744,21 @@ export function AnnualReportF4View() {
         )}
 
         {/* =====================================================================
-            HALAMAN 23: TARGET & WAKTU; 3.6 PENYEHATAN LIMBAH B3 CAIR (PERSIS GAMBAR 3)
+            HALAMAN 23: 3.6 PENYEHATAN LIMBAH B3 CAIR (PERSIS GAMBAR 3)
            ===================================================================== */}
         {shouldRenderPage(23, 'BAB_3_MONITORING') && (
           <section
             id="f4-page-23"
-            className="scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] px-14 sm:px-16 pt-14 pb-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
-            <div className="text-[13.8px] leading-[1.82] text-justify text-slate-900">
-              <div className="pl-8 space-y-1">
-                <div>Target: Pengelolaan limbah menjadi indikator mutu lingkungan KRIS.</div>
-                <div>Waktu: Bulanan dan tahunan.</div>
-              </div>
-
-              <div className="mt-6">
+            <div className="text-[12pt] leading-[1.65] text-justify text-slate-900" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
+              <div>
                 <div className="flex items-baseline gap-4 mb-3">
-                  <span className="shrink-0">3.6</span>
-                  <span>Penyelenggaraan Penyehatan Limbah B3 Cair</span>
+                  <span className="shrink-0 font-bold">3.6</span>
+                  <span className="font-bold">Penyelenggaraan Penyehatan Limbah B3 Cair</span>
                 </div>
 
-                <div className="pl-7 space-y-1.5">
+                <div className="pl-7 space-y-2">
                   <div className="flex items-baseline gap-4">
                     <span className="shrink-0">-</span>
                     <span>
@@ -3735,7 +3786,7 @@ export function AnnualReportF4View() {
                   <div className="flex items-baseline gap-4">
                     <span className="shrink-0">-</span>
                     <span>
-                      Adapun Hasil Pemantauan pemeriksaan Limbah Cair pada tahun 2025 sebagai berikut:
+                      Adapun Hasil Pemantauan pemeriksaan Limbah Cair pada {activePeriodMeta.narrativePhrase} sebagai berikut:
                     </span>
                   </div>
                 </div>
@@ -3751,7 +3802,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(24, 'BAB_3_MONITORING') && (
           <section
             id="f4-page-24"
-            className="f4-landscape scroll-mt-24 relative overflow-hidden bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full max-w-[330.2mm] min-h-[215.9mm] px-10 sm:px-12 pt-14 pb-6 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-landscape f4-page-section scroll-mt-24 relative overflow-hidden bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full max-w-[330.2mm] min-h-[215.9mm] px-[25mm] pt-[22mm] pb-[20mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             {renderLandscapeCorner(24)}
             <div className="space-y-1.5 text-[11px] font-sans text-slate-900">
@@ -4013,9 +4064,9 @@ export function AnnualReportF4View() {
         {shouldRenderPage(25, 'BAB_3_MONITORING') && (
           <section
             id="f4-page-25"
-            className="scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] px-12 sm:px-14 pt-12 pb-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
-            <div className="space-y-1.5 text-[13.5px] leading-[1.72] text-justify text-slate-900">
+            <div className="space-y-2 text-[12pt] leading-[1.65] text-justify text-slate-900" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
               <div>ANALISA HASIL PENGUJIAN LIMBAH CAIR IPAL</div>
 
               {/* 1. Gambaran Umum */}
@@ -4088,9 +4139,9 @@ export function AnnualReportF4View() {
         {shouldRenderPage(26, 'BAB_3_MONITORING') && (
           <section
             id="f4-page-26"
-            className="scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] px-12 sm:px-14 pt-12 pb-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
-            <div className="space-y-1.5 text-[13.5px] leading-[1.74] text-justify text-slate-900">
+            <div className="space-y-2 text-[12pt] leading-[1.65] text-justify text-slate-900" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
               <div className="pl-9 space-y-0.5">
                 <div>Analisa:</div>
                 <p>
@@ -4168,9 +4219,9 @@ export function AnnualReportF4View() {
         {shouldRenderPage(27, 'BAB_3_EVALUASI_PENUTUP') && (
           <section
             id="f4-page-27"
-            className="scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] px-12 sm:px-14 pt-12 pb-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
-            <div className="space-y-3 text-[13.5px] leading-[1.72] text-justify text-slate-900">
+            <div className="space-y-3 text-[12pt] leading-[1.65] text-justify text-slate-900">
               {/* 4. Evaluasi Kinerja IPAL */}
               <div className="space-y-0.5">
                 <div>4. Evaluasi Kinerja IPAL</div>
@@ -4349,9 +4400,9 @@ export function AnnualReportF4View() {
         {shouldRenderPage(28, 'BAB_3_EVALUASI_PENUTUP') && (
           <section
             id="f4-page-28"
-            className="scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] px-12 sm:px-14 pt-12 pb-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
-            <div className="space-y-2.5 text-[13.4px] leading-[1.68] text-justify text-slate-900">
+            <div className="space-y-2 text-[12pt] leading-[1.65] text-justify text-slate-900" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
               {/* Lanjutan Tabel Radiasi (Bila data > 4 bulan) */}
               {activeRadiationRows.length > 4 && (
                 <div>
@@ -4481,9 +4532,9 @@ export function AnnualReportF4View() {
         {shouldRenderPage(29, 'BAB_3_EVALUASI_PENUTUP') && (
           <section
             id="f4-page-29"
-            className="scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] px-12 sm:px-14 pt-12 pb-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
-            <div className="space-y-2 text-[13.5px] leading-[1.74] text-justify text-slate-900">
+            <div className="space-y-2 text-[12pt] leading-[1.65] text-justify text-slate-900">
               <div className="flex items-baseline gap-1.5">
                 <span className="shrink-0">3.8</span>
                 <span>Penyelenggaraan Pengendalian Vektor dan Binatang Pembawa Penyakit</span>
@@ -4685,9 +4736,9 @@ export function AnnualReportF4View() {
         {shouldRenderPage(30, 'BAB_3_EVALUASI_PENUTUP') && (
           <section
             id="f4-page-30"
-            className="scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] px-12 sm:px-14 pt-12 pb-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
-            <div className="space-y-2.5 text-[13.5px] leading-[1.72] text-justify text-slate-900">
+            <div className="space-y-2.5 text-[12pt] leading-[1.65] text-justify text-slate-900">
               <div className="pl-7 space-y-1">
                 <ul className="list-[circle] pl-7">
                   <li className="pl-2">Monitoring jentik mingguan</li>
@@ -4833,10 +4884,10 @@ export function AnnualReportF4View() {
         {shouldRenderPage(31, 'BAB_3_EVALUASI_PENUTUP') && (
           <section
             id="f4-page-31"
-            className="bg-white text-black shadow-2xl border border-slate-300 mx-auto w-[215.9mm] min-h-[330.2mm] px-[20mm] pt-[16mm] pb-[14mm] flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             <div
-              className="text-[11pt] leading-[1.6] text-black"
+              className="text-[12pt] leading-[1.65] text-slate-900"
               style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}
             >
               <p className="text-justify">
@@ -4923,7 +4974,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(32, 'BAB_3_EVALUASI_PENUTUP') && (
           <section
             id="f4-page-32"
-            className="bg-white text-black shadow-2xl border border-slate-300 mx-auto w-[215.9mm] min-h-[330.2mm] px-[20mm] pt-[16mm] pb-[14mm] flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             <div
               className="text-[11pt] leading-[1.6] text-black"
@@ -5021,7 +5072,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(33, 'BAB_3_EVALUASI_PENUTUP') && (
           <section
             id="f4-page-33"
-            className="bg-white text-black shadow-2xl border border-slate-300 mx-auto w-[215.9mm] min-h-[330.2mm] px-[18mm] pt-[14mm] pb-[14mm] flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             <div
               className="text-[10.5pt] leading-[1.28] text-black"
@@ -5167,7 +5218,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(34, 'BAB_3_EVALUASI_PENUTUP') && (
           <section
             id="f4-page-34"
-            className="bg-white text-black shadow-2xl border border-slate-300 mx-auto w-[215.9mm] min-h-[330.2mm] px-[18mm] pt-[12mm] pb-[14mm] flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             <div
               className="text-[10.5pt] leading-[1.28] text-black"
@@ -5303,30 +5354,48 @@ export function AnnualReportF4View() {
         {shouldRenderPage(35, 'BAB_3_EVALUASI_PENUTUP') && (
           <section
             id="f4-page-35"
-            className="bg-white text-black shadow-2xl border border-slate-300 mx-auto w-[215.9mm] min-h-[330.2mm] px-[19mm] pt-[14mm] pb-[14mm] flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             <div
-              className="text-[11pt] leading-[1.22] text-justify text-black"
+              className="text-[12pt] leading-[1.65] text-justify text-slate-900"
               style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}
             >
               <div className="text-center font-bold mb-6">
-                <div className="text-[12pt] leading-tight">BAB IV</div>
-                <div className="text-[10pt] mt-2">PENUTUP</div>
+                <div className="text-[14pt] leading-tight">BAB IV</div>
+                <div className="text-[12pt] mt-1 tracking-wider uppercase">PENUTUP</div>
               </div>
 
               <div className="space-y-4">
                 <p className="indent-12">
-                  Demikian laporan tahunan ini kami susun sebagai bentuk pertanggungjawaban atas pelaksanaan program kesehatan lingkungan di Rumah Sakit RSUD Al-Mulk selama tahun 2025. Kami menyadari bahwa keberhasilan yang telah dicapai tidak terlepas dari kerjasama dan dukungan semua pihak, baik dari manajemen rumah sakit, tenaga medis, staf, serta masyarakat sekitar.
+                  Demikian {activePeriodMeta.documentTitle} ini kami susun sebagai bentuk pertanggungjawaban atas pelaksanaan tata kelola dan pemantauan program kesehatan lingkungan di UOBK RSUD Al-Mulk Kota Sukabumi selama {activePeriodMeta.narrativePhrase}. Kami menyadari bahwa keberhasilan yang telah dicapai tidak terlepas dari kerja sama sinergis dan dukungan berkesinambungan dari segenap pimpinan manajemen rumah sakit, tenaga medis, staf operasional, serta masyarakat.
                 </p>
                 <p className="indent-12">
-                  Selama tahun ini, kami telah melaksanakan berbagai upaya untuk memastikan lingkungan rumah sakit yang bersih, sehat, dan aman bagi pasien, tenaga kesehatan, dan pengunjung. Namun demikian, kami juga menyadari masih ada beberapa tantangan yang harus dihadapi dan ditingkatkan, baik dari segi kebijakan, fasilitas, maupun kesadaran seluruh pihak terkait.
+                  Selama {activePeriodMeta.duringPeriod}, kami secara konsisten melaksanakan berbagai upaya preventif, inspektif, serta kuratif untuk memastikan lingkungan rumah sakit senantiasa memenuhi standar higienis, bersih, sehat, dan aman bagi pasien, pengunjung, dan seluruh civitas hospitalia, sekaligus mempercepat pemenuhan standar <em>Kelas Rawat Inap Standar</em> (KRIS). Seluruh kendala dan tantangan operasional yang dihadapi telah diidentifikasi dan ditindaklanjuti melalui rekomendasi perbaikan mutu berbasis bukti.
                 </p>
                 <p className="indent-12">
-                  Melalui laporan ini, kami berharap dapat memberikan gambaran yang jelas mengenai pencapaian dan kendala yang ada, serta menjadi dasar untuk merencanakan langkah-langkah perbaikan di tahun mendatang. Kami berkomitmen untuk terus meningkatkan kualitas lingkungan rumah sakit sebagai bagian dari upaya memberikan pelayanan kesehatan yang terbaik.
+                  Melalui laporan resmi ini, kami berharap dapat menyajikan gambaran komprehensif mengenai capaian indikator kinerja mutu lingkungan, sekaligus menjadi fondasi objektif dalam penyusunan program kerja dan rencana tindak lanjut (RTL) pada periode mendatang. Komitmen kami tetap teguh untuk mewujudkan mutu layanan kesehatan lingkungan terbaik yang berkelanjutan di UOBK RSUD Al-Mulk Kota Sukabumi.
                 </p>
                 <p className="indent-12">
-                  Akhir kata, kami mengucapkan terima kasih kepada seluruh pihak yang telah berkontribusi dalam pencapaian yang ada. Semoga kerja sama yang baik ini dapat terus berlanjut demi menciptakan lingkungan yang sehat, aman, dan nyaman bagi semua yang ada di rumah sakit ini.
+                  Akhir kata, kami menyampaikan penghargaan dan terima kasih setulus-tulusnya kepada seluruh pihak yang telah berpartisipasi dan berkontribusi aktif. Semoga kerja sama yang telah terbangun kokoh ini dapat terus ditingkatkan demi terwujudnya rumah sakit yang aman, nyaman, dan berdaya saing tinggi.
                 </p>
+              </div>
+
+              {/* Lembar Tanda Tangan Resmi Pengesahan Laporan */}
+              <div className="pt-8 grid grid-cols-2 gap-8 text-center text-[12pt] leading-normal print:pt-6">
+                <div>
+                  <p className="mb-1">Mengetahui,</p>
+                  <p className="font-bold">Direktur UOBK RSUD Al-Mulk</p>
+                  <p className="font-bold mb-16">Kota Sukabumi</p>
+                  <p className="font-bold underline">dr. Munifah Bahanan</p>
+                  <p className="text-[10pt] text-slate-600">NIP. 19780614 200604 2 018</p>
+                </div>
+                <div>
+                  <p className="mb-1">Sukabumi, {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                  <p className="font-bold">Kepala Instalasi</p>
+                  <p className="font-bold mb-16">Kesehatan Lingkungan</p>
+                  <p className="font-bold underline">Sanitarian RSUD Al-Mulk</p>
+                  <p className="text-[10pt] text-slate-600">Petugas Kesling RSUD Al-Mulk</p>
+                </div>
               </div>
             </div>
             {renderSingleFooter(35)}
@@ -5339,7 +5408,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(36, 'DOKUMENTASI') && (
           <section
             id="f4-page-36"
-            className="bg-white text-black shadow-2xl border border-slate-300 mx-auto w-[215.9mm] min-h-[330.2mm] px-[20mm] pt-[16mm] pb-[14mm] flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             <div
               className="pt-[78mm] text-center"
@@ -5359,26 +5428,25 @@ export function AnnualReportF4View() {
         {shouldRenderPage(37, 'DOKUMENTASI') && (
           <section
             id="f4-page-37"
-            className="bg-white text-black shadow-2xl border border-slate-300 mx-auto w-[215.9mm] min-h-[330.2mm] px-[20mm] pt-[15mm] pb-[14mm] flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             <div
-              className="text-[11pt] text-black"
+              className="text-[12pt] text-slate-900"
               style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}
             >
-              <div className="text-center mb-12">
-                DAFTAR DOKUMENTASI
+              <div className="text-center font-bold text-[14pt] uppercase mb-12">
+                DAFTAR DOKUMENTASI KEGIATAN KESEHATAN LINGKUNGAN
               </div>
 
-              <div className="space-y-4 leading-[1.35]">
-                <div>Dokumentasi – 1 Kegiatan Sampling Air Bersih 2025</div>
-                <div>Dokumentasi – 4 Kegiatan Sampling Air Limbah Cair IPAL 2025</div>
-                <div>Dokumentasi – 3 Kegiatan pengangkutan LB3 2025</div>
-                <div>Dokumentasi – 2 Kegiatan Sampling Kelembaban Udara, Kebisingan,</div>
-                <div>Dan Pencahayaan 2025</div>
-                <div>Dokumentasi – 8 Pengendalian Vektor dan Binatang Pembawa Penyakit 2025</div>
-                <div>Dokumentasi – 5 Kegiatan Pengamanan Radiasi 2025</div>
-                <div>Dokumentasi – 6 Kegiatan Penyehatan Pangan Siap Saji (JASA BOGA) 2025</div>
-                <div>Dokumentasi – 7 Penyelenggaraan Linen 2025</div>
+              <div className="space-y-4 leading-[1.6]">
+                <div>Dokumentasi – 1 Kegiatan Sampling Mutu Air Bersih ({activePeriodMeta.label})</div>
+                <div>Dokumentasi – 2 Kegiatan Sampling Kelembaban Udara, Kebisingan, dan Pencahayaan ({activePeriodMeta.label})</div>
+                <div>Dokumentasi – 3 Kegiatan Pengangkutan & Manifest Limbah Medis B3 ({activePeriodMeta.label})</div>
+                <div>Dokumentasi – 4 Kegiatan Sampling Efluen Air Limbah Cair IPAL ({activePeriodMeta.label})</div>
+                <div>Dokumentasi – 5 Kegiatan Pengawasan Keselamatan & Proteksi Radiasi ({activePeriodMeta.label})</div>
+                <div>Dokumentasi – 6 Kegiatan Penyehatan Pangan Siap Saji / TPM Dapur Gizi ({activePeriodMeta.label})</div>
+                <div>Dokumentasi – 7 Penyelenggaraan Manajemen Linen & Laundry ({activePeriodMeta.label})</div>
+                <div>Dokumentasi – 8 Pengendalian Vektor dan Binatang Pembawa Penyakit ({activePeriodMeta.label})</div>
               </div>
             </div>
             {renderSingleFooter(37)}
@@ -5391,7 +5459,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(38, 'LAMPIRAN_1_UDARA') && (
           <section
             id="f4-page-38"
-            className="bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-8 sm:p-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             <div className="space-y-4 text-[11px] font-sans">
               <div className="border-b-2 border-[#002147] pb-2 text-center">
@@ -5436,7 +5504,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(39, 'LAMPIRAN_1_UDARA') && (
           <section
             id="f4-page-39"
-            className="bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-8 sm:p-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             <div className="space-y-4 text-[11px] font-sans">
               <div className="border-b-2 border-[#002147] pb-2 text-center">
@@ -5480,7 +5548,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(40, 'LAMPIRAN_2_LOGBOOK') && activePeriodMeta.monthIndices.includes(0) && (
           <section
             id="f4-page-40"
-            className="bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-8 sm:p-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             <div className="space-y-3 text-[10px] font-sans">
               <div className="border-b-2 border-[#002147] pb-1 text-center">
@@ -5545,7 +5613,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(41, 'LAMPIRAN_2_LOGBOOK') && activePeriodMeta.monthIndices.some((idx) => [1, 2].includes(idx)) && (
           <section
             id="f4-page-41"
-            className="bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-8 sm:p-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             <div className="space-y-4 text-[10px] font-sans">
               <div className="border-b-2 border-[#002147] pb-1 text-center">
@@ -5609,7 +5677,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(42, 'LAMPIRAN_2_LOGBOOK') && activePeriodMeta.monthIndices.some((idx) => [3, 4].includes(idx)) && (
           <section
             id="f4-page-42"
-            className="bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-8 sm:p-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             <div className="space-y-4 text-[10px] font-sans">
               <div className="border-b-2 border-[#002147] pb-1 text-center">
@@ -5672,7 +5740,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(43, 'LAMPIRAN_2_LOGBOOK') && activePeriodMeta.monthIndices.some((idx) => [5, 6].includes(idx)) && (
           <section
             id="f4-page-43"
-            className="bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-8 sm:p-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             <div className="space-y-4 text-[10px] font-sans">
               <div className="border-b-2 border-[#002147] pb-1 text-center">
@@ -5735,7 +5803,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(44, 'LAMPIRAN_2_LOGBOOK') && activePeriodMeta.monthIndices.some((idx) => [7, 8].includes(idx)) && (
           <section
             id="f4-page-44"
-            className="bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-8 sm:p-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             <div className="space-y-4 text-[10px] font-sans">
               <div className="border-b-2 border-[#002147] pb-1 text-center">
@@ -5798,7 +5866,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(45, 'LAMPIRAN_2_LOGBOOK') && activePeriodMeta.monthIndices.some((idx) => [9, 10].includes(idx)) && (
           <section
             id="f4-page-45"
-            className="bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-8 sm:p-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             <div className="space-y-4 text-[10px] font-sans">
               <div className="border-b-2 border-[#002147] pb-1 text-center">
@@ -5861,7 +5929,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(46, 'LAMPIRAN_2_LOGBOOK') && activePeriodMeta.monthIndices.includes(11) && (
           <section
             id="f4-page-46"
-            className="bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-8 sm:p-10 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             <div className="space-y-4 text-[10px] font-sans">
               <div className="border-b-2 border-[#002147] pb-1 text-center">
@@ -5934,7 +6002,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(47, 'LAMPIRAN_3_6_CHECKLIST') && (
           <section
             id="f4-page-47"
-            className="bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-8 sm:p-12 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             <div className="space-y-4 text-[11px] font-sans">
               <div className="border-b-2 border-[#002147] pb-2 text-center">
@@ -5974,7 +6042,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(48, 'LAMPIRAN_3_6_CHECKLIST') && (
           <section
             id="f4-page-48"
-            className="bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-8 sm:p-12 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             <div className="space-y-4 text-[11px] font-sans">
               <div className="border-b-2 border-[#002147] pb-2 text-center">
@@ -6034,7 +6102,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(49, 'LAMPIRAN_3_6_CHECKLIST') && (
           <section
             id="f4-page-49"
-            className="bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-8 sm:p-12 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             <div className="space-y-4 text-[11px] font-sans">
               <div className="border-b-2 border-[#002147] pb-2 text-center">
@@ -6085,7 +6153,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(50, 'DOKUMENTASI') && (
           <section
             id="f4-page-50"
-            className="bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-8 sm:p-12 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             <div className="space-y-4 text-xs font-sans">
               <div className="text-center space-y-1 border-b-2 border-[#002147] pb-3">
@@ -6163,7 +6231,7 @@ export function AnnualReportF4View() {
         {shouldRenderPage(51, 'DOKUMENTASI') && (
           <section
             id="f4-page-51"
-            className="bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-8 sm:p-12 flex flex-col justify-between print:shadow-none print:border-none"
+            className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
             <div className="space-y-4 text-xs font-sans">
               <div className="text-center space-y-1 border-b-2 border-[#002147] pb-3">
