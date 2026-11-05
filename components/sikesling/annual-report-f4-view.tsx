@@ -41,6 +41,7 @@ import {
   compileAnnualKeslingReport,
   generateAnnualReportWordF4Html,
 } from '@/lib/annual-report-kesling';
+import { FloatingSaveButton } from '@/components/sikesling/floating-save-button';
 
 export type ReportSectionFilter =
   | 'ALL'
@@ -94,6 +95,39 @@ export function AnnualReportF4View() {
   const [zoomPercent, setZoomPercent] = useState<number>(100);
   const [viewMode, setViewMode] = useState<'single' | 'grid'>('single');
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
+
+  const handleSaveReport = () => {
+    if (f4DocumentRef.current) {
+      try {
+        localStorage.setItem(
+          `sikesling_annual_report_html_${reportYear}`,
+          f4DocumentRef.current.innerHTML
+        );
+      } catch {
+        // quota fallback
+      }
+    }
+    setHasUnsavedChanges(false);
+    pushToast({
+      type: 'success',
+      title: 'Perubahan Laporan Tahunan Disimpan',
+      message: `Hasil pengeditan laporan tahunan ${reportYear} berhasil disimpan.`,
+    });
+  };
+
+  // Restore saved HTML if available
+  React.useEffect(() => {
+    try {
+      const savedHtml = localStorage.getItem(`sikesling_annual_report_html_${reportYear}`);
+      if (savedHtml && f4DocumentRef.current) {
+        f4DocumentRef.current.innerHTML = savedHtml;
+      }
+    } catch {
+      // ignore
+    }
+    setHasUnsavedChanges(false);
+  }, [reportYear]);
 
   const f4DocumentRef = useRef<HTMLDivElement>(null);
   const workspaceContainerRef = useRef<HTMLDivElement>(null);
@@ -311,12 +345,8 @@ export function AnnualReportF4View() {
     '#F97316',
   ];
 
-  const shouldRenderPage = (pageNumber: number, sectionCategory: ReportSectionFilter) => {
-    if (jumpToPage !== 'ALL' && jumpToPage !== String(pageNumber)) {
-      return false;
-    }
-    if (activeSection === 'ALL') return true;
-    return activeSection === sectionCategory;
+  const shouldRenderPage = (_pageNumber: number, _sectionCategory: ReportSectionFilter) => {
+    return true;
   };
 
   const renderSingleFooter = (pageNum: number) => (
@@ -371,25 +401,22 @@ export function AnnualReportF4View() {
   return (
     <div className="space-y-6 max-w-[340mm] mx-auto pb-20">
       {/* Header Banner & Controls */}
-      <div className="max-w-7xl mx-auto rounded-3xl bg-gradient-to-r from-[#002147] via-[#0a3568] to-[#1F4E79] px-6 py-5 text-white shadow-xl border border-[#D2B48C]/30 print:hidden space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto rounded-3xl bg-gradient-to-r from-[#002147] via-[#0a3568] to-[#1F4E79] px-6 py-5 text-white shadow-xl border border-[#D2B48C]/30 print:hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#D2B48C]">
               Laporan Tahunan Kesehatan Lingkungan RSUD Al-Mulk
             </h1>
-            <p className="text-xs sm:text-sm text-slate-200 mt-1">
-              Dokumen Resmi Ukuran F4 / Folio (21,59 x 33,02 cm) · Format Laporan Tahunan Terintegrasi
-            </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2.5">
             {/* Filter Tahun */}
             <div className="relative inline-flex items-center">
               <select
                 aria-label="Pilih Tahun Laporan"
                 value={reportYear}
                 onChange={(e) => setReportYear(Number(e.target.value))}
-                className="appearance-none pl-3 pr-8 py-2 rounded-xl text-xs font-bold bg-[#001835] text-[#D2B48C] border border-[#D2B48C]/60 cursor-pointer shadow-sm focus:outline-none"
+                className="appearance-none pl-4 pr-8 py-2 rounded-xl text-xs font-bold bg-[#001835] text-[#D2B48C] border border-[#D2B48C]/60 cursor-pointer shadow-sm focus:outline-none"
               >
                 <option value={2026}>Tahun 2026</option>
                 <option value={2025}>Tahun 2025</option>
@@ -397,76 +424,14 @@ export function AnnualReportF4View() {
               <ChevronDown className="w-3.5 h-3.5 text-[#D2B48C] absolute right-2.5 pointer-events-none" />
             </div>
 
-            {/* Filter Bagian */}
-            <div className="relative inline-flex items-center">
-              <select
-                aria-label="Filter Bagian Laporan"
-                value={activeSection}
-                onChange={(e) => setActiveSection(e.target.value as ReportSectionFilter)}
-                className="appearance-none pl-3 pr-8 py-2 rounded-xl text-xs font-medium bg-[#001835] text-slate-100 border border-slate-700 cursor-pointer shadow-sm focus:outline-none"
-              >
-                <option value="ALL">Semua Bagian (51 Halaman)</option>
-                <option value="COVER_PENDAHULUAN">Cover &amp; Pendahuluan</option>
-                <option value="BAB_3_MONITORING">Bab III Data Monitoring</option>
-                <option value="BAB_3_EVALUASI_PENUTUP">Evaluasi &amp; Penutup</option>
-                <option value="LAMPIRAN_1_UDARA">Lampiran 1: Kualitas Udara</option>
-                <option value="LAMPIRAN_2_LOGBOOK">Lampiran 2: Logbook Limbah B3</option>
-                <option value="LAMPIRAN_3_6_CHECKLIST">Lampiran 3-6: Checklist</option>
-                <option value="DOKUMENTASI">Dokumentasi</option>
-              </select>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-300 absolute right-2.5 pointer-events-none" />
-            </div>
-
-            {/* Lompat Halaman */}
-            <div className="relative inline-flex items-center">
-              <select
-                aria-label="Lompat ke Halaman"
-                value={jumpToPage}
-                onChange={(e) => handlePageJumpChange(e.target.value)}
-                className="appearance-none pl-3 pr-8 py-2 rounded-xl text-xs font-medium bg-[#001835] text-slate-100 border border-slate-700 cursor-pointer shadow-sm focus:outline-none"
-              >
-                <option value="ALL">Lompat ke Halaman...</option>
-                {Array.from({ length: 51 }, (_, i) => i + 1).map((pg) => (
-                  <option key={pg} value={String(pg)}>
-                    Halaman {pg}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-300 absolute right-2.5 pointer-events-none" />
-            </div>
-
-            {/* Mode Edit */}
+            {/* Tombol Unduh Dokumen */}
             <button
               type="button"
-              onClick={() => setIsEditableMode(!isEditableMode)}
-              className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
-                isEditableMode
-                  ? 'bg-emerald-600 text-white border-emerald-500 shadow-md ring-2 ring-emerald-400'
-                  : 'bg-white/10 hover:bg-white/20 text-slate-100 border-white/20'
-              }`}
-            >
-              <Edit3 className="w-3.5 h-3.5" />
-              <span>{isEditableMode ? 'Mode Edit Aktif' : 'Edit Teks'}</span>
-            </button>
-
-            {/* Download Word F4 */}
-            <button
-              type="button"
-              onClick={isEditableMode ? handleDownloadCurrentEditedWordF4 : handleDownloadWordF4}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl bg-[#D2B48C] text-[#002147] hover:bg-[#e4c9a8] transition-all shadow-md cursor-pointer"
+              onClick={handleDownloadCurrentEditedWordF4}
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl bg-[#D2B48C] text-[#002147] hover:bg-[#e4c9a8] transition-all shadow-md cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Unduh Word F4</span>
-            </button>
-
-            {/* Cetak */}
-            <button
-              type="button"
-              onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all cursor-pointer"
-            >
-              <Printer className="w-3.5 h-3.5" />
-              <span>Print</span>
+              <span>Unduh Dokumen</span>
             </button>
           </div>
         </div>
@@ -486,8 +451,9 @@ export function AnnualReportF4View() {
       >
         <div
           ref={f4DocumentRef}
-          contentEditable={isEditableMode}
-          suppressContentEditableWarning
+          contentEditable={true}
+          suppressContentEditableWarning={true}
+          onInput={() => setHasUnsavedChanges(true)}
           style={{
             fontFamily: 'Arial, Helvetica, sans-serif',
             zoom: zoomPercent / 100,
@@ -5820,14 +5786,14 @@ export function AnnualReportF4View() {
       </div>
 
       {/* =====================================================================
-          FLOATING ZOOM SCROLLBAR / TOOLBAR (OXFORD NAVY & TAN)
-          Fitur scrol/zoom minimalis untuk memperkecil/memperbesar tampilan dokumen
+          FLOATING VERTICAL ZOOM SCROLLBAR (POJOK KANAN LAYAR RATA TENGAH)
+          Desain ramping minimalis posisi vertikal di tengah sisi kanan layar
          ===================================================================== */}
       <aside
-        aria-label="Pengatur Ukuran Tampilan Laporan"
-        className="fixed bottom-5 right-5 sm:right-8 z-50 print:hidden flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-full bg-[#002147]/95 dark:bg-[#00142A]/95 backdrop-blur-md border border-[#D2B48C]/50 shadow-[0_8px_30px_rgba(0,33,71,0.4)] text-slate-100 select-none transition-all hover:border-[#D2B48C]"
+        aria-label="Pengatur Ukuran Tampilan Laporan Vertikal"
+        className="fixed right-3 sm:right-4 top-1/2 -translate-y-1/2 z-50 print:hidden flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-full bg-[#002147]/95 dark:bg-[#00142A]/95 backdrop-blur-md border border-[#D2B48C]/50 shadow-[0_8px_30px_rgba(0,33,71,0.45)] text-slate-100 select-none transition-all hover:border-[#D2B48C] w-8 sm:w-9"
       >
-        {/* Toggle Mode: Grid (Banyak Halaman Samping) vs Single (Tunggal) */}
+        {/* Toggle Mode: Grid (Banyak Halaman Bersanding) */}
         <button
           type="button"
           onClick={() => {
@@ -5844,7 +5810,7 @@ export function AnnualReportF4View() {
               ? 'Beralih ke Tampilan Halaman Tunggal (100%)'
               : 'Beralih ke Tampilan Banyak Halaman / Grid (45%)'
           }
-          className={`p-1.5 rounded-full transition-all cursor-pointer ${
+          className={`p-1 rounded-full transition-all cursor-pointer ${
             viewMode === 'grid' || zoomPercent <= 80
               ? 'bg-[#D2B48C]/25 text-[#D2B48C] ring-1 ring-[#D2B48C]/60'
               : 'text-slate-300 hover:text-white hover:bg-white/10'
@@ -5853,6 +5819,7 @@ export function AnnualReportF4View() {
           <LayoutGrid className="w-3.5 h-3.5" />
         </button>
 
+        {/* Mode Tunggal */}
         <button
           type="button"
           onClick={() => {
@@ -5860,7 +5827,7 @@ export function AnnualReportF4View() {
             setZoomPercent(100);
           }}
           title="Tampilan Halaman Tunggal (100%)"
-          className={`p-1.5 rounded-full transition-all cursor-pointer ${
+          className={`p-1 rounded-full transition-all cursor-pointer ${
             viewMode === 'single' && zoomPercent === 100
               ? 'bg-[#D2B48C]/25 text-[#D2B48C] ring-1 ring-[#D2B48C]/60'
               : 'text-slate-300 hover:text-white hover:bg-white/10'
@@ -5874,7 +5841,7 @@ export function AnnualReportF4View() {
           type="button"
           onClick={toggleFullscreen}
           title={isFullscreen ? 'Keluar Layar Penuh' : 'Mode Layar Penuh'}
-          className="p-1.5 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+          className="p-1 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
         >
           {isFullscreen ? (
             <Minimize2 className="w-3.5 h-3.5" />
@@ -5884,31 +5851,7 @@ export function AnnualReportF4View() {
         </button>
 
         {/* Pemisah Halus */}
-        <div className="w-px h-3.5 bg-[#D2B48C]/30 mx-0.5" />
-
-        {/* Zoom Out (-) */}
-        <button
-          type="button"
-          onClick={() => setZoomPercent((z) => Math.max(30, z - 5))}
-          title="Perkecil Tampilan (Ctrl + Scroll Down)"
-          className="p-1 rounded-full text-slate-300 hover:text-[#D2B48C] hover:bg-white/10 transition-all cursor-pointer active:scale-95"
-        >
-          <Minus className="w-3.5 h-3.5" />
-        </button>
-
-        {/* Slim Scrollbar / Slider Range Ultra Minimalis */}
-        <div className="flex items-center px-1">
-          <input
-            type="range"
-            min={30}
-            max={150}
-            step={5}
-            value={zoomPercent}
-            onChange={(e) => setZoomPercent(Number(e.target.value))}
-            aria-label="Zoom Tampilan Laporan Tahunan"
-            className="w-16 sm:w-20 h-1 appearance-none bg-slate-700/80 rounded-full cursor-pointer accent-[#D2B48C] focus:outline-none"
-          />
-        </div>
+        <div className="w-3.5 h-px bg-[#D2B48C]/30 my-0.5" />
 
         {/* Zoom In (+) */}
         <button
@@ -5917,10 +5860,40 @@ export function AnnualReportF4View() {
           title="Perbesar Tampilan (Ctrl + Scroll Up)"
           className="p-1 rounded-full text-slate-300 hover:text-[#D2B48C] hover:bg-white/10 transition-all cursor-pointer active:scale-95"
         >
-          <Plus className="w-3.5 h-3.5" />
+          <Plus className="w-3 h-3 text-[#D2B48C]" />
         </button>
 
-        {/* Persentase Badge / Klik untuk Toggle Cepat */}
+        {/* Slim Vertical Slider Bar */}
+        <div className="py-1 flex items-center justify-center my-0.5">
+          <input
+            type="range"
+            min={30}
+            max={150}
+            step={5}
+            value={zoomPercent}
+            onChange={(e) => setZoomPercent(Number(e.target.value))}
+            aria-label="Zoom Tampilan Laporan Tahunan"
+            style={{
+              writingMode: 'vertical-lr',
+              direction: 'rtl',
+              height: '64px',
+              width: '3px',
+            }}
+            className="cursor-pointer appearance-none bg-slate-700/80 rounded-full accent-[#D2B48C] focus:outline-none"
+          />
+        </div>
+
+        {/* Zoom Out (-) */}
+        <button
+          type="button"
+          onClick={() => setZoomPercent((z) => Math.max(30, z - 5))}
+          title="Perkecil Tampilan (Ctrl + Scroll Down)"
+          className="p-1 rounded-full text-slate-300 hover:text-[#D2B48C] hover:bg-white/10 transition-all cursor-pointer active:scale-95"
+        >
+          <Minus className="w-3 h-3 text-[#D2B48C]" />
+        </button>
+
+        {/* Persentase Badge Minimalis */}
         <button
           type="button"
           onClick={() => {
@@ -5932,11 +5905,19 @@ export function AnnualReportF4View() {
             });
           }}
           title="Klik untuk beralih cepat: 45% (Banyak Halaman) · 75% · 100%"
-          className="px-1.5 py-0.5 rounded text-[11px] font-mono font-bold text-[#D2B48C] hover:bg-[#D2B48C]/20 transition-all cursor-pointer whitespace-nowrap"
+          className="px-1 py-0.5 rounded text-[9.5px] font-mono font-bold text-[#D2B48C] hover:bg-[#D2B48C]/20 transition-all cursor-pointer whitespace-nowrap"
         >
           {zoomPercent}%
         </button>
       </aside>
+
+      {/* Tombol Simpan Melayang di Pojok Kanan Bawah */}
+      <FloatingSaveButton
+        onSave={handleSaveReport}
+        hasUnsavedChanges={hasUnsavedChanges}
+        label="Simpan Data"
+        title="Simpan Perubahan Teks Laporan Tahunan"
+      />
     </div>
   );
 }
