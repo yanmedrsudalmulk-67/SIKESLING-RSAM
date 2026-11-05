@@ -73,15 +73,19 @@ export function calculateRadiationRowCapaian(
  * Data awal Pengamanan Radiasi sesuai referensi gambar (Januari–Desember 100%, ketiga indikator 'ya')
  */
 export function createInitialRadiationMonitoringData(): RadiationMonitoringRow[] {
-  return RADIATION_MONTHS.map((m) => ({
-    no: m.no,
-    monthLabel: m.monthLabel,
-    monthShort: m.monthShort,
-    izinBapeten: 'ya',
-    peralatanProteksi: 'ya',
-    pemantauanPekerja: 'ya',
-    capaian: 100,
-  }));
+  return RADIATION_MONTHS.map((m) => {
+    // Bulan 1..10 terisi (100% dari data inspeksi riil), Bulan 11 & 12 kosong / belum diinput
+    const isRecorded = m.no <= 10;
+    return {
+      no: m.no,
+      monthLabel: m.monthLabel,
+      monthShort: m.monthShort,
+      izinBapeten: isRecorded ? 'ya' : null,
+      peralatanProteksi: isRecorded ? 'ya' : null,
+      pemantauanPekerja: isRecorded ? 'ya' : null,
+      capaian: isRecorded ? 100 : 0,
+    };
+  });
 }
 
 /**

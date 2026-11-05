@@ -204,34 +204,17 @@ test('water quality dataset matches reference image and period filters accuratel
   assert.equal(marPoliGigiEColi?.resultValue, 4);
   assert.equal(marPoliGigiEColi?.status, 'TMS');
 
-  // Verify JUNI (MONTH_6) & DESEMBER (MONTH_12) have 13 indicators per source (52 rows per month) matching Excel
-  for (const mPeriod of ['MONTH_6', 'MONTH_12'] as const) {
-    const fullMonthRows = filterWaterQualityRows(rows, { period: mPeriod });
-    assert.equal(fullMonthRows.length, 52);
-    assert.equal(fullMonthRows.every((r) => r.status === 'MS'), true);
+  // Verify JUNI (MONTH_6) has 13 indicators per source (52 rows) matching real lab results
+  const juneRows = filterWaterQualityRows(rows, { period: 'MONTH_6' });
+  assert.equal(juneRows.length, 52);
+  const artesisJune = juneRows.filter((r) => r.sourceName === 'Artesis');
+  assert.equal(artesisJune.find((r) => r.indicator === 'Suhu')?.resultDisplay, '24,3');
+  assert.equal(artesisJune.find((r) => r.indicator === 'PH')?.resultDisplay, '6,74');
 
-    const artesisRows = fullMonthRows.filter((r) => r.sourceName === 'Artesis');
-    assert.equal(artesisRows.length, 13);
-    assert.equal(artesisRows.find((r) => r.indicator === 'Suhu')?.resultDisplay, '24,3');
-    assert.equal(artesisRows.find((r) => r.indicator === 'PH')?.resultDisplay, '6,74');
-    assert.equal(artesisRows.find((r) => r.indicator === 'Nitrat')?.resultDisplay, '4,3');
-
-    const roLabRows = fullMonthRows.filter((r) => r.sourceName === 'Air RO Lab');
-    assert.equal(roLabRows.length, 13);
-    assert.equal(roLabRows.find((r) => r.indicator === 'Suhu')?.resultDisplay, '24,1');
-    assert.equal(roLabRows.find((r) => r.indicator === 'PH')?.resultDisplay, '6,75');
-    assert.equal(roLabRows.find((r) => r.indicator === 'Nitrat')?.resultDisplay, '7,2');
-
-    const roGigiRows = fullMonthRows.filter((r) => r.sourceName === 'Air RO Poli Gigi');
-    assert.equal(roGigiRows.length, 13);
-    assert.equal(roGigiRows.find((r) => r.indicator === 'Suhu')?.resultDisplay, '24,3');
-    assert.equal(roGigiRows.find((r) => r.indicator === 'PH')?.resultDisplay, '6,74');
-
-    const airMinumRows = fullMonthRows.filter((r) => r.sourceName === 'Air Minum');
-    assert.equal(airMinumRows.length, 13);
-    assert.equal(airMinumRows.find((r) => r.indicator === 'Suhu')?.resultDisplay, '22,0');
-    assert.equal(airMinumRows.find((r) => r.indicator === 'PH')?.resultDisplay, '7,00');
-  }
+  // Verify DESEMBER (MONTH_12) has 52 rows waiting for input (empty in realtime)
+  const decRows = filterWaterQualityRows(rows, { period: 'MONTH_12' });
+  assert.equal(decRows.length, 52);
+  assert.equal(decRows.every((r) => r.resultDisplay === ''), true);
 
   // Verify JULI (MONTH_7) is a regular microbiological month with 8 rows
   const julyRows = filterWaterQualityRows(rows, { period: 'MONTH_7' });

@@ -70,15 +70,16 @@ export function calculateLinenRowCapaian(
  */
 export function createInitialLinenMonitoringData(): LinenMonitoringRow[] {
   return LINEN_MONTHS.map((m) => {
-    const isFullMonth = m.no === 1 || m.no === 2 || m.no === 11 || m.no === 12;
+    // Bulan 1..10 terisi (100% dari data inspeksi riil), Bulan 11 & 12 kosong / belum diinput
+    const isRecorded = m.no <= 10;
     return {
       no: m.no,
       monthLabel: m.monthLabel,
       monthShort: m.monthShort,
-      mouPihakKetiga: 'ya',
-      pemilahanInfeksius: 'ya',
-      pengawasan: 'ya',
-      capaian: isFullMonth ? 100 : 67,
+      mouPihakKetiga: isRecorded ? 'ya' : null,
+      pemilahanInfeksius: isRecorded ? 'ya' : null,
+      pengawasan: isRecorded ? 'ya' : null,
+      capaian: isRecorded ? 100 : 0,
     };
   });
 }

@@ -330,11 +330,14 @@ export function createInitialWaterQualityData(year = 2026): WaterQualityRow[] {
 
   for (const month of WATER_MONTHS) {
     const isFullParameterMonth = month.index === 6 || month.index === 12;
+    const isFutureUnrecordedMonth = month.index === 11 || month.index === 12;
 
     for (const sourceName of WATER_SOURCES) {
       if (isFullParameterMonth) {
         const presets = JUNE_DECEMBER_SOURCE_PRESETS[sourceName];
         for (const item of presets) {
+          // Month 12 (Desember) belum diisi/diuji pada periode realtime saat ini
+          const isDecEmpty = month.index === 12;
           rows.push({
             id: `${year}-${month.index}-${sourceName}-${item.indicator}`,
             year,
@@ -343,8 +346,8 @@ export function createInitialWaterQualityData(year = 2026): WaterQualityRow[] {
             sourceName,
             indicator: item.indicator,
             normalValue: item.normalValue,
-            resultValue: item.resultValue,
-            resultDisplay: item.resultDisplay,
+            resultValue: isDecEmpty ? 0 : item.resultValue,
+            resultDisplay: isDecEmpty ? '' : item.resultDisplay,
             status: item.status,
           });
         }
@@ -352,9 +355,11 @@ export function createInitialWaterQualityData(year = 2026): WaterQualityRow[] {
         for (const indicator of WATER_MICROBIOLOGY_INDICATORS) {
           const key = `${month.index}-${sourceName}-${indicator}`;
           const custom = presetSpecificValues[key];
-          const resultValue = custom ? custom.resultValue : 0;
-          const resultDisplay = custom && custom.resultDisplay ? custom.resultDisplay : String(resultValue);
-          const status = custom && custom.status ? custom.status : evaluateWaterCompliance(resultValue);
+          // Bulan 11 (November) belum diuji pada periode berjalan
+          const isNovEmpty = month.index === 11;
+          const resultValue = isNovEmpty ? 0 : (custom ? custom.resultValue : 0);
+          const resultDisplay = isNovEmpty ? '' : (custom && custom.resultDisplay ? custom.resultDisplay : String(resultValue));
+          const status = isNovEmpty ? 'MS' : (custom && custom.status ? custom.status : evaluateWaterCompliance(resultValue));
 
           rows.push({
             id: `${year}-${month.index}-${sourceName}-${indicator}`,
@@ -1005,8 +1010,8 @@ export function createInitialWaterPeriodicReports(
     { monthIndex: 8, extractionVolumeM3: 1365, groundwaterLevelMbmt: 13.4, meterPhotoFileName: 'Foto_Meter_Air_SB1_Agustus.jpg' },
     { monthIndex: 9, extractionVolumeM3: 1320, groundwaterLevelMbmt: 13.1, meterPhotoFileName: 'Foto_Meter_Air_SB1_September.jpg' },
     { monthIndex: 10, extractionVolumeM3: 1290, groundwaterLevelMbmt: 12.9, meterPhotoFileName: 'Foto_Meter_Air_SB1_Oktober.jpg' },
-    { monthIndex: 11, extractionVolumeM3: 1255, groundwaterLevelMbmt: 12.6, meterPhotoFileName: 'Foto_Meter_Air_SB1_November.jpg' },
-    { monthIndex: 12, extractionVolumeM3: 1275, groundwaterLevelMbmt: 12.5, meterPhotoFileName: 'Foto_Meter_Air_SB1_Desember.jpg' },
+    { monthIndex: 11, extractionVolumeM3: 0, groundwaterLevelMbmt: 0, meterPhotoFileName: '' },
+    { monthIndex: 12, extractionVolumeM3: 0, groundwaterLevelMbmt: 0, meterPhotoFileName: '' },
   ];
 
   return WATER_MONTHS.map((m) => {
@@ -1017,6 +1022,7 @@ export function createInitialWaterPeriodicReports(
       meterPhotoFileName: `Foto_Meter_Air_SB1_${MONTH_TITLE_CASE[m.index]}.jpg`,
     };
     const monthLabel = MONTH_TITLE_CASE[m.index] || m.name;
+    const isRecorded = preset.extractionVolumeM3 > 0 && preset.groundwaterLevelMbmt > 0;
 
     return {
       id: `sipa-${year}-${m.index}`,
@@ -1027,21 +1033,16 @@ export function createInitialWaterPeriodicReports(
       monthLabel,
       monthShort: m.short,
       periodeText: `${monthLabel} ${year}`,
-      catatan: '--',
+      catatan: isRecorded ? '--' : 'Belum Diinput',
       companyName: DEFAULT_SIPA_COMPANY_NAME,
       wellIdentity: DEFAULT_WELL_SIPA_IDENTITY,
       extractionVolumeM3: preset.extractionVolumeM3,
       communityWaterGrant: 'Tidak',
       groundwaterLevelMbmt: preset.groundwaterLevelMbmt,
       meterPhotoFileName: preset.meterPhotoFileName,
-      meterPhotoDataUrl: buildDefaultMeterPhotoDataUrl(
-        monthLabel,
-        year,
-        preset.extractionVolumeM3,
-        m.index
-      ),
-      meterPhotoFileSizeKB: 420,
-      status: 'Terlapor',
+      meterPhotoDataUrl: isRecorded ? buildDefaultMeterPhotoDataUrl(monthLabel, year, preset.extractionVolumeM3, m.index) : '',
+      meterPhotoFileSizeKB: isRecorded ? 420 : 0,
+      status: isRecorded ? 'Terlapor' : 'Belum Lengkap',
     };
   });
 }

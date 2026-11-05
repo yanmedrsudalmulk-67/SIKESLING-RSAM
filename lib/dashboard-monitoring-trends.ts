@@ -155,8 +155,8 @@ const DEFAULT_SOLID_WASTE_ROWS: SolidWasteSnapshotRow[] = [
   { no: 8, monthUpper: 'AGUSTUS', monthLabel: 'Agustus', monthShort: 'Agu', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 253, limbahTajam: 71, obatKadaluarsa: 0, totalOverride: 324 },
   { no: 9, monthUpper: 'SEPTEMBER', monthLabel: 'September', monthShort: 'Sep', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 298, limbahTajam: 98, obatKadaluarsa: 0, totalOverride: 396 },
   { no: 10, monthUpper: 'OKTOBER', monthLabel: 'Oktober', monthShort: 'Okt', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 248, limbahTajam: 80, obatKadaluarsa: 0, totalOverride: 328 },
-  { no: 11, monthUpper: 'NOVEMBER', monthLabel: 'November', monthShort: 'Nov', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 155, limbahTajam: 98, obatKadaluarsa: 0, totalOverride: 253 },
-  { no: 12, monthUpper: 'DESEMBER', monthLabel: 'Desember', monthShort: 'Des', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 217, limbahTajam: 103, obatKadaluarsa: 85.64, totalOverride: 320 },
+  { no: 11, monthUpper: 'NOVEMBER', monthLabel: 'November', monthShort: 'Nov', pemilahan: false, penyimpanan90Hari: false, tpsBerizin: false, limbahPadat: 0, limbahTajam: 0, obatKadaluarsa: 0, totalOverride: 0 },
+  { no: 12, monthUpper: 'DESEMBER', monthLabel: 'Desember', monthShort: 'Des', pemilahan: false, penyimpanan90Hari: false, tpsBerizin: false, limbahPadat: 0, limbahTajam: 0, obatKadaluarsa: 0, totalOverride: 0 },
 ];
 
 const DEFAULT_FOOD_ROWS: FoodSanitationSnapshotRow[] = [
@@ -170,8 +170,8 @@ const DEFAULT_FOOD_ROWS: FoodSanitationSnapshotRow[] = [
   { no: 8, monthLabel: 'Agustus', monthShort: 'Agu', sertifikatJasaBoga: 100, hasilIklStatus: 'belum memenuhi syarat', nilai: 84 },
   { no: 9, monthLabel: 'September', monthShort: 'Sep', sertifikatJasaBoga: 100, hasilIklStatus: 'belum memenuhi syarat', nilai: 84 },
   { no: 10, monthLabel: 'Oktober', monthShort: 'Okt', sertifikatJasaBoga: 100, hasilIklStatus: 'belum memenuhi syarat', nilai: 84 },
-  { no: 11, monthLabel: 'November', monthShort: 'Nov', sertifikatJasaBoga: 100, hasilIklStatus: 'belum memenuhi syarat', nilai: 84 },
-  { no: 12, monthLabel: 'Desember', monthShort: 'Des', sertifikatJasaBoga: 100, hasilIklStatus: 'belum memenuhi syarat', nilai: 84 },
+  { no: 11, monthLabel: 'November', monthShort: 'Nov', sertifikatJasaBoga: 0, hasilIklStatus: 'Belum Diisi', nilai: 0 },
+  { no: 12, monthLabel: 'Desember', monthShort: 'Des', sertifikatJasaBoga: 0, hasilIklStatus: 'Belum Diisi', nilai: 0 },
 ];
 
 export function createDefaultVectorFindingsSnapshot(): VectorFindingsSnapshotMap {
@@ -219,11 +219,9 @@ export function createDefaultVectorFindingsSnapshot(): VectorFindingsSnapshotMap
   map[10][14] = { jentik: true };
   map[10][18] = { lalat: true, kecoa: true };
 
-  map[11][14] = { jentik: true, lalat: true };
-  map[11][18] = { jentik: true, lalat: true, kecoa: true };
+  // Bulan 11 (November) belum diinput pada periode berjalan
 
-  map[12][14] = { lalat: true };
-  map[12][18] = { lalat: true, kecoa: true };
+  // Bulan 12 (Desember) belum diinput pada periode berjalan
 
   return map;
 }

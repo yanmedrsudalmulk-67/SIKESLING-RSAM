@@ -380,7 +380,6 @@ export function WaterQualityMonitoringView() {
                   onChange={(e) => {
                     const yr = Number(e.target.value);
                     setSelectedYear(yr);
-                    saveRows(rows.map((r) => ({ ...r, year: yr })));
                   }}
                   aria-label="Tahun Pemantauan"
                   className="appearance-none pl-4 pr-8 py-2 rounded-full text-xs font-bold bg-white/95 dark:bg-[#001835] text-[#002147] dark:text-slate-100 border border-[#D2B48C]/70 dark:border-slate-700 shadow-sm hover:border-[#002147] focus:outline-none focus:ring-2 focus:ring-[#002147]/30 cursor-pointer transition-all"
