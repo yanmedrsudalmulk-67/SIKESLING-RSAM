@@ -622,7 +622,7 @@ export function AnnualReportF4View() {
 
               {/* Teks Format Resmi Dinamis pada Garis Biru (Proporsional & Presisi Sesuai Format Resmi) */}
               <div
-                className="absolute left-0 right-0 top-[66.1%] bottom-[12.9%] flex flex-col items-center justify-center px-4 sm:px-8 text-center select-text"
+                className="absolute left-0 right-0 top-[66.7%] bottom-[13.3%] flex flex-col items-center justify-center px-4 sm:px-8 text-center select-text"
                 style={{ pointerEvents: 'auto' }}
               >
                 <div
