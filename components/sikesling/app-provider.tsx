@@ -42,6 +42,7 @@ import {
   INITIAL_MASTER_ACTIVITY_CATEGORIES,
   INITIAL_MASTER_OFFICERS,
   INITIAL_MASTER_ROOMS,
+  INITIAL_FINDINGS,
   INITIAL_VECTOR_UNITS,
   SikeslingCloudCollectionKey,
   SikeslingCloudState,
@@ -201,7 +202,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // Operational, Supervision, Findings, Schedules
   const [activities, setActivities] = useState<DailyActivityRecord[]>([]);
   const [supervisions, setSupervisions] = useState<SupervisionRecord[]>([]);
-  const [findings, setFindings] = useState<FindingFollowUpRecord[]>([]);
+  const [findings, setFindings] = useState<FindingFollowUpRecord[]>(INITIAL_FINDINGS);
   const [schedules, setSchedules] = useState<ScheduleRecord[]>([]);
 
   // Master Data & Hospital Profile

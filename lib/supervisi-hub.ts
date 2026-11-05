@@ -1,3 +1,5 @@
+import { OFFICIAL_SUPERVISI_AUDIT_FINDINGS_11 } from './master-findings-data';
+
 export type SupervisiCardId =
   | 'RAWAT_JALAN'
   | 'IGD'
@@ -1324,6 +1326,7 @@ export function createInitialSupervisiAuditRecords(): SupervisiAuditRecord[] {
       tanggalPerbaikan: '',
       tandaTanganPerbaikanUrl: '',
     },
+    ...OFFICIAL_SUPERVISI_AUDIT_FINDINGS_11,
   ];
 }
 

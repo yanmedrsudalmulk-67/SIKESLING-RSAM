@@ -41,6 +41,11 @@ import {
   createInitialRadiationMonitoringData,
 } from './radiation-monitoring';
 import { OFFICIAL_MASTER_ROOMS_74 } from './master-rooms-data';
+import { OFFICIAL_FINDING_RECORDS_11 } from './master-findings-data';
+
+export const INITIAL_FINDINGS: FindingFollowUpRecord[] = [
+  ...OFFICIAL_FINDING_RECORDS_11,
+];
 
 export const DEFAULT_SUPABASE_RAW_URL =
   'https://zwsshqpenadbpytvwkje.supabase.co/rest/v1/';
@@ -289,7 +294,7 @@ export function createInitialSikeslingCloudState(): SikeslingCloudState {
     radiation_monitoring: createInitialRadiationMonitoringData(),
     activities: [],
     supervisions: [],
-    findings: [],
+    findings: [...INITIAL_FINDINGS],
     schedules: [],
     master_rooms: [...INITIAL_MASTER_ROOMS],
     master_activity_categories: [...INITIAL_MASTER_ACTIVITY_CATEGORIES],
