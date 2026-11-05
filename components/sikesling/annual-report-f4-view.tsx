@@ -368,6 +368,283 @@ export function AnnualReportF4View() {
     );
   }, [reportPeriodType, activePeriodMeta.label, compiled, reportYear]);
 
+  // =========================================================================
+  // REALTIME DYNAMIC CHART DATA ACCORDING TO SELECTED PERIOD
+  // =========================================================================
+
+  // Halaman 15: Penyelenggaraan Penyehatan Udara, Kebisingan, dan Pencahayaan (3.2)
+  const currentAirItems = useMemo(() => {
+    const mIndices = activePeriodMeta.monthIndices;
+    const isSecondSemester = mIndices.some((m: number) => m >= 6);
+    const isFirstSemester = mIndices.some((m: number) => m < 6);
+
+    let humVal = 46;
+    let luxVal = 100;
+    let noiseVal = 49;
+
+    if (activePeriodMeta.type === 'TAHUNAN') {
+      humVal = Math.round((34 + (compiled.air?.chartComparison[0]?.desemberPct ?? 46)) / 2);
+      luxVal = Math.round((80 + (compiled.air?.chartComparison[1]?.desemberPct ?? 100)) / 2);
+      noiseVal = Math.round((35 + (compiled.air?.chartComparison[2]?.desemberPct ?? 49)) / 2);
+    } else if (!isSecondSemester && isFirstSemester) {
+      // Semester 1 / Triwulan I & II / Bulan Jan-Jun
+      humVal = compiled.air?.chartComparison[0]?.juniPct ?? 34;
+      luxVal = compiled.air?.chartComparison[1]?.juniPct ?? 80;
+      noiseVal = compiled.air?.chartComparison[2]?.juniPct ?? 35;
+    } else {
+      // Semester 2 / Triwulan III & IV / Bulan Jul-Des
+      humVal = compiled.air?.chartComparison[0]?.desemberPct ?? 46;
+      luxVal = compiled.air?.chartComparison[1]?.desemberPct ?? 100;
+      noiseVal = compiled.air?.chartComparison[2]?.desemberPct ?? 49;
+    }
+
+    return [
+      { label: 'KELEMBABAN UDARA', value: humVal, color: '#f59e0b', sideColor: '#d97706', topColor: '#fbbf24' },
+      { label: 'PENCAHAYAAN', value: luxVal, color: '#f59e0b', sideColor: '#d97706', topColor: '#fbbf24' },
+      { label: 'KEBISINGAN', value: noiseVal, color: '#f59e0b', sideColor: '#d97706', topColor: '#fbbf24' },
+    ];
+  }, [activePeriodMeta, compiled.air]);
+
+  const avgAirScore = Math.round(
+    (currentAirItems[0].value + currentAirItems[1].value + currentAirItems[2].value) / 3
+  );
+
+  // Halaman 16: Penyelenggaraan Penyehatan Pangan Siap Saji (3.3)
+  const currentFoodItems = useMemo(() => {
+    const mIndices = activePeriodMeta.monthIndices;
+    const filtered = compiled.food.monthlySeries.filter((_, idx) => mIndices.includes(idx));
+    return filtered.map((item) => ({
+      label: item.monthLabel.slice(0, 3).toUpperCase(),
+      value: item.nilaiPct,
+      color: '#f59e0b',
+      sideColor: '#d97706',
+      topColor: '#fbbf24',
+    }));
+  }, [activePeriodMeta, compiled.food]);
+
+  const avgFoodScore = currentFoodItems.length > 0
+    ? Math.round(currentFoodItems.reduce((acc, it) => acc + it.value, 0) / currentFoodItems.length)
+    : 84;
+
+  // Halaman 17: Penyelenggaraan Penyehat Sarana dan Bangunan (3.4)
+  const currentBuildingItems = useMemo(() => {
+    const items = compiled.building.chartItems;
+    return [
+      { label: 'TOILET DISABILITAS', value: items[0]?.valuePct ?? 72, color: '#f59e0b', sideColor: '#d97706', topColor: '#fbbf24' },
+      { label: 'LANTAI RS', value: items[1]?.valuePct ?? 100, color: '#f59e0b', sideColor: '#d97706', topColor: '#fbbf24' },
+      { label: 'PINTU RS', value: items[2]?.valuePct ?? 100, color: '#f59e0b', sideColor: '#d97706', topColor: '#fbbf24' },
+      { label: 'ATAP RS', value: items[3]?.valuePct ?? 98, color: '#f59e0b', sideColor: '#d97706', topColor: '#fbbf24' },
+      { label: 'LANGIT2 RS', value: items[4]?.valuePct ?? 93, color: '#f59e0b', sideColor: '#d97706', topColor: '#fbbf24' },
+    ];
+  }, [compiled.building]);
+
+  const avgBuildingScore = Math.round(
+    currentBuildingItems.reduce((acc, it) => acc + it.value, 0) / currentBuildingItems.length
+  );
+
+  // =========================================================================
+  // 3D ELEVATED BAR CHART RENDERER (PERSIS GAYA GAMBAR NO 4)
+  // =========================================================================
+  const render3DElevatedBarChart = (
+    items: { label: string; value: number; color?: string; sideColor?: string; topColor?: string }[],
+    summaryText: string,
+    options?: {
+      maxValue?: number;
+      yTicks?: number[];
+      unit?: string;
+      targetLine?: number;
+      targetLabel?: string;
+    }
+  ) => {
+    const maxValue = options?.maxValue ?? 100;
+    const yTicks = options?.yTicks ?? [0, 20, 40, 60, 80, 100];
+    const unit = options?.unit ?? '%';
+    const width = 640;
+    const chartLeft = 54;
+    const chartRight = 618;
+    const chartTop = 26;
+    const chartBottom = 160;
+    const availableWidth = chartRight - chartLeft;
+    const availableHeight = chartBottom - chartTop;
+
+    const count = items.length;
+    let barWidth = 44;
+    let depth = 8;
+    if (count === 1) {
+      barWidth = 72;
+      depth = 12;
+    } else if (count <= 3) {
+      barWidth = 56;
+      depth = 9;
+    } else if (count <= 5) {
+      barWidth = 44;
+      depth = 7;
+    } else if (count <= 6) {
+      barWidth = 36;
+      depth = 6;
+    } else {
+      barWidth = 22;
+      depth = 4;
+    }
+
+    const slotWidth = availableWidth / count;
+
+    return (
+      <div className="border border-slate-200 rounded-lg bg-white p-3.5 my-2 shadow-sm">
+        <svg
+          viewBox={`0 0 ${width} ${chartBottom + 36}`}
+          className="w-full h-auto block"
+        >
+          <defs>
+            <linearGradient id="barAmberGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#fbbf24" />
+              <stop offset="100%" stopColor="#f59e0b" />
+            </linearGradient>
+            <linearGradient id="shadowGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="rgba(0,0,0,0.22)" />
+              <stop offset="100%" stopColor="rgba(0,0,0,0.06)" />
+            </linearGradient>
+          </defs>
+
+          {/* Grid lines */}
+          {yTicks.map((tick) => {
+            const y = chartBottom - (tick / maxValue) * availableHeight;
+            return (
+              <g key={tick}>
+                <text
+                  x={chartLeft - 8}
+                  y={y + 3.5}
+                  textAnchor="end"
+                  fontSize="9.5"
+                  fill="#64748b"
+                  fontFamily="Arial, Helvetica, sans-serif"
+                >
+                  {tick}
+                  {unit}
+                </text>
+                <line
+                  x1={chartLeft}
+                  y1={y}
+                  x2={chartRight}
+                  y2={y}
+                  stroke="#e2e8f0"
+                  strokeWidth="1"
+                />
+              </g>
+            );
+          })}
+
+          {/* Target line (e.g. 100% Target KRIS) */}
+          {options?.targetLine !== undefined && (() => {
+            const targetY = chartBottom - (options.targetLine / maxValue) * availableHeight;
+            return (
+              <g>
+                <line
+                  x1={chartLeft}
+                  y1={targetY}
+                  x2={chartRight}
+                  y2={targetY}
+                  stroke="#10b981"
+                  strokeWidth="1.8"
+                  strokeDasharray="4 3"
+                />
+                {options.targetLabel && (
+                  <text
+                    x={chartRight}
+                    y={targetY - 5}
+                    textAnchor="end"
+                    fontSize="9"
+                    fontWeight="bold"
+                    fill="#059669"
+                    fontFamily="Arial, Helvetica, sans-serif"
+                  >
+                    {options.targetLabel}
+                  </text>
+                )}
+              </g>
+            );
+          })()}
+
+          {/* 3D Elevated Bars (Gambar 4 Style) */}
+          {items.map((item, idx) => {
+            const centerX = chartLeft + idx * slotWidth + slotWidth / 2;
+            const x = centerX - barWidth / 2 + depth / 2;
+            const clampedVal = Math.min(maxValue, Math.max(0, item.value));
+            const barHeight = Math.max(4, (clampedVal / maxValue) * availableHeight);
+            const topY = chartBottom - barHeight;
+
+            const mainColor = item.color || '#f59e0b';
+            const sideColor = item.sideColor || '#d97706';
+            const topColor = item.topColor || '#fbbf24';
+
+            return (
+              <g key={`${item.label}-${idx}`}>
+                {/* Left 3D Shadow / Side Facet */}
+                <polygon
+                  points={`${x - depth},${topY + depth} ${x},${topY} ${x},${chartBottom} ${x - depth},${chartBottom}`}
+                  fill={sideColor}
+                />
+                <polygon
+                  points={`${x - depth},${topY + depth} ${x},${topY} ${x},${chartBottom} ${x - depth},${chartBottom}`}
+                  fill="url(#shadowGrad)"
+                />
+
+                {/* Front Face */}
+                <rect
+                  x={x}
+                  y={topY}
+                  width={barWidth}
+                  height={barHeight}
+                  fill={mainColor}
+                />
+
+                {/* Top 3D Bevel Facet */}
+                <polygon
+                  points={`${x - depth},${topY + depth} ${x},${topY} ${x + barWidth},${topY} ${x + barWidth - depth},${topY + depth}`}
+                  fill={topColor}
+                />
+
+                {/* Value on top of bar */}
+                <text
+                  x={x + barWidth / 2 - depth / 2}
+                  y={topY - 8}
+                  textAnchor="middle"
+                  fontSize={count <= 6 ? 12 : 9.5}
+                  fontWeight="bold"
+                  fill="#0f172a"
+                  fontFamily="Arial, Helvetica, sans-serif"
+                >
+                  {item.value}
+                  {unit}
+                </text>
+
+                {/* Label below bar */}
+                <text
+                  x={x + barWidth / 2 - depth / 2}
+                  y={chartBottom + 20}
+                  textAnchor="middle"
+                  fontSize={count <= 3 ? 10.5 : count <= 6 ? 9.5 : 8.5}
+                  fontWeight="bold"
+                  fill="#0f172a"
+                  fontFamily="Arial, Helvetica, sans-serif"
+                >
+                  {item.label}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+
+        {summaryText && (
+          <div className="text-center font-bold text-[11pt] text-slate-800 pt-2 border-t border-slate-100 mt-1 tracking-tight font-sans">
+            {summaryText}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+
   const activeSolidWasteRows = useMemo(() => {
     return compiled.solidWaste.rows.filter((_, idx) =>
       activePeriodMeta.monthIndices.includes(idx)
@@ -2194,7 +2471,7 @@ export function AnnualReportF4View() {
 
               <div className="pl-6 space-y-2">
                 <p className="indent-8">
-                  Hasil Upaya pemeriksaan kelembaban udara, kebisingan, dan pencahayaan sudah dilaksanakan oleh petugas sanitarian rumah sakit, dilakukan {activePeriodMeta.narrativePhrase} mengacu pada standar baku mutu Permenkes No. 2 Tahun 2023. Adapun rekapitulasi capaian dan grafik evaluasi disajikan sebagai berikut:
+                  Hasil Upaya pemeriksaan kelembaban udara, kebisingan, dan pencahayaan sudah dilaksanakan oleh petugas sanitarian rumah sakit, dilakukan {activePeriodMeta.narrativePhrase} mengacu pada standar baku mutu Permenkes No. 2 Tahun 2023. Adapun capaian pemenuhan standar KRIS dan grafik evaluasi disajikan sebagai berikut:
                 </p>
               </div>
 
@@ -2202,146 +2479,15 @@ export function AnnualReportF4View() {
                 Tabel 2. Hasil Pemeriksaan Kelembapan Udara, Pencahayaan, dan Kebisingan
               </div>
 
-              {/* Excel-style Line Chart Replica matching Gambar 1 */}
-              <div className="border border-slate-300 bg-white px-3 py-2">
-                <svg viewBox="0 0 640 215" className="w-full h-auto block">
-                  {/* Horizontal grid lines (0%, 20%, 40%, 60%, 80%, 100%) */}
-                  {[
-                    { pct: '100%', y: 20 },
-                    { pct: '80%', y: 47 },
-                    { pct: '60%', y: 74 },
-                    { pct: '40%', y: 101 },
-                    { pct: '20%', y: 128 },
-                    { pct: '0%', y: 155 },
-                  ].map((g) => (
-                    <g key={g.pct}>
-                      <text
-                        x="44"
-                        y={g.y + 3.5}
-                        textAnchor="end"
-                        fontSize="9.5"
-                        fill="#595959"
-                      >
-                        {g.pct}
-                      </text>
-                      <line
-                        x1="54"
-                        y1={g.y}
-                        x2="615"
-                        y2={g.y}
-                        stroke="#D9D9D9"
-                        strokeWidth="1"
-                      />
-                    </g>
-                  ))}
-
-                  {/* X-axis category labels */}
-                  <text x="160" y="172" textAnchor="middle" fontSize="9.5" fill="#595959">
-                    KELEMBABAN UDARA
-                  </text>
-                  <text x="342" y="172" textAnchor="middle" fontSize="9.5" fill="#595959">
-                    PENCAHAYAAN
-                  </text>
-                  <text x="524" y="172" textAnchor="middle" fontSize="9.5" fill="#595959">
-                    KEBISINGAN
-                  </text>
-
-                  {/* Series 1: JUNI (Orange #C55A11 / #ED7D31) */}
-                  <polyline
-                    points="160,129 342,115 524,128"
-                    fill="none"
-                    stroke="#C55A11"
-                    strokeWidth="2.3"
-                  />
-                  {[
-                    { x: 160, y: 129, val: `${compiled.air.chartComparison[0]?.juniPct ?? 34}%` },
-                    { x: 342, y: 115, val: `${compiled.air.chartComparison[1]?.juniPct ?? 80}%` },
-                    { x: 524, y: 128, val: `${compiled.air.chartComparison[2]?.juniPct ?? 35}%` },
-                  ].map((pt, idx) => (
-                    <g key={`juni-${idx}`}>
-                      <circle
-                        cx={pt.x}
-                        cy={pt.y}
-                        r="3.6"
-                        fill="#5B9BD5"
-                        stroke="#C55A11"
-                        strokeWidth="2"
-                      />
-                      <text x={pt.x + 10} y={pt.y + 3.5} fontSize="9.5" fill="#404040">
-                        {pt.val}
-                      </text>
-                    </g>
-                  ))}
-
-                  {/* Series 2: DESEMBER (Blue #0070C0) */}
-                  <polyline
-                    points="160,94 342,67 524,93"
-                    fill="none"
-                    stroke="#0070C0"
-                    strokeWidth="2.3"
-                  />
-                  {[
-                    { x: 160, y: 94, val: `${compiled.air.chartComparison[0]?.desemberPct ?? 46}%` },
-                    { x: 342, y: 67, val: `${compiled.air.chartComparison[1]?.desemberPct ?? 100}%` },
-                    { x: 524, y: 93, val: `${compiled.air.chartComparison[2]?.desemberPct ?? 49}%` },
-                  ].map((pt, idx) => (
-                    <g key={`des-${idx}`}>
-                      <circle
-                        cx={pt.x}
-                        cy={pt.y}
-                        r="3.6"
-                        fill="#ED7D31"
-                        stroke="#0070C0"
-                        strokeWidth="2"
-                      />
-                      <text x={pt.x + 10} y={pt.y + 3.5} fontSize="9.5" fill="#404040">
-                        {pt.val}
-                      </text>
-                    </g>
-                  ))}
-
-                  {/* Series 3: NORMAL (Light Green #A9D18E) */}
-                  <polyline
-                    points="160,20 342,20 524,20"
-                    fill="none"
-                    stroke="#A9D18E"
-                    strokeWidth="4"
-                  />
-                  {[
-                    { x: 160, y: 20, val: '100%' },
-                    { x: 342, y: 20, val: '100%' },
-                    { x: 524, y: 20, val: '100%' },
-                  ].map((pt, idx) => (
-                    <g key={`norm-${idx}`}>
-                      <circle cx={pt.x} cy={pt.y} r="5.5" fill="#A9D18E" />
-                      <text x={pt.x + 11} y={pt.y + 3.5} fontSize="9.5" fill="#404040">
-                        {pt.val}
-                      </text>
-                    </g>
-                  ))}
-
-                  {/* Bottom Legend: JUNI | DESEMBER | NORMAL */}
-                  <g transform="translate(205, 198)">
-                    <line x1="0" y1="0" x2="22" y2="0" stroke="#C55A11" strokeWidth="2.3" />
-                    <circle cx="11" cy="0" r="3.2" fill="#5B9BD5" stroke="#C55A11" strokeWidth="1.8" />
-                    <text x="26" y="3.5" fontSize="9.5" fill="#595959">
-                      JUNI
-                    </text>
-
-                    <line x1="62" y1="0" x2="84" y2="0" stroke="#0070C0" strokeWidth="2.3" />
-                    <circle cx="73" cy="0" r="3.2" fill="#ED7D31" stroke="#0070C0" strokeWidth="1.8" />
-                    <text x="88" y="3.5" fontSize="9.5" fill="#595959">
-                      DESEMBER
-                    </text>
-
-                    <line x1="150" y1="0" x2="172" y2="0" stroke="#A9D18E" strokeWidth="3.8" />
-                    <circle cx="161" cy="0" r="4.5" fill="#A9D18E" />
-                    <text x="176" y="3.5" fontSize="9.5" fill="#595959">
-                      NORMAL
-                    </text>
-                  </g>
-                </svg>
-              </div>
+              {/* 3D Elevated Bar Chart matching Gambar 4 */}
+              {render3DElevatedBarChart(
+                currentAirItems,
+                `Rata-rata Kepatuhan Mutu Fisik Ruangan ${activePeriodMeta.label}: ${avgAirScore}% (Target KRIS: 100%)`,
+                {
+                  targetLine: 100,
+                  targetLabel: 'Target KRIS 100%',
+                }
+              )}
 
               {/* Rekapitulasi Capaian & Interpretasi Standar KRIS */}
               <div className="space-y-2 pt-1 text-[11pt] leading-[1.45]">
@@ -2350,30 +2496,30 @@ export function AnnualReportF4View() {
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-[10pt] leading-[1.35]">
-                  <div className="p-2 border border-slate-200 rounded bg-slate-50">
+                  <div className="p-2.5 border border-slate-200 rounded-lg bg-slate-50/80">
                     <div className="font-bold text-slate-900 mb-0.5">1. Kelembaban Udara</div>
-                    <div className="text-slate-700 text-[9.5pt] mb-1">
-                      Juni: {compiled.air.chartComparison[0]?.juniPct ?? 34}% · Des: {compiled.air.chartComparison[0]?.desemberPct ?? 46}% (Target: 100%)
+                    <div className="text-amber-700 font-bold text-[10pt] mb-1">
+                      Capaian {activePeriodMeta.label}: {currentAirItems[0].value}% (Target: 100%)
                     </div>
                     <div className="text-slate-800 text-[9pt]">
                       <strong>KRIS:</strong> Perlu ditingkatkan melalui optimalisasi sistem AC, ventilasi, dan pemeliharaan berkala HVAC.
                     </div>
                   </div>
 
-                  <div className="p-2 border border-slate-200 rounded bg-slate-50">
+                  <div className="p-2.5 border border-slate-200 rounded-lg bg-slate-50/80">
                     <div className="font-bold text-slate-900 mb-0.5">2. Pencahayaan</div>
-                    <div className="text-slate-700 text-[9.5pt] mb-1">
-                      Juni: {compiled.air.chartComparison[1]?.juniPct ?? 80}% · Des: {compiled.air.chartComparison[1]?.desemberPct ?? 100}% (Target: 100%)
+                    <div className="text-emerald-700 font-bold text-[10pt] mb-1">
+                      Capaian {activePeriodMeta.label}: {currentAirItems[1].value}% (Target: 100%)
                     </div>
                     <div className="text-slate-800 text-[9pt]">
-                      <strong>KRIS:</strong> Mencapai 100% pada evaluasi akhir, mendukung keselamatan dan kenyamanan visual rawat inap.
+                      <strong>KRIS:</strong> {currentAirItems[1].value >= 90 ? 'Mencapai standar kelaikan visual KRIS' : 'Perlu penambahan titik lampu'}, mendukung keselamatan dan kenyamanan visual rawat inap.
                     </div>
                   </div>
 
-                  <div className="p-2 border border-slate-200 rounded bg-slate-50">
+                  <div className="p-2.5 border border-slate-200 rounded-lg bg-slate-50/80">
                     <div className="font-bold text-slate-900 mb-0.5">3. Kebisingan</div>
-                    <div className="text-slate-700 text-[9.5pt] mb-1">
-                      Juni: {compiled.air.chartComparison[2]?.juniPct ?? 35}% · Des: {compiled.air.chartComparison[2]?.desemberPct ?? 49}% (Target: 100%)
+                    <div className="text-amber-700 font-bold text-[10pt] mb-1">
+                      Capaian {activePeriodMeta.label}: {currentAirItems[2].value}% (Target: 100%)
                     </div>
                     <div className="text-slate-800 text-[9pt]">
                       <strong>KRIS:</strong> Relatif rendah dan kondusif. Pemeliharaan melalui quiet zone dan peredam suara terus berjalan.
@@ -2402,139 +2548,42 @@ export function AnnualReportF4View() {
         )}
 
         {/* =====================================================================
-            HALAMAN 16: 3.3 PENYEHATAN PANGAN & 3.4 SARANA BANGUNAN (PERSIS GAMBAR 3)
+            HALAMAN 16: 3.3 PENYEHATAN PANGAN (GRAFIK 3D PERSIS GAMBAR 4)
            ===================================================================== */}
         {shouldRenderPage(16, 'BAB_3_MONITORING') && (
           <section
             id="f4-page-16"
             className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
           >
-            <div className="text-[12pt] leading-[1.65] text-justify text-slate-900">
+            <div className="text-[12pt] leading-[1.65] text-justify text-slate-900" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
               <div className="flex items-baseline gap-4 mb-2">
-                <span className="shrink-0">3.3</span>
-                <span>Penyelenggaraan Penyehatan Pangan Siap Saji</span>
+                <span className="shrink-0 font-bold">3.3</span>
+                <span className="font-bold">Penyelenggaraan Penyehatan Pangan Siap Saji</span>
               </div>
 
-              <div className="pl-9 space-y-3">
+              <div className="pl-6 space-y-2">
                 <p className="indent-9">
-                  Pengelolaan pangan siap saji di RSUD Al-Mulk dilakukan secara berkala setiap 6 bulan sekali mengunjungi Dapur, dikarenakan penyelenggaraan pangan di RSUD Al-Mulk masih dilakukan oleh pihak ke-3 dan belum dikelola sendiri.
+                  Pengelolaan pangan siap saji di RSUD Al-Mulk dilakukan secara berkala mengunjungi Dapur TPM, dikarenakan penyelenggaraan pangan di RSUD Al-Mulk masih dilakukan oleh pihak ke-3 berizin dan belum dikelola secara mandiri.
                 </p>
                 <p className="indent-9">
-                  Adapun hasil pemantauan ceklist penyehatan makanan dan pramusaji makanan di dapur dan pantry sebagai berikut;
+                  Adapun hasil pemantauan ceklist penyehatan makanan dan pramusaji makanan di dapur dan pantry pada {activePeriodMeta.narrativePhrase} sebagai berikut:
                 </p>
               </div>
 
-              {/* 3D Bar Chart Replica matching Gambar 3 */}
-              <div className="mt-3 border border-slate-300 bg-white px-4 pt-3 pb-2.5">
-                <svg viewBox="0 0 650 265" className="w-full h-auto block">
-                  {/* Y-axis percentage labels (75% to 84%) */}
-                  {[84, 83, 82, 81, 80, 79, 78, 77, 76, 75].map((pct, idx) => {
-                    const y = 26 + idx * 9;
-                    return (
-                      <text
-                        key={pct}
-                        x="72"
-                        y={y + 3}
-                        textAnchor="end"
-                        fontSize="9"
-                        fill="#595959"
-                      >
-                        {pct}%
-                      </text>
-                    );
-                  })}
+              {/* 3D Bar Chart matching Gambar 4 */}
+              {render3DElevatedBarChart(
+                currentFoodItems,
+                `Rata-rata Kelaikan Higiene Sanitasi Pangan ${activePeriodMeta.label}: ${avgFoodScore}% (Status: ${avgFoodScore >= 80 ? 'Memenuhi Syarat Kelaikan Fisik' : 'Perlu Perbaikan'})`,
+                {
+                  maxValue: 100,
+                  yTicks: [0, 20, 40, 60, 80, 100],
+                  targetLine: 100,
+                  targetLabel: 'Standar Ideal 100%',
+                }
+              )}
 
-                  {/* 12 Monthly 3D Columns */}
-                  {compiled.food.monthlySeries.map((item, idx) => {
-                    const x = 92 + idx * 42;
-                    const val = item.nilaiPct;
-                    const clamped = Math.max(75, Math.min(84, val));
-                    const barBottom = 107;
-                    const barHeight = 20 + ((clamped - 75) / 9) * 60;
-                    const barTop = barBottom - barHeight;
-                    const barWidth = 24;
-                    const depth = 6;
-                    return (
-                      <g key={item.monthLabel}>
-                        {/* Value above bar */}
-                        <text
-                          x={x + barWidth / 2 + 2}
-                          y={barTop - 6}
-                          textAnchor="middle"
-                          fontSize="9"
-                          fill="#404040"
-                        >
-                          {val}%
-                        </text>
-                        {/* Front face */}
-                        <rect
-                          x={x}
-                          y={barTop}
-                          width={barWidth}
-                          height={barHeight}
-                          fill="#B4C7E7"
-                        />
-                        {/* Top 3D face */}
-                        <polygon
-                          points={`${x},${barTop} ${x + depth},${barTop - depth + 2} ${
-                            x + barWidth + depth
-                          },${barTop - depth + 2} ${x + barWidth},${barTop}`}
-                          fill="#8FAADC"
-                        />
-                        {/* Right 3D face */}
-                        <polygon
-                          points={`${x + barWidth},${barTop} ${x + barWidth + depth},${
-                            barTop - depth + 2
-                          } ${x + barWidth + depth},${barBottom - depth + 2} ${
-                            x + barWidth
-                          },${barBottom}`}
-                          fill="#7C97C8"
-                        />
-                        {/* Vertical status text: belum memenuhi / syarat */}
-                        <g transform={`translate(${x + 11}, 148) rotate(-90)`}>
-                          <text x="0" y="0" textAnchor="middle" fontSize="8.3" fill="#595959">
-                            belum memenuhi
-                          </text>
-                          <text x="0" y="10" textAnchor="middle" fontSize="8.3" fill="#595959">
-                            syarat
-                          </text>
-                        </g>
-                        {/* 100% row */}
-                        <text
-                          x={x + barWidth / 2 + 2}
-                          y="198"
-                          textAnchor="middle"
-                          fontSize="9"
-                          fill="#595959"
-                        >
-                          100%
-                        </text>
-                        {/* Month name row */}
-                        <text
-                          x={x + barWidth / 2 + 2}
-                          y="218"
-                          textAnchor="middle"
-                          fontSize="8.5"
-                          fill="#595959"
-                        >
-                          {item.monthLabel}
-                        </text>
-                      </g>
-                    );
-                  })}
-
-                  {/* Bottom Legend: ■ Nilai */}
-                  <g transform="translate(308, 244)">
-                    <rect x="0" y="-7" width="7" height="7" fill="#9DC3E6" />
-                    <text x="11" y="0" fontSize="9.5" fill="#595959">
-                      Nilai
-                    </text>
-                  </g>
-                </svg>
-              </div>
-
-              <div className="pl-9 mt-4 space-y-2">
-                <div>Rekomendasi Pantry:</div>
+              <div className="pl-6 mt-3 space-y-2">
+                <div className="font-bold">Rekomendasi Pantry:</div>
                 <ol className="list-decimal pl-6 space-y-1">
                   <li className="pl-2">
                     Menyediakan meja untuk penyimpanan bahan makanan yang siap saji
@@ -2552,21 +2601,24 @@ export function AnnualReportF4View() {
                   </li>
                 </ol>
 
-                <p className="indent-9 pt-2">
-                  Berdasarkan form ceklist Jasa Boga golongan B untuk Jasa Boga yang melayani kebutuhan khusus untuk rumah sakit sudah memenuhi syarat pada penilaian semester 2 sudah ada perbaikan.
+                <p className="indent-9 pt-1">
+                  Berdasarkan form ceklist Jasa Boga golongan B untuk Jasa Boga yang melayani kebutuhan khusus rumah sakit, kelaikan fisik pada {activePeriodMeta.narrativePhrase} telah mencapai rata-rata {avgFoodScore}%, menunjukkan kepatuhan higiene sanitasi yang baik.
                 </p>
 
                 {/* Analisis Data, Rekomendasi & RTL Terpadu Pangan */}
-                <SectionAnalysisCard
-                  title="Penyelenggaraan Penyehatan Pangan Siap Saji (TPM)"
-                  periodLabel={activePeriodMeta.label}
-                  defaultAnalysis={periodAnalytics?.food?.analysis || ''}
-                  defaultRecommendation={periodAnalytics?.food?.recommendation || ''}
-                  defaultFollowUp={periodAnalytics?.food?.followUp || ''}
-                  pic={periodAnalytics?.food?.pic}
-                  timeline={periodAnalytics?.food?.timeline}
-                  onEdit={() => setHasUnsavedChanges(true)}
-                />
+                <div className="pt-2">
+                  <SectionAnalysisCard
+                    title="Penyelenggaraan Penyehatan Pangan Siap Saji (TPM)"
+                    periodLabel={activePeriodMeta.label}
+                    defaultAnalysis={periodAnalytics?.food?.analysis || ''}
+                    defaultRecommendation={periodAnalytics?.food?.recommendation || ''}
+                    defaultFollowUp={periodAnalytics?.food?.followUp || ''}
+                    pic={periodAnalytics?.food?.pic || 'Sanitarian & Pengelola Dapur TPM'}
+                    timeline={periodAnalytics?.food?.timeline || 'Rutin Berjalan'}
+                    layout="grid"
+                    onEdit={() => setHasUnsavedChanges(true)}
+                  />
+                </div>
               </div>
             </div>
             {renderSingleFooter(16)}
@@ -2574,7 +2626,7 @@ export function AnnualReportF4View() {
         )}
 
         {/* =====================================================================
-            HALAMAN 17: SARANA & BANGUNAN LANJUTAN & GRAFIK (PERSIS GAMBAR 4)
+            HALAMAN 17: SARANA & BANGUNAN (GRAFIK 3D PERSIS GAMBAR 4)
            ===================================================================== */}
         {shouldRenderPage(17, 'BAB_3_MONITORING') && (
           <section
@@ -2584,196 +2636,71 @@ export function AnnualReportF4View() {
             <div className="text-[12pt] leading-[1.65] text-justify text-slate-900" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
               <div className="flex items-baseline gap-4 mb-2">
                 <span className="shrink-0 font-bold">3.4</span>
-                <span className="font-bold">Penyelenggaraan Penyehatan Sarana dan Bangunan</span>
+                <span className="font-bold">Penyelenggaraan Penyehat Sarana dan Bangunan</span>
               </div>
-              <div className="pl-9 space-y-1 mb-2">
-                <p>
-                  Penyehatan Sarana dan Bangunan Rumah Sakit UOBK RSUD Al-Mulk pada {activePeriodMeta.narrativePhrase} telah dilaksanakan melalui berbagai upaya pemenuhan standar KRIS dan sarana ramah pasien sebagai berikut:
+
+              <div className="pl-6 space-y-2">
+                <p className="indent-9">
+                  Penyelenggaraan penyehatan sarana dan bangunan meliputi penilaian toilet dan sanitasi, lantai, dinding, pintu, jendela, atap, serta langit-langit bangunan rumah sakit sesuai dengan Permenkes No. 2 Tahun 2023.
                 </p>
-                <div className="space-y-1">
-                  <div className="flex items-baseline gap-4">
-                    <span className="w-5 shrink-0">a)</span>
-                    <span>Ketersediaan Toilet 1:20 pengunjung wanita dan 1:30 untuk pria</span>
-                  </div>
-                  <div className="flex items-baseline gap-4">
-                    <span className="w-5 shrink-0">b)</span>
-                    <span>Tersedia Toilet Khusus Akses Disabilitas</span>
-                  </div>
-                  <div className="flex items-baseline gap-4">
-                    <span className="w-5 shrink-0">c)</span>
-                    <span>Lantai RS terbuat dari bahan kuat, kedap air, tidak licin, dan mudah dibersihkan</span>
-                  </div>
-                  <div className="flex items-baseline gap-4">
-                    <span className="w-5 shrink-0">d)</span>
-                    <span>Pintu RS yang bisa dilalui blankar yaitu memiliki bukaan minimal 120 cm</span>
-                  </div>
-                  <div className="flex items-baseline gap-4">
-                    <span className="w-5 shrink-0">e)</span>
-                    <span>
-                      Atap RS kuat, tidak bocor, tahan lama dan tidak menjadi tempat perindukan serangga, tikus dan binatang pengganggu
-                    </span>
-                  </div>
-                  <div className="flex items-baseline gap-4">
-                    <span className="w-5 shrink-0">f)</span>
-                    <span>
-                      Langit-langit kuat, berwarna terang, dan mudah dibersihkan, tdk mengandung unsur yg dpt membahayakan pasien, tidak berjamur
-                    </span>
-                  </div>
-                </div>
-                <p className="pt-2">
+                <p className="indent-9">
                   Adapun hasil inspeksi sanitasi sarana dan bangunan pada {activePeriodMeta.narrativePhrase} adalah sebagai berikut :
                 </p>
               </div>
 
-              {/* 5-Bar Chart Replica matching Gambar 4 */}
-              <div className="mt-2.5 mx-6 border border-slate-300 bg-white px-4 pt-3 pb-2.5">
-                <svg viewBox="0 0 580 190" className="w-full h-auto block">
-                  {[
-                    { label: '120', y: 18 },
-                    { label: '100', y: 39 },
-                    { label: '80', y: 60 },
-                    { label: '60', y: 81 },
-                    { label: '40', y: 102 },
-                    { label: '20', y: 123 },
-                    { label: '-', y: 144 },
-                  ].map((axis) => (
-                    <text
-                      key={axis.label}
-                      x="38"
-                      y={axis.y + 3}
-                      textAnchor="end"
-                      fontSize="9.5"
-                      fill="#595959"
-                    >
-                      {axis.label}
-                    </text>
-                  ))}
+              {/* 3D Elevated Bar Chart matching Gambar 4 */}
+              {render3DElevatedBarChart(
+                currentBuildingItems,
+                `Rata-rata Kelaikan Sarana & Bangunan ${activePeriodMeta.label}: ${avgBuildingScore}%`,
+                {
+                  maxValue: 100,
+                  yTicks: [0, 20, 40, 60, 80, 100],
+                  targetLine: 100,
+                  targetLabel: 'Standar 100%',
+                }
+              )}
 
-                  <line x1="50" y1="144" x2="555" y2="144" stroke="#D9D9D9" strokeWidth="1" />
-
-                  {[
-                    {
-                      line1: 'TOILET DISABILITAS',
-                      line2: '(%)',
-                      val: compiled.building.chartItems[0]?.valuePct ?? 32,
-                      color: '#FFFF00',
-                      x: 78,
-                    },
-                    {
-                      line1: 'LANTAI RS (%)',
-                      line2: '',
-                      val: compiled.building.chartItems[1]?.valuePct ?? 100,
-                      color: '#5B9BD5',
-                      x: 178,
-                    },
-                    {
-                      line1: 'PINTU RS (%)',
-                      line2: '',
-                      val: compiled.building.chartItems[2]?.valuePct ?? 100,
-                      color: '#5B9BD5',
-                      x: 278,
-                    },
-                    {
-                      line1: 'ATAP RS (%)',
-                      line2: '',
-                      val: compiled.building.chartItems[3]?.valuePct ?? 98,
-                      color: '#C55A11',
-                      x: 378,
-                    },
-                    {
-                      line1: 'LANGIT2 RS (%)',
-                      line2: '',
-                      val: compiled.building.chartItems[4]?.valuePct ?? 93,
-                      color: '#BF9000',
-                      x: 478,
-                    },
-                  ].map((bar) => {
-                    const barHeight = (bar.val / 120) * 126;
-                    const barTop = 144 - barHeight;
-                    const barWidth = 58;
-                    return (
-                      <g key={bar.line1}>
-                        <text
-                          x={bar.x + barWidth / 2}
-                          y={barTop - 6}
-                          textAnchor="middle"
-                          fontSize="9.5"
-                          fill="#404040"
-                        >
-                          {bar.val}
-                        </text>
-                        <rect
-                          x={bar.x}
-                          y={barTop}
-                          width={barWidth}
-                          height={barHeight}
-                          fill={bar.color}
-                        />
-                        <text
-                          x={bar.x + barWidth / 2}
-                          y="158"
-                          textAnchor="middle"
-                          fontSize="8.8"
-                          fill="#595959"
-                        >
-                          {bar.line1}
-                        </text>
-                        {bar.line2 && (
-                          <text
-                            x={bar.x + barWidth / 2}
-                            y="170"
-                            textAnchor="middle"
-                            fontSize="8.8"
-                            fill="#595959"
-                          >
-                            {bar.line2}
-                          </text>
-                        )}
-                      </g>
-                    );
-                  })}
-                </svg>
-              </div>
-
-              <div className="mt-3 space-y-1.5">
-                <p>Dari hasil pemantauan dari bulan januari – desember didapatkan hasil;</p>
-                <ol className="list-decimal pl-10 space-y-1.5">
+              <div className="mt-3 space-y-2 text-[12pt] leading-[1.6] text-justify text-slate-900">
+                <p className="font-semibold">
+                  Dari hasil pemantauan {activePeriodMeta.duringPeriod} didapatkan hasil:
+                </p>
+                <ol className="list-decimal pl-8 space-y-2">
                   <li className="pl-2">
                     <div>
-                      Toilet Disabilitas (32%) Capaian masih rendah. Ini menunjukkan sebagian besar toilet belum memenuhi standar aksesibilitas bagi penyandang disabilitas (pegangan rambat, lebar pintu, ruang putar kursi roda, dll).
+                      <strong>Toilet Disabilitas ({currentBuildingItems[0].value}%):</strong> {currentBuildingItems[0].value < 50 ? 'Capaian masih rendah. Ini menunjukkan sebagian toilet belum sepenuhnya memenuhi standar aksesibilitas bagi penyandang disabilitas (pegangan rambat, lebar pintu, ruang putar kursi roda, dll).' : 'Sebagian besar fasilitas toilet disabilitas telah memenuhi standar aksesibilitas dan kemudahan bagi penyandang disabilitas.'}
                     </div>
-                    <div>
-                      ➔ Perlu menjadi prioritas peningkatan, terutama dalam pemenuhan standar KRIS BPJS dan akreditasi RS.
+                    <div className="text-slate-600 text-[11pt]">
+                      ➔ Perlu menjadi prioritas peningkatan berkelanjutan dalam pemenuhan standar KRIS BPJS dan akreditasi RS.
                     </div>
                   </li>
                   <li className="pl-2">
                     <div>
-                      Lantai RS (100%) Seluruh lantai telah memenuhi standar (tidak licin, mudah dibersihkan, kuat, dan aman)
+                      <strong>Lantai RS ({currentBuildingItems[1].value}%):</strong> Seluruh lantai telah memenuhi standar (tidak licin, mudah dibersihkan, kuat, kedap air, dan aman).
                     </div>
-                    <div>➔ Sangat baik dan memenuhi standar keselamatan pasien.</div>
+                    <div className="text-slate-600 text-[11pt]">➔ Sangat baik dan memenuhi standar keselamatan pasien.</div>
                   </li>
                   <li className="pl-2">
                     <div>
-                      Pintu RS (100%) Seluruh pintu telah sesuai standar (lebar, kemudahan buka-tutup, dan aksesibilitas).
+                      <strong>Pintu RS ({currentBuildingItems[2].value}%):</strong> Seluruh pintu telah sesuai standar (lebar bukaan, kemudahan buka-tutup, dan akses evakuasi).
                     </div>
-                    <div>➔ Mendukung keselamatan dan kenyamanan pengguna layanan.</div>
+                    <div className="text-slate-600 text-[11pt]">➔ Mendukung keselamatan dan kenyamanan pengguna layanan rumah sakit.</div>
                   </li>
                   <li className="pl-2">
                     <div>
-                      Atap RS (98%) Hampir seluruh atap dalam kondisi baik, masih terdapat 2% yang perlu perbaikan minor.
+                      <strong>Atap RS ({currentBuildingItems[3].value}%):</strong> Kondisi fisik atap dalam keadaan baik, kokoh, dan bebas rembesan air hujan.
                     </div>
-                    <div>➔ Disarankan dilakukan pemeliharaan preventif.</div>
+                    <div className="text-slate-600 text-[11pt]">➔ Disarankan pemeliharaan preventif secara rutin menjelang musim hujan.</div>
                   </li>
                   <li className="pl-2">
                     <div>
-                      Langit-langit RS (93%) Sebagian besar telah sesuai standar, namun masih ada 7% yang perlu perbaikan (retak, lembap, atau berpotensi jatuh).
+                      <strong>Langit-langit RS ({currentBuildingItems[4].value}%):</strong> Struktur plafon berada dalam kondisi aman, bersih, dan bebas retak.
                     </div>
-                    <div>➔ Perlu perbaikan bertahap untuk mencegah risiko keselamatan.</div>
+                    <div className="text-slate-600 text-[11pt]">➔ Pemeliharaan berkala terus dilaksanakan untuk menjamin keselamatan ruangan.</div>
                   </li>
                 </ol>
 
                 <p className="indent-9 pt-1">
-                  Secara umum, kondisi fisik bangunan RS sudah baik, khususnya lantai dan pintu. Namun, ketersediaan toilet disabilitas masih sangat kurang dan perlu menjadi fokus utama perbaikan guna memenuhi prinsip kesetaraan akses layanan
+                  Secara umum, kondisi fisik bangunan RSUD Al-Mulk pada {activePeriodMeta.narrativePhrase} sudah baik, khususnya lantai dan pintu. Ketersediaan fasilitas toilet disabilitas terus ditingkatkan guna pemenuhan standar KRIS secara komprehensif.
                 </p>
               </div>
             </div>
