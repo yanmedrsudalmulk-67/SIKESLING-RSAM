@@ -1678,11 +1678,11 @@ export function AnnualReportF4View() {
               <SectionAnalysisCard
                 title="Hasil Pengujian Air Bersih"
                 periodLabel={activePeriodMeta.label}
-                defaultAnalysis={periodAnalytics.waterClean.analysis}
-                defaultRecommendation={periodAnalytics.waterClean.recommendation}
-                defaultFollowUp={periodAnalytics.waterClean.followUp}
-                pic={periodAnalytics.waterClean.pic}
-                timeline={periodAnalytics.waterClean.timeline}
+                defaultAnalysis={periodAnalytics?.waterClean?.analysis || ''}
+                defaultRecommendation={periodAnalytics?.waterClean?.recommendation || ''}
+                defaultFollowUp={periodAnalytics?.waterClean?.followUp || ''}
+                pic={periodAnalytics?.waterClean?.pic}
+                timeline={periodAnalytics?.waterClean?.timeline}
                 onEdit={() => setHasUnsavedChanges(true)}
               />
             </div>
@@ -2035,11 +2035,11 @@ export function AnnualReportF4View() {
               <SectionAnalysisCard
                 title="Hasil Pengujian Air RO & Air Minum"
                 periodLabel={activePeriodMeta.label}
-                defaultAnalysis={periodAnalytics.waterRo.analysis}
-                defaultRecommendation={periodAnalytics.waterRo.recommendation}
-                defaultFollowUp={periodAnalytics.waterRo.followUp}
-                pic={periodAnalytics.waterRo.pic}
-                timeline={periodAnalytics.waterRo.timeline}
+                defaultAnalysis={periodAnalytics?.waterRo?.analysis || ''}
+                defaultRecommendation={periodAnalytics?.waterRo?.recommendation || ''}
+                defaultFollowUp={periodAnalytics?.waterRo?.followUp || ''}
+                pic={periodAnalytics?.waterRo?.pic}
+                timeline={periodAnalytics?.waterRo?.timeline}
                 onEdit={() => setHasUnsavedChanges(true)}
               />
             </div>
@@ -2252,11 +2252,11 @@ export function AnnualReportF4View() {
                 <SectionAnalysisCard
                   title="Kualitas Udara & Lingkungan Fisik Ruangan"
                   periodLabel={activePeriodMeta.label}
-                  defaultAnalysis={periodAnalytics.airQuality.analysis}
-                  defaultRecommendation={periodAnalytics.airQuality.recommendation}
-                  defaultFollowUp={periodAnalytics.airQuality.followUp}
-                  pic={periodAnalytics.airQuality.pic}
-                  timeline={periodAnalytics.airQuality.timeline}
+                  defaultAnalysis={periodAnalytics?.airQuality?.analysis || ''}
+                  defaultRecommendation={periodAnalytics?.airQuality?.recommendation || ''}
+                  defaultFollowUp={periodAnalytics?.airQuality?.followUp || ''}
+                  pic={periodAnalytics?.airQuality?.pic}
+                  timeline={periodAnalytics?.airQuality?.timeline}
                   onEdit={() => setHasUnsavedChanges(true)}
                 />
               </div>
@@ -2503,11 +2503,11 @@ export function AnnualReportF4View() {
                 <SectionAnalysisCard
                   title="Penyelenggaraan Penyehatan Pangan Siap Saji (TPM)"
                   periodLabel={activePeriodMeta.label}
-                  defaultAnalysis={periodAnalytics.food.analysis}
-                  defaultRecommendation={periodAnalytics.food.recommendation}
-                  defaultFollowUp={periodAnalytics.food.followUp}
-                  pic={periodAnalytics.food.pic}
-                  timeline={periodAnalytics.food.timeline}
+                  defaultAnalysis={periodAnalytics?.food?.analysis || ''}
+                  defaultRecommendation={periodAnalytics?.food?.recommendation || ''}
+                  defaultFollowUp={periodAnalytics?.food?.followUp || ''}
+                  pic={periodAnalytics?.food?.pic}
+                  timeline={periodAnalytics?.food?.timeline}
                   onEdit={() => setHasUnsavedChanges(true)}
                 />
               </div>
@@ -3385,11 +3385,11 @@ export function AnnualReportF4View() {
               <SectionAnalysisCard
                 title="Penyehatan Sarana & Prasarana Bangunan"
                 periodLabel={activePeriodMeta.label}
-                defaultAnalysis={periodAnalytics.sarpras.analysis}
-                defaultRecommendation={periodAnalytics.sarpras.recommendation}
-                defaultFollowUp={periodAnalytics.sarpras.followUp}
-                pic={periodAnalytics.sarpras.pic}
-                timeline={periodAnalytics.sarpras.timeline}
+                defaultAnalysis={periodAnalytics?.sarpras?.analysis || ''}
+                defaultRecommendation={periodAnalytics?.sarpras?.recommendation || ''}
+                defaultFollowUp={periodAnalytics?.sarpras?.followUp || ''}
+                pic={periodAnalytics?.sarpras?.pic}
+                timeline={periodAnalytics?.sarpras?.timeline}
                 onEdit={() => setHasUnsavedChanges(true)}
               />
             </div>
@@ -3553,11 +3553,11 @@ export function AnnualReportF4View() {
                 <SectionAnalysisCard
                   title="Pengelolaan Limbah Medis Padat & B3"
                   periodLabel={activePeriodMeta.label}
-                  defaultAnalysis={periodAnalytics.solidWaste.analysis}
-                  defaultRecommendation={periodAnalytics.solidWaste.recommendation}
-                  defaultFollowUp={periodAnalytics.solidWaste.followUp}
-                  pic={periodAnalytics.solidWaste.pic}
-                  timeline={periodAnalytics.solidWaste.timeline}
+                  defaultAnalysis={periodAnalytics?.solidWaste?.analysis || ''}
+                  defaultRecommendation={periodAnalytics?.solidWaste?.recommendation || ''}
+                  defaultFollowUp={periodAnalytics?.solidWaste?.followUp || ''}
+                  pic={periodAnalytics?.solidWaste?.pic}
+                  timeline={periodAnalytics?.solidWaste?.timeline}
                   onEdit={() => setHasUnsavedChanges(true)}
                 />
               </div>
@@ -4217,11 +4217,11 @@ export function AnnualReportF4View() {
                 <SectionAnalysisCard
                   title="Pengolahan Air Limbah (IPAL)"
                   periodLabel={activePeriodMeta.label}
-                  defaultAnalysis={periodAnalytics.wastewater.analysis}
-                  defaultRecommendation={periodAnalytics.wastewater.recommendation}
-                  defaultFollowUp={periodAnalytics.wastewater.followUp}
-                  pic={periodAnalytics.wastewater.pic}
-                  timeline={periodAnalytics.wastewater.timeline}
+                  defaultAnalysis={periodAnalytics?.wastewater?.analysis || ''}
+                  defaultRecommendation={periodAnalytics?.wastewater?.recommendation || ''}
+                  defaultFollowUp={periodAnalytics?.wastewater?.followUp || ''}
+                  pic={periodAnalytics?.wastewater?.pic}
+                  timeline={periodAnalytics?.wastewater?.timeline}
                   onEdit={() => setHasUnsavedChanges(true)}
                 />
               </div>
@@ -4463,11 +4463,11 @@ export function AnnualReportF4View() {
               <SectionAnalysisCard
                 title="Pengamanan Radiasi Rumah Sakit"
                 periodLabel={activePeriodMeta.label}
-                defaultAnalysis={periodAnalytics.radiation.analysis}
-                defaultRecommendation={periodAnalytics.radiation.recommendation}
-                defaultFollowUp={periodAnalytics.radiation.followUp}
-                pic={periodAnalytics.radiation.pic}
-                timeline={periodAnalytics.radiation.timeline}
+                defaultAnalysis={periodAnalytics?.radiation?.analysis || ''}
+                defaultRecommendation={periodAnalytics?.radiation?.recommendation || ''}
+                defaultFollowUp={periodAnalytics?.radiation?.followUp || ''}
+                pic={periodAnalytics?.radiation?.pic}
+                timeline={periodAnalytics?.radiation?.timeline}
                 onEdit={() => setHasUnsavedChanges(true)}
               />
             </div>
@@ -4730,11 +4730,11 @@ export function AnnualReportF4View() {
                 <SectionAnalysisCard
                   title="Pengendalian Vektor & Binatang Pembawa Penyakit"
                   periodLabel={activePeriodMeta.label}
-                  defaultAnalysis={periodAnalytics.vector.analysis}
-                  defaultRecommendation={periodAnalytics.vector.recommendation}
-                  defaultFollowUp={periodAnalytics.vector.followUp}
-                  pic={periodAnalytics.vector.pic}
-                  timeline={periodAnalytics.vector.timeline}
+                  defaultAnalysis={periodAnalytics?.vector?.analysis || ''}
+                  defaultRecommendation={periodAnalytics?.vector?.recommendation || ''}
+                  defaultFollowUp={periodAnalytics?.vector?.followUp || ''}
+                  pic={periodAnalytics?.vector?.pic}
+                  timeline={periodAnalytics?.vector?.timeline}
                   onEdit={() => setHasUnsavedChanges(true)}
                 />
               </div>
@@ -4962,11 +4962,11 @@ export function AnnualReportF4View() {
                 <SectionAnalysisCard
                   title="Penyelenggaraan Pengawasan Linen (Laundry)"
                   periodLabel={activePeriodMeta.label}
-                  defaultAnalysis={periodAnalytics.linen.analysis}
-                  defaultRecommendation={periodAnalytics.linen.recommendation}
-                  defaultFollowUp={periodAnalytics.linen.followUp}
-                  pic={periodAnalytics.linen.pic}
-                  timeline={periodAnalytics.linen.timeline}
+                  defaultAnalysis={periodAnalytics?.linen?.analysis || ''}
+                  defaultRecommendation={periodAnalytics?.linen?.recommendation || ''}
+                  defaultFollowUp={periodAnalytics?.linen?.followUp || ''}
+                  pic={periodAnalytics?.linen?.pic}
+                  timeline={periodAnalytics?.linen?.timeline}
                   onEdit={() => setHasUnsavedChanges(true)}
                 />
               </div>
@@ -5284,11 +5284,11 @@ export function AnnualReportF4View() {
                 <SectionAnalysisCard
                   title="Supervisi & Evaluasi Masalah Kesling"
                   periodLabel={activePeriodMeta.label}
-                  defaultAnalysis={periodAnalytics.supervision.analysis}
-                  defaultRecommendation={periodAnalytics.supervision.recommendation}
-                  defaultFollowUp={periodAnalytics.supervision.followUp}
-                  pic={periodAnalytics.supervision.pic}
-                  timeline={periodAnalytics.supervision.timeline}
+                  defaultAnalysis={periodAnalytics?.supervision?.analysis || periodAnalytics?.supervisi?.analysis || ''}
+                  defaultRecommendation={periodAnalytics?.supervision?.recommendation || periodAnalytics?.supervisi?.recommendation || ''}
+                  defaultFollowUp={periodAnalytics?.supervision?.followUp || periodAnalytics?.supervisi?.followUp || ''}
+                  pic={periodAnalytics?.supervision?.pic || periodAnalytics?.supervisi?.pic}
+                  timeline={periodAnalytics?.supervision?.timeline || periodAnalytics?.supervisi?.timeline}
                   onEdit={() => setHasUnsavedChanges(true)}
                 />
               </div>

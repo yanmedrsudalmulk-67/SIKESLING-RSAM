@@ -177,5 +177,6 @@ export function generateAllPeriodAnalytics(
     radiation,
     sarpras,
     supervisi,
+    supervision: supervisi,
   };
 }
