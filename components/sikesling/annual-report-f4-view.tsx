@@ -620,16 +620,16 @@ export function AnnualReportF4View() {
                 className="w-full h-full object-fill block"
               />
 
-              {/* Teks Format Resmi Dinamis pada Garis Biru (Tanpa Tulisan di Atas Kiri) */}
+              {/* Teks Format Resmi Dinamis pada Garis Biru (Proporsional & Presisi Sesuai Format Resmi) */}
               <div
-                className="absolute left-0 right-0 top-[66.1%] bottom-[12.9%] flex flex-col items-center justify-center px-6 sm:px-12 text-center select-text"
+                className="absolute left-0 right-0 top-[66.1%] bottom-[12.9%] flex flex-col items-center justify-center px-4 sm:px-8 text-center select-text"
                 style={{ pointerEvents: 'auto' }}
               >
                 <div
                   contentEditable={true}
                   suppressContentEditableWarning={true}
                   onInput={() => setHasUnsavedChanges(true)}
-                  className="text-white font-black text-[38px] sm:text-[44px] md:text-[48px] tracking-wider leading-tight uppercase outline-none focus:ring-2 focus:ring-amber-300/80 rounded px-3 drop-shadow-md"
+                  className="text-white font-black text-[22px] sm:text-[25px] md:text-[27px] tracking-wider leading-snug uppercase whitespace-nowrap outline-none focus:ring-2 focus:ring-amber-300/80 rounded px-2.5 drop-shadow-sm"
                 >
                   {coverLines.line1}
                 </div>
@@ -637,7 +637,7 @@ export function AnnualReportF4View() {
                   contentEditable={true}
                   suppressContentEditableWarning={true}
                   onInput={() => setHasUnsavedChanges(true)}
-                  className="text-white font-extrabold text-[28px] sm:text-[32px] md:text-[34px] tracking-wide leading-tight uppercase mt-3.5 sm:mt-4.5 md:mt-5 outline-none focus:ring-2 focus:ring-amber-300/80 rounded px-3 drop-shadow-md"
+                  className="text-white font-extrabold text-[17px] sm:text-[19.5px] md:text-[21px] tracking-wide leading-snug uppercase whitespace-nowrap mt-2.5 sm:mt-3 outline-none focus:ring-2 focus:ring-amber-300/80 rounded px-2.5 drop-shadow-sm"
                 >
                   {coverLines.line2}
                 </div>
@@ -645,7 +645,7 @@ export function AnnualReportF4View() {
                   contentEditable={true}
                   suppressContentEditableWarning={true}
                   onInput={() => setHasUnsavedChanges(true)}
-                  className="text-white font-extrabold text-[26px] sm:text-[30px] md:text-[32px] tracking-wider leading-tight uppercase mt-3.5 sm:mt-4.5 md:mt-5 outline-none focus:ring-2 focus:ring-amber-300/80 rounded px-3 drop-shadow-md"
+                  className="text-white font-extrabold text-[16px] sm:text-[18px] md:text-[19.5px] tracking-wider leading-snug uppercase whitespace-nowrap mt-2.5 sm:mt-3 outline-none focus:ring-2 focus:ring-amber-300/80 rounded px-2.5 drop-shadow-sm"
                 >
                   {coverLines.line3}
                 </div>
