@@ -3,7 +3,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { getAirQualityDataByYear, AIR_QUALITY_DATA_2026, AIR_QUALITY_DATA_2025 } from '@/lib/air-quality-data';
 import {
-  RefreshCw,
   Calendar,
   ChevronDown,
   Check,
@@ -123,17 +122,6 @@ export function AirQualityView() {
       type: 'info',
       title: `Memuat Data Kualitas Udara ${year}`,
       message: `Data hasil uji fisik kualitas udara tahun ${year} berhasil dimuat dari dataset resmi.`,
-    });
-  };
-
-  const handleReloadExcelData = () => {
-    const dataForYear = getAirQualityDataByYear(selectedYear);
-    void updateAirItems(dataForYear);
-    setHasUnsavedChanges(true);
-    pushToast({
-      type: 'success',
-      title: 'Data Asli Excel Berhasil Dimuat',
-      message: `Seluruh ruangan dan parameter fisik (Suhu, Kelembaban, Lux, Kebisingan) dari file Excel telah dimuat.`,
     });
   };
 
@@ -398,17 +386,6 @@ export function AirQualityView() {
         breadcrumbs={meta.breadcrumbs}
         actions={
           <div className="flex flex-wrap items-center gap-2.5">
-            {/* Tombol Muat Data Asli Excel */}
-            <button
-              type="button"
-              onClick={handleReloadExcelData}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-[#002147] bg-[#D2B48C] hover:bg-[#e4c9a8] border border-[#002147]/20 shadow-sm transition-all cursor-pointer"
-              title="Muat ulang seluruh 35+ ruangan dari data Excel resmi (Juni 2026 / Desember 2025)"
-            >
-              <RefreshCw className="w-3.5 h-3.5 text-[#002147]" />
-              <span>Muat Data Asli Excel</span>
-            </button>
-
             {/* Tombol Tambah Ruangan Baru */}
             <button
               type="button"
