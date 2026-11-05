@@ -64,7 +64,7 @@ export interface KeslingDocActivity {
 
 const STORAGE_KEY = 'sikresmi_supervisi_kesling_docs_v1';
 
-// 8 Kegiatan Kesehatan Lingkungan RSUD Al-Mulk (Persis Daftar Dokumentasi Halaman 37 & Lampiran Resmi)
+// 8 Kegiatan Kesehatan Lingkungan RSUD Al-Mulk (Bersih tanpa foto dummy)
 const DEFAULT_ACTIVITIES_DATA: KeslingDocActivity[] = [
   {
     id: 'air-bersih',
@@ -84,24 +84,7 @@ const DEFAULT_ACTIVITIES_DATA: KeslingDocActivity[] = [
       'Pengemasan sampel botol steril dalam coolbox berpendingin',
       'Pengiriman sampel air bersih ke Labkesda Kota Sukabumi',
     ],
-    photos: [
-      {
-        id: 'air-1',
-        url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><rect width="600" height="400" fill="%230f3b61"/><circle cx="300" cy="180" r="70" fill="%230284c7" opacity="0.4"/><path d="M300 130 C270 170 250 200 250 225 C250 255 272 275 300 275 C328 275 350 255 350 225 C350 200 330 170 300 130 Z" fill="%2338bdf8"/><text x="300" y="320" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="%23ffffff" text-anchor="middle">Sampling Air Kran Laboratorium</text><text x="300" y="348" font-family="Arial, sans-serif" font-size="13" fill="%2394a3b8" text-anchor="middle">Dokumentasi 1 - UOBK RSUD Al-Mulk Sukabumi</text></svg>',
-        caption: 'Pengambilan sampel air kran laboratorium mikrobiologi untuk uji baku mutu Total Coliform & E.Coli.',
-        date: '2026-03-12',
-        location: 'Kran Wastafel Laboratorium Sentral',
-        uploadedAt: '2026-03-12T09:30:00Z',
-      },
-      {
-        id: 'air-2',
-        url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><rect width="600" height="400" fill="%230c4a6e"/><rect x="220" y="140" width="160" height="120" rx="12" fill="%230369a1" opacity="0.5"/><path d="M260 230 L340 230 M300 160 L300 230" stroke="%2338bdf8" stroke-width="8" stroke-linecap="round"/><circle cx="300" cy="160" r="14" fill="%2338bdf8"/><text x="300" y="320" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="%23ffffff" text-anchor="middle">Pengukuran Suhu &amp; Kekeruhan Air Artesis</text><text x="300" y="348" font-family="Arial, sans-serif" font-size="13" fill="%2394a3b8" text-anchor="middle">Titik Sumur Bor Kedalaman 80m</text></svg>',
-        caption: 'Pengukuran suhu in-situ dan kekeruhan pada titik tandon distribusi sumur artesis.',
-        date: '2026-03-12',
-        location: 'Rumah Pompa Sumur Artesis',
-        uploadedAt: '2026-03-12T10:15:00Z',
-      },
-    ],
+    photos: [],
   },
   {
     id: 'kualitas-udara',
@@ -121,16 +104,7 @@ const DEFAULT_ACTIVITIES_DATA: KeslingDocActivity[] = [
       'Pengukuran pencahayaan di lorong rawat jalan dan loket pendaftaran',
       'Rekapitulasi pembacaan alat instrumen ukur lingkungan rumah sakit',
     ],
-    photos: [
-      {
-        id: 'udara-1',
-        url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><rect width="600" height="400" fill="%231e293b"/><circle cx="300" cy="180" r="60" fill="%23f59e0b" opacity="0.3"/><path d="M300 130 L300 230 M250 180 L350 180" stroke="%23fbbf24" stroke-width="6"/><circle cx="300" cy="180" r="30" fill="%23fbbf24"/><text x="300" y="320" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="%23ffffff" text-anchor="middle">Pengukuran Lux Meter Meja Operasi</text><text x="300" y="348" font-family="Arial, sans-serif" font-size="13" fill="%2394a3b8" text-anchor="middle">Instalasi Bedah Sentral (IBS)</text></svg>',
-        caption: 'Pengukuran intensitas pencahayaan di meja operasi IBS menggunakan Luxmeter digital (capaian 100% standar).',
-        date: '2026-06-18',
-        location: 'Kamar Bedah IBS Utama',
-        uploadedAt: '2026-06-18T11:00:00Z',
-      },
-    ],
+    photos: [],
   },
   {
     id: 'limbah-medis',
@@ -150,16 +124,7 @@ const DEFAULT_ACTIVITIES_DATA: KeslingDocActivity[] = [
       'Desinfeksi area lantai TPS B3 pasca pengangkutan berkala',
       'Pencatatan logbook limbah B3 dan bukti serah terima resmi',
     ],
-    photos: [
-      {
-        id: 'limbah-1',
-        url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><rect width="600" height="400" fill="%23451a03"/><rect x="220" y="130" width="160" height="130" rx="8" fill="%23b45309" opacity="0.5"/><path d="M260 210 L340 210 L320 160 L280 160 Z" fill="%23f59e0b"/><text x="300" y="320" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="%23ffffff" text-anchor="middle">Penimbangan &amp; Serah Terima Limbah B3</text><text x="300" y="348" font-family="Arial, sans-serif" font-size="13" fill="%23fde68a" text-anchor="middle">Armada Transporter Berizin KLHK</text></svg>',
-        caption: 'Penimbangan limbah medis padat dan serah terima dokumen Festronik bersama transporter berizin.',
-        date: '2026-04-08',
-        location: 'Depan TPS B3 RSUD Al-Mulk',
-        uploadedAt: '2026-04-08T14:20:00Z',
-      },
-    ],
+    photos: [],
   },
   {
     id: 'air-limbah-ipal',
@@ -179,16 +144,7 @@ const DEFAULT_ACTIVITIES_DATA: KeslingDocActivity[] = [
       'Pemantauan kolam bioindikator ikan air tawar di outlet IPAL',
       'Pengawetan dan pelabelan botol sampel uji BOD, COD, & TSS',
     ],
-    photos: [
-      {
-        id: 'ipal-1',
-        url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><rect width="600" height="400" fill="%23064e3b"/><rect x="230" y="140" width="140" height="110" rx="10" fill="%23047857" opacity="0.6"/><path d="M250 200 Q280 180 300 200 T350 200" stroke="%2334d399" stroke-width="6" fill="none"/><circle cx="300" cy="165" r="16" fill="%236ee7b7"/><text x="300" y="320" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="%23ffffff" text-anchor="middle">Sampling Outlet &amp; Kolam Bioindikator IPAL</text><text x="300" y="348" font-family="Arial, sans-serif" font-size="13" fill="%23a7f3d0" text-anchor="middle">Kepatuhan 100% Baku Mutu Efluen Permenkes No. 7/2019</text></svg>',
-        caption: 'Pengambilan sampel effluent air limbah pada bak kontrol akhir dan pemeriksaan kesehatan ikan bioindikator.',
-        date: '2026-05-15',
-        location: 'Bak Outlet IPAL & Kolam Indikator',
-        uploadedAt: '2026-05-15T10:00:00Z',
-      },
-    ],
+    photos: [],
   },
   {
     id: 'proteksi-radiasi',
@@ -208,16 +164,7 @@ const DEFAULT_ACTIVITIES_DATA: KeslingDocActivity[] = [
       'Pemantauan uji kebocoran radiasi dinding penahan timbal',
       'Dokumentasi sosialisasi SOP keselamatan radiasi bagi staf medis',
     ],
-    photos: [
-      {
-        id: 'radiasi-1',
-        url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><rect width="600" height="400" fill="%233b0764"/><circle cx="300" cy="180" r="60" fill="%239333ea" opacity="0.4"/><polygon points="300,140 330,220 270,220" fill="%23c084fc"/><circle cx="300" cy="180" r="14" fill="%23ffffff"/><text x="300" y="320" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="%23ffffff" text-anchor="middle">Inspeksi Apron Pb &amp; Tanda Bahaya Radiasi</text><text x="300" y="348" font-family="Arial, sans-serif" font-size="13" fill="%23e9d5ff" text-anchor="middle">Standar Keselamatan Fisika Medik BAPETEN</text></svg>',
-        caption: 'Pemeriksaan integritas pelindung apron timbal (Pb) dan lampu indikator peringatan bahaya radiasi aktif.',
-        date: '2026-07-22',
-        location: 'Ruang Pemeriksaan Rontgen / Radiologi',
-        uploadedAt: '2026-07-22T09:45:00Z',
-      },
-    ],
+    photos: [],
   },
   {
     id: 'pangan-siap-saji',
@@ -237,16 +184,7 @@ const DEFAULT_ACTIVITIES_DATA: KeslingDocActivity[] = [
       'Pemeriksaan sampel makanan siap saji sebelum distribusi bangsal',
       'Peninjauan sertifikat laik higiene sanitasi jasaboga rekanan',
     ],
-    photos: [
-      {
-        id: 'pangan-1',
-        url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><rect width="600" height="400" fill="%23713f12"/><circle cx="300" cy="180" r="60" fill="%23ca8a04" opacity="0.4"/><path d="M260 170 L260 210 M280 170 L280 210 M340 170 L340 220" stroke="%23facc15" stroke-width="5" stroke-linecap="round"/><circle cx="300" cy="190" r="35" fill="none" stroke="%23facc15" stroke-width="4"/><text x="300" y="320" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="%23ffffff" text-anchor="middle">Inspeksi Higiene Sanitasi Dapur Gizi</text><text x="300" y="348" font-family="Arial, sans-serif" font-size="13" fill="%23fef08a" text-anchor="middle">Pengawasan Rantai Dingin &amp; APD Pramusaji</text></svg>',
-        caption: 'Pemeriksaan kebersihan meja penyiapan makanan dan kelengkapan APD pramusaji di instalasi dapur gizi.',
-        date: '2026-08-14',
-        location: 'Instalasi Gizi & Pantry Sentral',
-        uploadedAt: '2026-08-14T11:30:00Z',
-      },
-    ],
+    photos: [],
   },
   {
     id: 'linen-laundry',
@@ -266,16 +204,7 @@ const DEFAULT_ACTIVITIES_DATA: KeslingDocActivity[] = [
       'Pelipatan, pengepakan plastik kedap, dan penyimpanan lemari bersih',
       'Pendistribusian linen bersih ke unit rawat inap dengan troli tertutup',
     ],
-    photos: [
-      {
-        id: 'linen-1',
-        url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><rect width="600" height="400" fill="%23134e4a"/><rect x="230" y="140" width="140" height="110" rx="8" fill="%230d9488" opacity="0.5"/><path d="M260 160 L300 190 L340 160" stroke="%235eead4" stroke-width="6" stroke-linecap="round"/><line x1="240" y1="210" x2="360" y2="210" stroke="%235eead4" stroke-width="4"/><text x="300" y="320" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="%23ffffff" text-anchor="middle">Manajemen Pemilahan Linen &amp; Troli Tertutup</text><text x="300" y="348" font-family="Arial, sans-serif" font-size="13" fill="%2399f6e4" text-anchor="middle">Pemisahan Alur Infeksius dan Non-Infeksius</text></svg>',
-        caption: 'Pemisahan jalur distribusi troli linen bersih tertutup dan troli linen kotor bersekat sesuai PPI.',
-        date: '2026-09-05',
-        location: 'Ruang Dekontaminasi & Penyimpanan Linen',
-        uploadedAt: '2026-09-05T13:10:00Z',
-      },
-    ],
+    photos: [],
   },
   {
     id: 'vektor-binatang',
@@ -295,16 +224,7 @@ const DEFAULT_ACTIVITIES_DATA: KeslingDocActivity[] = [
       'Aplikasi pengasapan dingin (cold fogging) di area vegetasi luar gedung',
       'Pencatatan indeks kepadatan lalat dan jentik nyamuk (ABJ) bulanan',
     ],
-    photos: [
-      {
-        id: 'vektor-1',
-        url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><rect width="600" height="400" fill="%231e1b4b"/><circle cx="300" cy="180" r="50" fill="%234338ca" opacity="0.4"/><ellipse cx="300" cy="185" rx="30" ry="40" fill="%23818cf8"/><circle cx="300" cy="145" r="16" fill="%23818cf8"/><line x1="255" y1="170" x2="280" y2="185" stroke="%23c7d2fe" stroke-width="4"/><line x1="345" y1="170" x2="320" y2="185" stroke="%23c7d2fe" stroke-width="4"/><text x="300" y="320" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="%23ffffff" text-anchor="middle">Monitoring Perangkap Vektor &amp; Larvasidasi</text><text x="300" y="348" font-family="Arial, sans-serif" font-size="13" fill="%23c7d2fe" text-anchor="middle">20 Unit Ruangan Bebas Vektor 100%</text></svg>',
-        caption: 'Pemeriksaan rutin fly catcher dan rodent baiting station di area penunjang medis luar gedung.',
-        date: '2026-10-10',
-        location: 'Perimeter Dapur & Selasar Belakang RSUD',
-        uploadedAt: '2026-10-10T08:30:00Z',
-      },
-    ],
+    photos: [],
   },
 ];
 
@@ -375,6 +295,27 @@ async function compressImageFile(file: File): Promise<string> {
   });
 }
 
+// Bersihkan foto dummy (SVG placeholder), pertahankan foto asli yang diunggah pengguna
+function cleanDummyPhotos(list: KeslingDocActivity[]): KeslingDocActivity[] {
+  return list.map((act) => ({
+    ...act,
+    photos: (act.photos || []).filter(
+      (p) =>
+        p &&
+        p.url &&
+        !p.url.startsWith('data:image/svg+xml') &&
+        !p.id.startsWith('air-') &&
+        !p.id.startsWith('udara-') &&
+        !p.id.startsWith('limbah-') &&
+        !p.id.startsWith('ipal-') &&
+        !p.id.startsWith('radiasi-') &&
+        !p.id.startsWith('pangan-') &&
+        !p.id.startsWith('linen-') &&
+        !p.id.startsWith('vektor-')
+    ),
+  }));
+}
+
 export function SupervisiKeslingView() {
   const { pushToast } = useApp();
   const [activities, setActivities] = useState<KeslingDocActivity[]>(DEFAULT_ACTIVITIES_DATA);
@@ -401,14 +342,17 @@ export function SupervisiKeslingView() {
     docNumber: number;
   } | null>(null);
 
-  // Load from localStorage on mount
+  // Load from localStorage on mount & bersihkan seluruh foto dummy secara otomatis
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length === 8) {
-          setActivities(parsed);
+          const cleaned = cleanDummyPhotos(parsed);
+          setActivities(cleaned);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned));
+          return;
         }
       }
     } catch (e) {
@@ -441,7 +385,7 @@ export function SupervisiKeslingView() {
     setExpandedCards(next);
   };
 
-  // Upload photo handler (up to 6 photos max)
+  // Upload new photo(s) handler (up to 6 photos max per card)
   const handleUploadPhotos = async (activityId: string, files: FileList | null) => {
     if (!files || files.length === 0) return;
 
@@ -465,8 +409,8 @@ export function SupervisiKeslingView() {
     try {
       pushToast({
         type: 'info',
-        title: 'Mengompresi Foto',
-        message: `Memproses ${filesToUpload.length} foto dokumentasi dengan resolusi optimal...`,
+        title: 'Memproses Foto',
+        message: `Mengompresi dan mengunggah ${filesToUpload.length} foto dokumentasi...`,
       });
 
       const newPhotos: KeslingDocPhoto[] = [];
@@ -481,7 +425,7 @@ export function SupervisiKeslingView() {
           `Dokumentasi ${targetActivity.title} (Foto ${nextIdx})`;
 
         newPhotos.push({
-          id: `doc-${activityId}-${Date.now()}-${i}`,
+          id: `real-doc-${activityId}-${Date.now()}-${i}`,
           url: compressedUrl,
           caption: suggested,
           date: today,
@@ -512,7 +456,59 @@ export function SupervisiKeslingView() {
       pushToast({
         type: 'error',
         title: 'Gagal Mengunggah Foto',
-        message: 'Terjadi kesalahan saat memproses file gambar. Pastikan file valid.',
+        message: 'Terjadi kesalahan saat memproses gambar. Pastikan file gambar valid.',
+      });
+    }
+  };
+
+  // Replace existing photo handler ("Ganti Foto")
+  const handleReplacePhoto = async (
+    activityId: string,
+    photoId: string,
+    file: File | null
+  ) => {
+    if (!file) return;
+
+    try {
+      pushToast({
+        type: 'info',
+        title: 'Mengganti Foto',
+        message: 'Memproses dan mengompresi gambar pengganti...',
+      });
+
+      const compressedUrl = await compressImageFile(file);
+
+      const updated = activities.map((act) => {
+        if (act.id === activityId) {
+          return {
+            ...act,
+            photos: act.photos.map((p) =>
+              p.id === photoId
+                ? {
+                    ...p,
+                    url: compressedUrl,
+                    uploadedAt: new Date().toISOString(),
+                  }
+                : p
+            ),
+          };
+        }
+        return act;
+      });
+
+      setActivities(updated);
+      saveToStorage(updated);
+
+      pushToast({
+        type: 'success',
+        title: 'Foto Berhasil Diganti',
+        message: 'Foto dokumentasi telah berhasil diperbarui.',
+      });
+    } catch (err) {
+      pushToast({
+        type: 'error',
+        title: 'Gagal Mengganti Foto',
+        message: 'Terjadi kesalahan saat memproses gambar pengganti.',
       });
     }
   };
@@ -560,15 +556,15 @@ export function SupervisiKeslingView() {
     saveToStorage(updated);
   };
 
-  // Reset to default
+  // Reset to default (empty photos)
   const handleResetData = () => {
-    if (confirm('Kembalikan 8 Card Dokumentasi ke format awal standar RSUD Al-Mulk?')) {
+    if (confirm('Kosongkan seluruh foto pada 8 Card Dokumentasi dan mulai dari awal?')) {
       setActivities(DEFAULT_ACTIVITIES_DATA);
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_ACTIVITIES_DATA));
       pushToast({
         type: 'success',
-        title: 'Data Direset',
-        message: '8 Card Dokumentasi telah dikembalikan ke format awal standar.',
+        title: 'Data Dikosongkan',
+        message: 'Seluruh foto pada 8 Card Dokumentasi telah dibersihkan.',
       });
     }
   };
@@ -606,7 +602,7 @@ export function SupervisiKeslingView() {
 
   return (
     <PageContainer>
-      {/* Page Header */}
+      {/* Page Header dengan Status Foto Terunggah */}
       <PageHeader
         title="Supervisi Kesling — Dokumentasi 8 Kegiatan"
         description="Pencatatan dan arsip foto dokumentasi untuk 8 kegiatan kesehatan lingkungan utama RSUD Al-Mulk Sukabumi (maksimal 6 foto per modul kegiatan)."
@@ -618,13 +614,20 @@ export function SupervisiKeslingView() {
         ]}
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            {/* Pill Ringkas Jumlah Foto Terunggah */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-[#001835] border border-slate-200 dark:border-slate-700 text-[#002147] dark:text-[#D2B48C] text-xs font-bold shadow-2xs">
+              <Camera className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>{totalPhotos} / {maxTotalPhotos} Foto</span>
+              <span className="text-[10px] text-slate-500 font-semibold">({completionPct}%)</span>
+            </div>
+
             <button
               type="button"
               onClick={handleManualSave}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-[#002147] text-white hover:bg-[#001835] text-xs font-semibold shadow-sm transition-all active:scale-95"
             >
               <Save className="w-4 h-4 text-[#D2B48C]" />
-              <span>Simpan Perubahan</span>
+              <span>Simpan</span>
             </button>
             <button
               type="button"
@@ -637,7 +640,7 @@ export function SupervisiKeslingView() {
             <button
               type="button"
               onClick={handleResetData}
-              title="Reset ke Template Awal"
+              title="Kosongkan Semua Foto"
               className="p-1.5 sm:p-2 rounded-xl bg-white dark:bg-[#001835] border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-rose-600 transition-colors"
             >
               <RefreshCw className="w-4 h-4" />
@@ -646,69 +649,8 @@ export function SupervisiKeslingView() {
         }
       />
 
-      {/* Top Banner KPI & Quick Jump */}
-      <div className="rounded-2xl bg-gradient-to-br from-[#002147] via-[#002b5c] to-[#013875] text-white p-4 sm:p-5 shadow-lg border border-[#D2B48C]/40 mb-5 relative overflow-hidden">
-        <div className="absolute -right-8 -bottom-8 w-40 h-40 rounded-full bg-[#D2B48C]/10 blur-2xl pointer-events-none" />
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full bg-[#D2B48C]/25 text-[#D2B48C] text-[11px] font-bold uppercase tracking-wider border border-[#D2B48C]/40">
-                Dokumentasi Resmi Kesling
-              </span>
-              <span className="text-xs text-slate-200">Tahun 2026 (Januari – Desember)</span>
-            </div>
-            <h2 className="text-lg sm:text-xl font-extrabold text-white mt-1">
-              8 Modul Dokumentasi Kegiatan Kesehatan Lingkungan
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-200 mt-0.5 max-w-2xl">
-              Setiap modul mendukung input maksimal 6 foto beresolusi tinggi dengan kompresi otomatis, lengkap dengan tanggal kegiatan, lokasi, dan keterangan resmi untuk lampiran laporan.
-            </p>
-          </div>
-
-          {/* KPI Badge */}
-          <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-3 rounded-xl border border-white/20 shrink-0">
-            <div className="w-10 h-10 rounded-lg bg-[#D2B48C] text-[#002147] flex items-center justify-center font-black text-base shadow-sm">
-              <Camera className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-[11px] text-slate-200 font-medium">Total Foto Terunggah</div>
-              <div className="text-lg sm:text-xl font-black text-white">
-                {totalPhotos} <span className="text-xs text-[#D2B48C] font-semibold">/ {maxTotalPhotos} Foto ({completionPct}%)</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Jump Bar to 8 Activities */}
-        <div className="mt-4 pt-3 border-t border-white/15 flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-          <span className="text-[11px] font-bold text-[#D2B48C] uppercase tracking-wider shrink-0 mr-1">
-            Pintas Kartu:
-          </span>
-          {activities.map((act) => {
-            const count = act.photos.length;
-            const isFull = count === 6;
-            return (
-              <a
-                key={act.id}
-                href={`#card-${act.id}`}
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors shrink-0 ${
-                  isFull
-                    ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/50 hover:bg-emerald-500/40'
-                    : count > 0
-                    ? 'bg-white/15 text-white border border-white/25 hover:bg-white/25'
-                    : 'bg-white/5 text-slate-300 border border-white/10 hover:bg-white/15'
-                }`}
-              >
-                <span>Dok {act.docNumber}</span>
-                <span className="text-[10px] opacity-80">({count}/6)</span>
-              </a>
-            );
-          })}
-        </div>
-      </div>
-
       {/* Navigation Mode Tabs: Card Input vs Table Preview */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-5">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-5 mt-2">
         <div className="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-[#001835] border border-slate-200 dark:border-slate-800 shadow-2xs">
           <button
             type="button"
@@ -877,7 +819,7 @@ export function SupervisiKeslingView() {
                             className="group rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-[#002147]/30 p-2.5 hover:shadow-md transition-all flex flex-col justify-between"
                           >
                             {/* Photo Thumbnail */}
-                            <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-slate-900 border border-slate-300/80 dark:border-slate-700 mb-2.5 shadow-2xs">
+                            <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-slate-900 border border-slate-300/80 dark:border-slate-700 mb-2 shadow-2xs">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
                                 src={photo.url}
@@ -890,7 +832,7 @@ export function SupervisiKeslingView() {
                                 Foto #{idx + 1}
                               </span>
 
-                              {/* Action Overlay */}
+                              {/* Action Overlay: Zoom & Quick Delete */}
                               <div className="absolute top-2 right-2 flex items-center gap-1">
                                 <button
                                   type="button"
@@ -920,8 +862,61 @@ export function SupervisiKeslingView() {
                               </div>
                             </div>
 
+                            {/* Tombol Aksi: Ganti Foto (Kamera / Galeri) & Hapus */}
+                            <div className="flex items-center justify-between gap-1 pb-2 border-b border-slate-200 dark:border-slate-700">
+                              {/* Ganti via Kamera HP */}
+                              <label
+                                title="Ganti foto ini menggunakan kamera HP langsung"
+                                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-[10.5px] font-bold cursor-pointer hover:bg-emerald-100 transition-colors shadow-2xs"
+                              >
+                                <Camera className="w-3.5 h-3.5" />
+                                <span>Kamera</span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  capture="environment"
+                                  onChange={(e) => {
+                                    const f = e.target.files?.[0];
+                                    if (f) handleReplacePhoto(act.id, photo.id, f);
+                                    e.target.value = '';
+                                  }}
+                                  className="hidden"
+                                />
+                              </label>
+
+                              {/* Ganti via Galeri / File */}
+                              <label
+                                title="Ganti foto ini dari file / galeri foto"
+                                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-[10.5px] font-semibold cursor-pointer hover:bg-slate-200 transition-colors shadow-2xs"
+                              >
+                                <RefreshCw className="w-3 h-3 text-[#D2B48C]" />
+                                <span>Galeri</span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => {
+                                    const f = e.target.files?.[0];
+                                    if (f) handleReplacePhoto(act.id, photo.id, f);
+                                    e.target.value = '';
+                                  }}
+                                  className="hidden"
+                                />
+                              </label>
+
+                              {/* Tombol Hapus */}
+                              <button
+                                type="button"
+                                onClick={() => handleDeletePhoto(act.id, photo.id)}
+                                title="Hapus foto ini"
+                                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 text-[10.5px] font-semibold hover:bg-rose-100 transition-colors shadow-2xs"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>Hapus</span>
+                              </button>
+                            </div>
+
                             {/* Photo Metadata Form */}
-                            <div className="space-y-2 text-xs flex-1 flex flex-col justify-between">
+                            <div className="space-y-2 text-xs flex-1 flex flex-col justify-between pt-2">
                               <div>
                                 <label className="block text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-0.5">
                                   Keterangan / Deskripsi Foto:
@@ -974,27 +969,57 @@ export function SupervisiKeslingView() {
 
                         {/* Upload Dropzone Slot (If photoCount < 6) */}
                         {!isFull && (
-                          <div className="relative rounded-xl border-2 border-dashed border-[#D2B48C]/70 dark:border-[#D2B48C]/40 bg-[#F7F1E7]/40 dark:bg-[#002147]/20 p-4 hover:bg-[#F7F1E7]/70 dark:hover:bg-[#002147]/40 transition-colors flex flex-col items-center justify-center text-center group cursor-pointer min-h-[220px]">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              multiple
-                              onChange={(e) => handleUploadPhotos(act.id, e.target.files)}
-                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                            />
-                            <div className="w-12 h-12 rounded-full bg-[#002147] text-[#D2B48C] flex items-center justify-center mb-2 shadow-sm group-hover:scale-110 transition-transform">
-                              <UploadCloud className="w-6 h-6" />
+                          <div className="rounded-xl border-2 border-dashed border-[#D2B48C]/70 dark:border-[#D2B48C]/40 bg-[#F7F1E7]/40 dark:bg-[#002147]/20 p-4 hover:bg-[#F7F1E7]/70 dark:hover:bg-[#002147]/40 transition-colors flex flex-col items-center justify-center text-center min-h-[220px]">
+                            <div className="w-11 h-11 rounded-full bg-[#002147] text-[#D2B48C] flex items-center justify-center mb-2 shadow-sm">
+                              <Camera className="w-5 h-5" />
                             </div>
                             <h4 className="text-xs sm:text-sm font-bold text-[#002147] dark:text-white">
                               Tambah Foto Dokumentasi
                             </h4>
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 max-w-[200px]">
-                              Klik atau seret file gambar ({remaining} slot tersisa dari maks. 6)
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 mb-3 max-w-[200px]">
+                              Tersedia {remaining} slot foto lagi (maksimal 6 foto per modul)
                             </p>
-                            <span className="mt-2.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#002147] text-[#D2B48C] text-[10px] font-bold shadow-2xs">
-                              <Plus className="w-3 h-3" />
-                              Pilih File Foto
-                            </span>
+
+                            {/* Dua Tombol Aksi: Kamera Langsung & Galeri */}
+                            <div className="flex flex-col sm:flex-row items-center gap-2 w-full max-w-[260px]">
+                              {/* 1. Ambil Foto Kamera (Langsung buka kamera di HP) */}
+                              <label
+                                title="Buka kamera HP langsung untuk memotret kegiatan"
+                                className="w-full sm:flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold cursor-pointer shadow-sm transition-all active:scale-95"
+                              >
+                                <Camera className="w-4 h-4" />
+                                <span>Kamera HP</span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  capture="environment"
+                                  onChange={(e) => {
+                                    handleUploadPhotos(act.id, e.target.files);
+                                    e.target.value = '';
+                                  }}
+                                  className="hidden"
+                                />
+                              </label>
+
+                              {/* 2. Pilih dari Galeri / File Explorer */}
+                              <label
+                                title="Pilih foto yang sudah tersimpan di galeri atau berkas"
+                                className="w-full sm:flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-[#002147] hover:bg-[#001835] text-white text-xs font-bold cursor-pointer shadow-sm transition-all active:scale-95"
+                              >
+                                <UploadCloud className="w-4 h-4 text-[#D2B48C]" />
+                                <span>Pilih Galeri</span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  multiple
+                                  onChange={(e) => {
+                                    handleUploadPhotos(act.id, e.target.files);
+                                    e.target.value = '';
+                                  }}
+                                  className="hidden"
+                                />
+                              </label>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -1009,7 +1034,7 @@ export function SupervisiKeslingView() {
                             </span>
                           </div>
                           <span className="text-[11px] opacity-75 hidden sm:inline">
-                            Hapus salah satu foto jika ingin mengganti dengan dokumentasi baru.
+                            Gunakan tombol &ldquo;Ganti&rdquo; atau &ldquo;Hapus&rdquo; pada foto di atas untuk memperbarui.
                           </span>
                         </div>
                       )}
@@ -1058,7 +1083,7 @@ export function SupervisiKeslingView() {
             </div>
           </div>
 
-          {/* Quick Table of Contents (Persis Gambar 2 Pengguna) */}
+          {/* Quick Table of Contents */}
           <div className="p-4 sm:p-5 rounded-xl bg-[#F7F1E7]/70 dark:bg-[#002147]/40 border border-[#D2B48C]/50 space-y-2 mb-6">
             <h4 className="text-xs font-extrabold uppercase text-[#002147] dark:text-[#D2B48C] tracking-wider mb-2">
               Daftar Dokumentasi Terjadwal:
