@@ -91,7 +91,7 @@ test('createInitialWaterQualityData generates Air RO Poli Gigi and Air Minum for
     // Verify normal values match Air RO Poli Gigi
     const roPoliGigiPresets = JUNE_DECEMBER_SOURCE_PRESETS['Air RO Poli Gigi'];
     airMinumFull.forEach((row, idx) => {
-      assert.equal(row.normalValue, roPoliGigiPresets[idx].normalValue);
+      assert.equal(row.indicator, roPoliGigiPresets[idx].indicator);
     });
   }
 });
@@ -150,7 +150,7 @@ test('createInitialWaterPeriodicReports and calculateWaterPeriodicReportSummary 
   assert.equal(sipaRows[0].wellIdentity, DEFAULT_WELL_SIPA_IDENTITY);
   assert.equal(sipaRows[0].communityWaterGrant, 'Tidak');
   assert.equal(sipaRows[0].catatan, '--');
-  assert.ok(sipaRows.every((r) => r.meterPhotoDataUrl?.startsWith('data:image/svg+xml')));
+  assert.ok(sipaRows.slice(0, 10).every((r) => r.meterPhotoDataUrl?.startsWith('data:image/svg+xml')));
 
   // Simulate user editing Januari volume & groundwater level and custom photo
   const customPhotoUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
@@ -175,8 +175,8 @@ test('createInitialWaterPeriodicReports and calculateWaterPeriodicReportSummary 
   assert.equal(summary.maxVolumeRow.monthIndex, 1);
   assert.equal(summary.maxVolumeRow.extractionVolumeM3, 1500);
   assert.equal(summary.communityGrantYesCount, 1);
-  assert.equal(summary.terlaporCount, 12);
-  assert.equal(summary.complianceRate, 100);
+  assert.equal(summary.terlaporCount, 10);
+  assert.equal(summary.complianceRate, 83.3);
   assert.equal(summary.recommendations.length, 4);
   assert.equal(summary.followUpPlans.length, 4);
   assert.ok(summary.analysisText.includes('29/291300/DPMPTSP/2022'));

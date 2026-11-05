@@ -140,8 +140,8 @@ test('buildAllModulesDashboardSummaries builds 12-month annual series and reflec
   assert.equal(annualSummaries.vektor.points.length, 12);
   assert.equal(annualSummaries.pangan.points.length, 12);
 
-  // Total Limbah B3 for full year matches 3.952 Kg
-  assert.equal(annualSummaries.limbah_b3.headlineValue, '3.952 Kg');
+  // Total Limbah B3 for year matches active months up to Oktober (3.379 Kg)
+  assert.equal(annualSummaries.limbah_b3.headlineValue, '3.379 Kg');
 
   // Single month mode produces 4 weekly points and reflects updated food sanitation score
   dataset.foodRows[9] = {

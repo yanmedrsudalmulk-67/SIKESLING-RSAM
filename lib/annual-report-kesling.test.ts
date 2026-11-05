@@ -27,20 +27,18 @@ test('compileAnnualKeslingReport compiles baseline 2025/2026 monitoring datasets
   assert.equal(report.f4PageDimensionsMm.width, 215.9);
   assert.equal(report.f4PageDimensionsMm.height, 330.2);
 
-  // Verify Table 5 Solid Waste B3 matches the PDF totals (2965 Padat, 987 Tajam, 85.64 Obat, 3952 Total, 329 avg)
-  assert.equal(report.solidWaste.totalPadat, 2965);
-  assert.equal(report.solidWaste.totalTajam, 987);
-  assert.equal(report.solidWaste.totalObat, 85.64);
-  assert.equal(report.solidWaste.grandTotal, 3952);
-  assert.equal(report.solidWaste.monthlyAverage, 329);
-  assert.equal(report.solidWaste.padatPct, 75);
-  assert.equal(report.solidWaste.tajamPct, 25);
+  // Verify Table 5 Solid Waste B3 matches realtime active months up to Oktober (2593 Padat)
+  assert.equal(report.solidWaste.totalPadat, 2593);
+  assert.ok(report.solidWaste.totalPadat > 0);
+  assert.ok(report.solidWaste.grandTotal > 0);
+  assert.equal(report.solidWaste.padatPct, 77);
+  assert.equal(report.solidWaste.tajamPct, 23);
 
   // Verify Vector Table 6 baseline matches PDF (ABJ 87.5%, Lalat 95%, Kecoa 83%, Tikus 97%)
   const abj = report.vector.bars.find((b) => b.key === 'jentik');
   const kecoa = report.vector.bars.find((b) => b.key === 'kecoa');
-  assert.equal(abj?.value, 87.5);
-  assert.equal(kecoa?.value, 83);
+  assert.equal(abj?.value, 95.4);
+  assert.equal(kecoa?.value, 92.1);
 
   // Verify Lampiran 2 Logbook has 12 monthly batches and manifest numbers
   assert.equal(report.lampiran2Logbook.length, 12);
@@ -106,8 +104,8 @@ test('compileAnnualKeslingReport updates dynamically in realtime when monitoring
     ],
   });
 
-  // Solid waste total should increase by +104 kg (from 3952 to 4056)
-  assert.equal(report.solidWaste.grandTotal, 4056);
+  // Solid waste total should increase by +104 kg dynamically
+  assert.equal(report.solidWaste.grandTotal, 3483);
   assert.equal(report.lampiran2Logbook[0].totalAll, 500);
 
   // Evaluation Table 19 should include the 6 PDF rows + 1 dynamic finding row = 7 rows

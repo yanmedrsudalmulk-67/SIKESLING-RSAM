@@ -53,6 +53,23 @@ export type ReportSectionFilter =
   | 'LAMPIRAN_3_6_CHECKLIST'
   | 'DOKUMENTASI';
 
+export type ReportPeriodType = 'TAHUNAN' | 'BULANAN' | 'TRIWULAN' | 'SEMESTER';
+
+const MONTH_LONG_NAMES = [
+  'JANUARI',
+  'FEBRUARI',
+  'MARET',
+  'APRIL',
+  'MEI',
+  'JUNI',
+  'JULI',
+  'AGUSTUS',
+  'SEPTEMBER',
+  'OKTOBER',
+  'NOVEMBER',
+  'DESEMBER',
+];
+
 const MONTH_SHORT_HEADERS = [
   'JANUARI',
   'FEBRUARI',
@@ -85,6 +102,44 @@ export function AnnualReportF4View() {
   } = useApp();
 
   const [reportYear, setReportYear] = useState<number>(2026);
+  const [reportPeriodType, setReportPeriodType] = useState<ReportPeriodType>('TAHUNAN');
+  const [reportMonth, setReportMonth] = useState<number>(10); // Default Oktober (1-12)
+  const [reportTriwulan, setReportTriwulan] = useState<number>(1);
+  const [reportSemester, setReportSemester] = useState<number>(1);
+
+  // Dynamic Cover Lines matching official RSUD Al-Mulk format
+  const coverLines = useMemo(() => {
+    const line2 = 'UOBK RSUD AL-MULK KOTA SUKABUMI';
+    if (reportPeriodType === 'BULANAN') {
+      const monthName = MONTH_LONG_NAMES[reportMonth - 1] || 'OKTOBER';
+      return {
+        line1: 'LAPORAN BULANAN UNIT KESLING',
+        line2,
+        line3: `PERIODE BULAN ${monthName} ${reportYear}`,
+      };
+    }
+    if (reportPeriodType === 'TRIWULAN') {
+      const romanTriwulan = ['I', 'II', 'III', 'IV'][reportTriwulan - 1] || 'I';
+      return {
+        line1: 'LAPORAN TRIWULAN UNIT KESLING',
+        line2,
+        line3: `PERIODE TRIWULAN ${romanTriwulan} TAHUN ${reportYear}`,
+      };
+    }
+    if (reportPeriodType === 'SEMESTER') {
+      return {
+        line1: 'LAPORAN SEMESTER UNIT KESLING',
+        line2,
+        line3: `PERIODE SEMESTER ${reportSemester} TAHUN ${reportYear}`,
+      };
+    }
+    // Default: TAHUNAN
+    return {
+      line1: 'LAPORAN TAHUNAN UNIT KESLING',
+      line2,
+      line3: `PERIODE TAHUN ${reportYear}`,
+    };
+  }, [reportPeriodType, reportMonth, reportTriwulan, reportSemester, reportYear]);
   const [activeSection, setActiveSection] = useState<ReportSectionFilter>('ALL');
   const [jumpToPage, setJumpToPage] = useState<string>('ALL');
   const [isEditableMode, setIsEditableMode] = useState<boolean>(false);
@@ -307,7 +362,15 @@ export function AnnualReportF4View() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `LAPORAN_TAHUNAN_KESLING_RSUD_AL_MULK_${reportYear}_HASIL_EDIT_F4.doc`;
+    const filePeriodTag =
+      reportPeriodType === 'BULANAN'
+        ? `BULANAN_${MONTH_LONG_NAMES[reportMonth - 1]}_${reportYear}`
+        : reportPeriodType === 'TRIWULAN'
+        ? `TRIWULAN_${['I', 'II', 'III', 'IV'][reportTriwulan - 1]}_${reportYear}`
+        : reportPeriodType === 'SEMESTER'
+        ? `SEMESTER_${reportSemester}_${reportYear}`
+        : `TAHUNAN_${reportYear}`;
+    link.download = `LAPORAN_KESLING_RSUD_AL_MULK_${filePeriodTag}_F4.doc`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -402,14 +465,89 @@ export function AnnualReportF4View() {
     <div className="space-y-6 max-w-[340mm] mx-auto pb-20">
       {/* Header Banner & Controls */}
       <div className="max-w-7xl mx-auto rounded-3xl bg-gradient-to-r from-[#002147] via-[#0a3568] to-[#1F4E79] px-6 py-5 text-white shadow-xl border border-[#D2B48C]/30 print:hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
             <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#D2B48C]">
-              Laporan Tahunan Kesehatan Lingkungan RSUD Al-Mulk
+              {reportPeriodType === 'BULANAN'
+                ? 'Laporan Bulanan Kesehatan Lingkungan RSUD Al-Mulk'
+                : reportPeriodType === 'TRIWULAN'
+                ? 'Laporan Triwulan Kesehatan Lingkungan RSUD Al-Mulk'
+                : reportPeriodType === 'SEMESTER'
+                ? 'Laporan Semester Kesehatan Lingkungan RSUD Al-Mulk'
+                : 'Laporan Tahunan Kesehatan Lingkungan RSUD Al-Mulk'}
             </h1>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Filter Jenis Periode */}
+            <div className="relative inline-flex items-center">
+              <select
+                aria-label="Pilih Jenis Periode"
+                value={reportPeriodType}
+                onChange={(e) => setReportPeriodType(e.target.value as ReportPeriodType)}
+                className="appearance-none pl-4 pr-8 py-2 rounded-xl text-xs font-bold bg-[#001835] text-[#D2B48C] border border-[#D2B48C]/60 cursor-pointer shadow-sm focus:outline-none"
+              >
+                <option value="TAHUNAN">Periode Tahunan</option>
+                <option value="BULANAN">Periode Bulanan</option>
+                <option value="TRIWULAN">Periode Triwulanan</option>
+                <option value="SEMESTER">Periode Semesteran</option>
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-[#D2B48C] absolute right-2.5 pointer-events-none" />
+            </div>
+
+            {/* Filter Bulan Jika Mode Bulanan */}
+            {reportPeriodType === 'BULANAN' && (
+              <div className="relative inline-flex items-center">
+                <select
+                  aria-label="Pilih Bulan Laporan"
+                  value={reportMonth}
+                  onChange={(e) => setReportMonth(Number(e.target.value))}
+                  className="appearance-none pl-4 pr-8 py-2 rounded-xl text-xs font-bold bg-[#001835] text-white border border-[#D2B48C]/60 cursor-pointer shadow-sm focus:outline-none"
+                >
+                  {MONTH_LONG_NAMES.map((mName, idx) => (
+                    <option key={mName} value={idx + 1}>
+                      Bulan {mName}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="w-3.5 h-3.5 text-[#D2B48C] absolute right-2.5 pointer-events-none" />
+              </div>
+            )}
+
+            {/* Filter Triwulan Jika Mode Triwulan */}
+            {reportPeriodType === 'TRIWULAN' && (
+              <div className="relative inline-flex items-center">
+                <select
+                  aria-label="Pilih Triwulan Laporan"
+                  value={reportTriwulan}
+                  onChange={(e) => setReportTriwulan(Number(e.target.value))}
+                  className="appearance-none pl-4 pr-8 py-2 rounded-xl text-xs font-bold bg-[#001835] text-white border border-[#D2B48C]/60 cursor-pointer shadow-sm focus:outline-none"
+                >
+                  <option value={1}>Triwulan I (Jan - Mar)</option>
+                  <option value={2}>Triwulan II (Apr - Jun)</option>
+                  <option value={3}>Triwulan III (Jul - Sep)</option>
+                  <option value={4}>Triwulan IV (Okt - Des)</option>
+                </select>
+                <ChevronDown className="w-3.5 h-3.5 text-[#D2B48C] absolute right-2.5 pointer-events-none" />
+              </div>
+            )}
+
+            {/* Filter Semester Jika Mode Semester */}
+            {reportPeriodType === 'SEMESTER' && (
+              <div className="relative inline-flex items-center">
+                <select
+                  aria-label="Pilih Semester Laporan"
+                  value={reportSemester}
+                  onChange={(e) => setReportSemester(Number(e.target.value))}
+                  className="appearance-none pl-4 pr-8 py-2 rounded-xl text-xs font-bold bg-[#001835] text-white border border-[#D2B48C]/60 cursor-pointer shadow-sm focus:outline-none"
+                >
+                  <option value={1}>Semester 1 (Jan - Jun)</option>
+                  <option value={2}>Semester 2 (Jul - Des)</option>
+                </select>
+                <ChevronDown className="w-3.5 h-3.5 text-[#D2B48C] absolute right-2.5 pointer-events-none" />
+              </div>
+            )}
+
             {/* Filter Tahun */}
             <div className="relative inline-flex items-center">
               <select
@@ -467,24 +605,50 @@ export function AnnualReportF4View() {
           }`}
         >
         {/* =====================================================================
-            HALAMAN 1: COVER RESMI (PERSIS SESUAI GAMBAR NO 1)
+            HALAMAN 1: COVER RESMI SESUAI TEMPLATE RESMI RSUD AL-MULK
            ===================================================================== */}
         {shouldRenderPage(1, 'COVER_PENDAHULUAN') && (
           <section
             id="f4-page-1"
             className="scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] overflow-hidden relative print:shadow-none print:border-none p-0 flex flex-col"
           >
-            <div className="relative w-full aspect-[215.9/330.2] min-h-[330.2mm] flex flex-col justify-between overflow-hidden bg-white">
+            <div className="relative w-full aspect-[215.9/330.2] min-h-[330.2mm] flex flex-col justify-between overflow-hidden bg-white select-none">
               <img
-                src="/assets/aistudio/image_eb69bb57.png"
-                alt="Cover Laporan Tahunan Kesling RSUD Al-Mulk"
+                src="/assets/aistudio/cover_kesling_official_clean.jpg"
+                alt="Cover Laporan Unit Kesling RSUD Al-Mulk"
                 className="w-full h-full object-fill block"
               />
-              {reportYear !== 2025 && (
-                <div className="absolute top-[11.5%] left-[6%] bg-[#1F4E79] text-white font-extrabold text-2xl sm:text-3xl px-8 py-1 rounded shadow-lg border-2 border-white/40">
-                  {reportYear}
+
+              {/* Teks Format Resmi Dinamis pada Garis Biru (Tanpa Tulisan di Atas Kiri) */}
+              <div
+                className="absolute left-0 right-0 top-[66.1%] bottom-[12.9%] flex flex-col items-center justify-center px-6 sm:px-10 text-center select-text"
+                style={{ pointerEvents: 'auto' }}
+              >
+                <div
+                  contentEditable={true}
+                  suppressContentEditableWarning={true}
+                  onInput={() => setHasUnsavedChanges(true)}
+                  className="text-white font-black text-[20px] sm:text-[23px] tracking-wider leading-snug uppercase outline-none focus:ring-1 focus:ring-amber-300/60 rounded px-2 drop-shadow-sm"
+                >
+                  {coverLines.line1}
                 </div>
-              )}
+                <div
+                  contentEditable={true}
+                  suppressContentEditableWarning={true}
+                  onInput={() => setHasUnsavedChanges(true)}
+                  className="text-white font-extrabold text-[16.5px] sm:text-[18.5px] tracking-wide leading-snug uppercase mt-2 sm:mt-2.5 outline-none focus:ring-1 focus:ring-amber-300/60 rounded px-2 drop-shadow-sm"
+                >
+                  {coverLines.line2}
+                </div>
+                <div
+                  contentEditable={true}
+                  suppressContentEditableWarning={true}
+                  onInput={() => setHasUnsavedChanges(true)}
+                  className="text-white font-extrabold text-[15.5px] sm:text-[17.5px] tracking-wider leading-snug uppercase mt-2 sm:mt-2.5 outline-none focus:ring-1 focus:ring-amber-300/60 rounded px-2 drop-shadow-sm"
+                >
+                  {coverLines.line3}
+                </div>
+              </div>
             </div>
           </section>
         )}
