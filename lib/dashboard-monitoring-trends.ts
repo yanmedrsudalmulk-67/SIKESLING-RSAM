@@ -1,3 +1,4 @@
+import { getAirQualityDataByYear } from './air-quality-data';
 import {
   WaterQualityRow,
   createInitialWaterQualityData,
@@ -232,7 +233,7 @@ export function createDefaultMonitoringDataset(
 ): RealtimeMonitoringDataset {
   return {
     waterRows: createInitialWaterQualityData(year),
-    airItems: [],
+    airItems: getAirQualityDataByYear(year),
     wastewaterRows: createInitialWastewaterData(year),
     solidWasteRows: DEFAULT_SOLID_WASTE_ROWS,
     vectorFindings: createDefaultVectorFindingsSnapshot(),

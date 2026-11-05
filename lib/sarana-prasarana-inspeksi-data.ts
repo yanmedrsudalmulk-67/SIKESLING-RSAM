@@ -1,0 +1,106 @@
+export interface InspeksiSanitasiRuanganItem {
+  no: number;
+  ruangan: string;
+  toiletUmumL: number;
+  toiletUmumP: number;
+  toiletKaryawanL: number;
+  toiletKaryawanP: number;
+  wastafel: number;
+  keterangan: string;
+  isDisabilitas?: boolean;
+}
+
+export const DATA_INSPEKSI_SANITASI_RUANGAN: InspeksiSanitasiRuanganItem[] = [
+  { no: 1, ruangan: 'RUANG TUNGGU PASIEN RAJAL 1', toiletUmumL: 2, toiletUmumP: 1, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: 'wastafel dekat toilet disabilitas belum berfungsi', isDisabilitas: true },
+  { no: 2, ruangan: 'POLI RAJAL BEDAH', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 3, ruangan: 'POLI RAJAL GIGI', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 4, ruangan: 'POLI RAJAL UMUM', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 5, ruangan: 'POLI RAJAL PENYAKIT DALAM', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 6, ruangan: 'RUANG TUNGGU PASIEN RAJAL 2', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 7, ruangan: 'POLI RAJAL ARAFAH/KONSULTASI', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 1, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 8, ruangan: 'POLI RAJAL DOT', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+  { no: 9, ruangan: 'POLI RAJAL ANAK', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 10, ruangan: 'POLI RAJAL KEBIDANAN', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 11, ruangan: 'REKAMEDIS', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 1, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 12, ruangan: 'FARMASI', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 1, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 13, ruangan: 'LABORATORIUM', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 1, toiletKaryawanP: 0, wastafel: 3, keterangan: '' },
+  { no: 14, ruangan: 'RADIOLOGI', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 15, ruangan: 'ICU', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 1, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 16, ruangan: 'OK', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 3, toiletKaryawanP: 0, wastafel: 4, keterangan: 'Ada wastafel airnya kecil' },
+  { no: 17, ruangan: 'IBS', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: 'wastafel tidak ada sambungannya' },
+  { no: 18, ruangan: 'RUANGAN IGD', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 1, toiletKaryawanP: 0, wastafel: 3, keterangan: 'wastafel yang di IGD rusak, lampu wc on terus, pintu aga longgar, kran tidak bisa ditutup' },
+  { no: 19, ruangan: 'RUANGAN ISOLASI IGD', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 20, ruangan: 'DOKTER JAGA IGD', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 1, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+  { no: 21, ruangan: 'RUANGAN RESUSITASI', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 22, ruangan: 'RUANGAN EMERGENCY KEBIDANAN', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 23, ruangan: 'RABIES CENTER', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+  { no: 24, ruangan: 'R. USMAN', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 1, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 25, ruangan: 'RUANGAN USG', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 26, ruangan: 'USMAN 1', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+  { no: 27, ruangan: 'USMAN 2', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+  { no: 28, ruangan: 'USMAN 3', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+  { no: 29, ruangan: 'USMAN 4', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+  { no: 30, ruangan: 'USMAN 5', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+  { no: 31, ruangan: 'USMAN 6', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+  { no: 32, ruangan: 'USMAN 7', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+  { no: 33, ruangan: 'USMAN 8', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+  { no: 34, ruangan: 'USMAN 9', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+  { no: 35, ruangan: 'USMAN 10', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+  { no: 36, ruangan: 'USMAN 11', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+  { no: 37, ruangan: 'USMAN 12', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: 'kebersihan wc ditingkatkan, lampu belum memenuhi syarat' },
+  { no: 38, ruangan: 'USMAN 13', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: 'kebersihan wc ditingkatkan, lampu belum memenuhi syarat' },
+  { no: 39, ruangan: 'USMAN 14', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: 'kulit bes sudah retak, kebersihan wc di tingkatkan, lampu belum memenuhi syarat' },
+  { no: 40, ruangan: 'USMAN 15', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: 'ruangan belum digunakan karna rusak' },
+  { no: 41, ruangan: 'USMAN 16', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: 'ruangan belum digunakan karna rusak' },
+  { no: 42, ruangan: 'USMAN 17', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: 'ruangan belum digunakan karna rusak' },
+  { no: 44, ruangan: 'RUANGAN FATIMAH', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 1, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 45, ruangan: 'FATIMAH 1', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: 'wastafel krannya rusak, WC flashingnya airnya mengalir terus' },
+  { no: 46, ruangan: 'FATIMAH 2', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 47, ruangan: 'FATIMAH 3', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 48, ruangan: 'FATIMAH 4', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 49, ruangan: 'FATIMAH 5', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 50, ruangan: 'RUANGAN AISYAH', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 1, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 51, ruangan: 'AISYAH 1', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 52, ruangan: 'AISYAH 2', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: 'WC flashingnya airnya mengalir terus' },
+  { no: 53, ruangan: 'AISYAH 3', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 54, ruangan: 'AISYAH 4', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: 'WC flashingnya airnya mengalir terus' },
+  { no: 55, ruangan: 'AISYAH 5', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+  { no: 56, ruangan: 'RUANGAN KHODIJAH', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+  { no: 57, ruangan: 'KHODIJAH 1', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 58, ruangan: 'KHODIJAH 2', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 59, ruangan: 'KHODIJAH 3A', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+  { no: 60, ruangan: 'KHODIJAH 3B', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+  { no: 61, ruangan: 'R. TINDAKAN KEBIDANAN', toiletUmumL: 1, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 62, ruangan: 'R. PERINATOLOGI', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 63, ruangan: 'GUDANG FARMASI', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 1, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+  { no: 64, ruangan: 'MANAJEMEN', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 1, toiletKaryawanP: 1, wastafel: 1, keterangan: '' },
+  { no: 65, ruangan: 'PENUNJANG', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 1, toiletKaryawanP: 1, wastafel: 1, keterangan: '' },
+  { no: 66, ruangan: 'R. IT DAN SARPRAS', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+  { no: 67, ruangan: 'MUSOLA', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+  { no: 68, ruangan: 'CSSD', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 69, ruangan: 'RUANGAN DIKLAT', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 1, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+  { no: 70, ruangan: 'R. JENAZAH', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: 'dihancurkan' },
+  { no: 71, ruangan: 'GUDANG ASET', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: 'dihancurkan' },
+  { no: 72, ruangan: 'HALAMAN / TAMAN 1', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 73, ruangan: 'HALAMAN / TAMAN 2', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+  { no: 74, ruangan: 'HALAMAN / TAMAN 3', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+  { no: 75, ruangan: 'TPS', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 0, toiletKaryawanP: 0, wastafel: 1, keterangan: '' },
+  { no: 76, ruangan: 'IPSRS dan Gudang ATK', toiletUmumL: 0, toiletUmumP: 0, toiletKaryawanL: 1, toiletKaryawanP: 0, wastafel: 0, keterangan: '' },
+];
+
+export const TOTAL_INSPEKSI_RUANGAN = {
+  toiletUmumL: 38,
+  toiletUmumP: 1,
+  toiletKaryawanL: 19,
+  toiletKaryawanP: 2,
+  totalToiletKaryawan: 21,
+  wastafel: 49,
+  totalKeteranganTemuan: 58,
+};
+
+export const SANITARIAN_INSPECTOR_OFFICIAL = {
+  name: 'Fitria Wulandari, AMKL',
+  nup: '20210301P1154',
+  role: 'Sanitarian Inspector / Pelaksana Sanitarian',
+  institution: 'UOBK RSUD Al-Mulk Kota Sukabumi',
+};

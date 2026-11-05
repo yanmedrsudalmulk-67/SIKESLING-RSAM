@@ -53,6 +53,7 @@ import {
   calculateSaranaPrasaranaSummary,
   createInitialSaranaPrasaranaData,
 } from '@/lib/sarana-prasarana';
+import { DATA_INSPEKSI_SANITASI_RUANGAN, TOTAL_INSPEKSI_RUANGAN, SANITARIAN_INSPECTOR_OFFICIAL } from '@/lib/sarana-prasarana';
 
 type ActiveSheetTab =
   | 'sheet-1'
@@ -60,7 +61,8 @@ type ActiveSheetTab =
   | 'sheet-3'
   | 'sheet-4'
   | 'sheet-5'
-  | 'sheet-6';
+  | 'sheet-6'
+  | 'sheet-ruangan';
 
 export function SaranaPrasaranaView() {
   const meta = resolveRouteMeta('/monitoring/sarana-prasarana');
@@ -447,7 +449,7 @@ export function SaranaPrasaranaView() {
       />
 
       {/* Tabs navigation without 'Sheet' prefix - Responsive 6-column grid in one screen without horizontal scroll */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1.5 sm:gap-2 w-full mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-1.5 sm:gap-2 w-full mb-4">
         <button
           type="button"
           onClick={() => setActiveTab('sheet-1')}
@@ -511,6 +513,19 @@ export function SaranaPrasaranaView() {
         >
           <Maximize2 className="w-3.5 h-3.5 shrink-0" />
           <span>Langit-langit RS</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('sheet-ruangan')}
+          className={`w-full flex items-center justify-center gap-1.5 px-2 sm:px-2.5 py-2 sm:py-2.5 rounded-2xl text-[11px] sm:text-xs xl:text-[12.5px] font-bold text-center transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === 'sheet-ruangan'
+              ? 'bg-[#002147] text-[#D2B48C] shadow-md ring-2 ring-[#D2B48C]'
+              : 'bg-white/85 dark:bg-[#001835]/80 text-[#002147] dark:text-slate-200 border border-[#D2B48C]/40 hover:bg-[#F7F1E7]'
+          }`}
+        >
+          <Building className="w-3.5 h-3.5 shrink-0" />
+          <span>74 Ruangan (Inspeksi)</span>
         </button>
 
         <button
@@ -1946,6 +1961,36 @@ export function SaranaPrasaranaView() {
       )}
 
       {/* Floating Save Button with Jelly Touch Effect */}
+            {/* Sanitarian Inspector Signature Block */}
+      <section
+        aria-label="Pengesahan Sanitarian Inspector Sarpras"
+        className="rounded-2xl bg-white/90 dark:bg-slate-900/90 border border-[#D2B48C]/50 p-5 shadow-sm text-slate-800 dark:text-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 print:block"
+      >
+        <div className="space-y-1 text-center sm:text-left">
+          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            Unit Penanggung Jawab Teknis Kesling
+          </p>
+          <p className="text-sm font-extrabold text-[#002147] dark:text-[#D2B48C]">
+            UOBK RSUD Al-Mulk Kota Sukabumi
+          </p>
+          <p className="text-xs text-slate-600 dark:text-slate-300">
+            Pemeriksaan Kesehatan Sarana dan Bangunan Rumah Sakit (Permenkes No. 7 Tahun 2019)
+          </p>
+        </div>
+
+        <div className="text-center border-t sm:border-t-0 sm:border-l border-slate-200 dark:border-slate-700 pt-3 sm:pt-0 sm:pl-6 min-w-[200px]">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-6">
+            Sanitarian Inspector,
+          </p>
+          <p className="text-sm font-black text-[#002147] dark:text-[#D2B48C] underline underline-offset-4">
+            Fitria Wulandari, AMKL
+          </p>
+          <p className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+            NUP. 20210301P1154
+          </p>
+        </div>
+      </section>
+
       <FloatingSaveButton onSave={handleSaveData} />
 
       {/* Delete Confirmation Modal */}

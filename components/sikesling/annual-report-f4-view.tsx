@@ -5873,13 +5873,7 @@ export function AnnualReportF4View() {
             value={zoomPercent}
             onChange={(e) => setZoomPercent(Number(e.target.value))}
             aria-label="Zoom Tampilan Laporan Tahunan"
-            style={{
-              writingMode: 'vertical-lr',
-              direction: 'rtl',
-              height: '64px',
-              width: '3px',
-            }}
-            className="cursor-pointer appearance-none bg-slate-700/80 rounded-full accent-[#D2B48C] focus:outline-none"
+            className="vertical-zoom-slider focus:outline-none"
           />
         </div>
 

@@ -16,13 +16,13 @@ test('createInitialLinenMonitoringData creates 12 months matching reference imag
   assert.equal(rows[1].monthLabel, 'Februari');
   assert.equal(rows[1].capaian, 100);
   assert.equal(rows[2].monthLabel, 'Maret');
-  assert.equal(rows[2].capaian, 67);
+  assert.equal(rows[2].capaian, 100);
   assert.equal(rows[9].monthLabel, 'Oktober');
-  assert.equal(rows[9].capaian, 67);
+  assert.equal(rows[9].capaian, 100);
   assert.equal(rows[10].monthLabel, 'November');
-  assert.equal(rows[10].capaian, 100);
+  assert.equal(rows[10].capaian, 0);
   assert.equal(rows[11].monthLabel, 'Desember');
-  assert.equal(rows[11].capaian, 100);
+  assert.equal(rows[11].capaian, 0);
 });
 
 test('calculateLinenRowCapaian computes accurate percentage for 3 indicators', () => {
@@ -37,12 +37,12 @@ test('calculateLinenSummary computes stats, analysis, recommendations, and RTL d
   const initialRows = createInitialLinenMonitoringData();
   const summary = calculateLinenSummary(initialRows);
   assert.equal(summary.totalMonths, 12);
-  assert.equal(summary.perfect100Count, 4);
-  assert.equal(summary.partialCount, 8);
-  assert.equal(summary.mouRate, 100);
-  assert.equal(summary.pemilahanRate, 100);
-  assert.equal(summary.pengawasanRate, 100);
-  assert.equal(summary.avgCapaian, 78);
+  assert.equal(summary.perfect100Count, 10);
+  assert.equal(summary.partialCount, 2);
+  assert.equal(summary.mouRate, 83);
+  assert.equal(summary.pemilahanRate, 83);
+  assert.equal(summary.pengawasanRate, 83);
+  assert.equal(summary.avgCapaian, 83.3);
   assert.ok(summary.analysisText.includes('Penyelenggaraan Linen'));
   assert.ok(summary.recommendations.length >= 4);
   assert.ok(summary.followUpPlans.length >= 4);

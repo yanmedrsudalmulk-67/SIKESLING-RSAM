@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { getAirQualityDataByYear, AIR_QUALITY_DATA_2026, AIR_QUALITY_DATA_2025 } from '@/lib/air-quality-data';
 import {
+  RefreshCw,
   Calendar,
   ChevronDown,
   Check,
@@ -105,6 +107,35 @@ export function AirQualityView() {
   const [activeSheet, setActiveSheet] = useState<'sheet1' | 'sheet2'>('sheet1');
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
+
+  // Auto-hydrate from official Excel dataset if empty or year changes
+  useEffect(() => {
+    if (!airItems || airItems.length === 0) {
+      void updateAirItems(getAirQualityDataByYear(selectedYear));
+    }
+  }, [airItems, selectedYear, updateAirItems]);
+
+  const handleYearChange = (year: number) => {
+    setSelectedYear(year);
+    const dataForYear = getAirQualityDataByYear(year);
+    void updateAirItems(dataForYear);
+    pushToast({
+      type: 'info',
+      title: `Memuat Data Kualitas Udara ${year}`,
+      message: `Data hasil uji fisik kualitas udara tahun ${year} berhasil dimuat dari dataset resmi.`,
+    });
+  };
+
+  const handleReloadExcelData = () => {
+    const dataForYear = getAirQualityDataByYear(selectedYear);
+    void updateAirItems(dataForYear);
+    setHasUnsavedChanges(true);
+    pushToast({
+      type: 'success',
+      title: 'Data Asli Excel Berhasil Dimuat',
+      message: `Seluruh ruangan dan parameter fisik (Suhu, Kelembaban, Lux, Kebisingan) dari file Excel telah dimuat.`,
+    });
+  };
 
   const items = airItems as AirQualityItem[];
   const setItems = (
@@ -381,7 +412,7 @@ export function AirQualityView() {
                 <select
                   id="filter-air-year"
                   value={selectedYear}
-                  onChange={(e) => setSelectedYear(Number(e.target.value))}
+                  onChange={(e) => handleYearChange(Number(e.target.value))}
                   aria-label="Tahun Pemantauan"
                   className="appearance-none pl-4 pr-8 py-2 rounded-full text-xs font-bold bg-white/95 dark:bg-[#001835] text-[#002147] dark:text-slate-100 border border-[#D2B48C]/70 dark:border-slate-700 shadow-sm hover:border-[#002147] focus:outline-none focus:ring-2 focus:ring-[#002147]/30 cursor-pointer transition-all"
                 >
@@ -1453,6 +1484,37 @@ export function AirQualityView() {
           });
         }}
       />
+
+      {/* Sanitarian Inspector Signature Block */}
+      <section
+        aria-label="Pengesahan Sanitarian Inspector"
+        className="rounded-2xl bg-white/90 dark:bg-slate-900/90 border border-[#D2B48C]/50 p-5 shadow-sm text-slate-800 dark:text-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 print:block"
+      >
+        <div className="space-y-1 text-center sm:text-left">
+          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            Unit Penanggung Jawab Teknis Kesling
+          </p>
+          <p className="text-sm font-extrabold text-[#002147] dark:text-[#D2B48C]">
+            UOBK RSUD Al-Mulk Kota Sukabumi
+          </p>
+          <p className="text-xs text-slate-600 dark:text-slate-300">
+            Pemeriksaan Parameter Fisik Kualitas Udara (Suhu, Kelembaban, Pencahayaan, Kebisingan)
+          </p>
+        </div>
+
+        <div className="text-center border-t sm:border-t-0 sm:border-l border-slate-200 dark:border-slate-700 pt-3 sm:pt-0 sm:pl-6 min-w-[200px]">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-6">
+            Sanitarian Inspector,
+          </p>
+          <p className="text-sm font-black text-[#002147] dark:text-[#D2B48C] underline underline-offset-4">
+            Fitria Wulandari, AMKL
+          </p>
+          <p className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+            NUP. 20210301P1154
+          </p>
+        </div>
+      </section>
+
     </PageContainer>
   );
 }

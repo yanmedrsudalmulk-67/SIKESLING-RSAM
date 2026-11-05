@@ -13,12 +13,14 @@ test('createInitialRadiationMonitoringData creates 12 months with 100% matching 
   assert.equal(rows[0].monthLabel, 'Januari');
   assert.equal(rows[11].monthLabel, 'Desember');
 
-  for (const row of rows) {
-    assert.equal(row.izinBapeten, 'ya');
-    assert.equal(row.peralatanProteksi, 'ya');
-    assert.equal(row.pemantauanPekerja, 'ya');
-    assert.equal(row.capaian, 100);
+  for (let i = 0; i < 10; i++) {
+    assert.equal(rows[i].izinBapeten, 'ya');
+    assert.equal(rows[i].peralatanProteksi, 'ya');
+    assert.equal(rows[i].pemantauanPekerja, 'ya');
+    assert.equal(rows[i].capaian, 100);
   }
+  assert.equal(rows[10].izinBapeten, null);
+  assert.equal(rows[11].izinBapeten, null);
 });
 
 test('calculateRadiationRowCapaian computes accurate percentage for 3 indicators', () => {
@@ -34,12 +36,12 @@ test('calculateRadiationSummary computes stats, analysis, recommendations, and R
   const summary = calculateRadiationSummary(rows);
 
   assert.equal(summary.totalMonths, 12);
-  assert.equal(summary.perfect100Count, 12);
-  assert.equal(summary.partialCount, 0);
-  assert.equal(summary.avgCapaian, 100);
-  assert.equal(summary.izinBapetenRate, 100);
-  assert.equal(summary.peralatanProteksiRate, 100);
-  assert.equal(summary.pemantauanPekerjaRate, 100);
+  assert.equal(summary.perfect100Count, 10);
+  assert.equal(summary.partialCount, 2);
+  assert.equal(summary.avgCapaian, 83.3);
+  assert.equal(summary.izinBapetenRate, 83);
+  assert.equal(summary.peralatanProteksiRate, 83);
+  assert.equal(summary.pemantauanPekerjaRate, 83);
   assert.ok(summary.analysisText.includes('BAPETEN'));
   assert.ok(summary.recommendations.length >= 3);
   assert.ok(summary.followUpPlans.length >= 3);

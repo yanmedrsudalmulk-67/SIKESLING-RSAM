@@ -867,6 +867,36 @@ export function RadiationMonitoringView() {
         </div>
       </section>
 
+            {/* Sanitarian Inspector Signature Block */}
+      <section
+        aria-label="Pengesahan Sanitarian Inspector Radiasi"
+        className="rounded-2xl bg-white/90 dark:bg-slate-900/90 border border-[#D2B48C]/50 p-5 shadow-sm text-slate-800 dark:text-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 print:block"
+      >
+        <div className="space-y-1 text-center sm:text-left">
+          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            Unit Penanggung Jawab Teknis Kesling
+          </p>
+          <p className="text-sm font-extrabold text-[#002147] dark:text-[#D2B48C]">
+            UOBK RSUD Al-Mulk Kota Sukabumi
+          </p>
+          <p className="text-xs text-slate-600 dark:text-slate-300">
+            Pengamanan Radiasi Rumah Sakit (BAPETEN, Peralatan Proteksi, Pemantauan APD Pekerja)
+          </p>
+        </div>
+
+        <div className="text-center border-t sm:border-t-0 sm:border-l border-slate-200 dark:border-slate-700 pt-3 sm:pt-0 sm:pl-6 min-w-[200px]">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-6">
+            Pelaksana Sanitarian,
+          </p>
+          <p className="text-sm font-black text-[#002147] dark:text-[#D2B48C] underline underline-offset-4">
+            Fitria Wulandari, AMKL
+          </p>
+          <p className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+            NUP. 20210301P1154
+          </p>
+        </div>
+      </section>
+
       {/* Tombol Simpan Data Melayang (Kanan Bawah) */}
       <FloatingSaveButton
         hasUnsavedChanges={hasUnsavedChanges}

@@ -14,7 +14,7 @@ import { MAIN_NAVIGATION } from './navigation';
 test('createInitialSaranaPrasaranaData initializes 5 sheets properly', () => {
   const data = createInitialSaranaPrasaranaData(2026);
   assert.equal(data.year, 2026);
-  assert.equal(data.toilets.length, 4);
+  assert.equal(data.toilets.length, 15);
   assert.equal(data.toiletDisabilitas.rajalAda, true);
   assert.equal(data.toiletDisabilitas.igdAda, true);
   assert.equal(data.toiletDisabilitas.penunjangAda, true);
