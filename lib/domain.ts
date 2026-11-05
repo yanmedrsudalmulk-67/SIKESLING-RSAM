@@ -101,6 +101,12 @@ export interface MasterRoomItem {
   unitName: string;
   building: string;
   isActive: boolean;
+  toiletUmumL?: number;
+  toiletUmumP?: number;
+  toiletKaryawanL?: number;
+  toiletKaryawanP?: number;
+  wastafel?: number;
+  keteranganFisik?: string;
 }
 
 export interface MasterStandardItem {

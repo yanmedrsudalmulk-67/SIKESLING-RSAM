@@ -40,6 +40,7 @@ import {
   RadiationMonitoringRow,
   createInitialRadiationMonitoringData,
 } from './radiation-monitoring';
+import { OFFICIAL_MASTER_ROOMS_74 } from './master-rooms-data';
 
 export const DEFAULT_SUPABASE_RAW_URL =
   'https://zwsshqpenadbpytvwkje.supabase.co/rest/v1/';
@@ -202,48 +203,7 @@ export const INITIAL_VECTOR_UNITS: string[] = [
   'PANTRY',
 ];
 
-export const INITIAL_MASTER_ROOMS: MasterRoomItem[] = [
-  {
-    id: 'rm-1',
-    code: 'R-IGD-01',
-    name: 'Instalasi Gawat Darurat (IGD)',
-    unitName: 'Instalasi Gawat Darurat',
-    building: 'Gedung Utama Lt. 1',
-    isActive: true,
-  },
-  {
-    id: 'rm-2',
-    code: 'R-RANAP-01',
-    name: 'Ruang Rawat Inap Dewasa',
-    unitName: 'Instalasi Rawat Inap',
-    building: 'Gedung Perawatan Lt. 2',
-    isActive: true,
-  },
-  {
-    id: 'rm-3',
-    code: 'R-GIZI-01',
-    name: 'Dapur & Penyelenggaraan Makanan',
-    unitName: 'Instalasi Gizi',
-    building: 'Gedung Penunjang',
-    isActive: true,
-  },
-  {
-    id: 'rm-4',
-    code: 'R-IPAL-01',
-    name: 'Area Instalasi Pengolahan Air Limbah (IPAL)',
-    unitName: 'Unit Kesehatan Lingkungan',
-    building: 'Area Utilitas Belakang',
-    isActive: true,
-  },
-  {
-    id: 'rm-5',
-    code: 'R-TPSB3-01',
-    name: 'TPS Limbah B3 & Medis Padat',
-    unitName: 'Unit Kesehatan Lingkungan',
-    building: 'Area Utilitas Belakang',
-    isActive: true,
-  },
-];
+export const INITIAL_MASTER_ROOMS: MasterRoomItem[] = [...OFFICIAL_MASTER_ROOMS_74];
 
 export const INITIAL_MASTER_ACTIVITY_CATEGORIES: MasterActivityCategoryItem[] = [
   {
