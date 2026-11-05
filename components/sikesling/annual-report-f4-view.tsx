@@ -629,7 +629,7 @@ export function AnnualReportF4View() {
                   contentEditable={true}
                   suppressContentEditableWarning={true}
                   onInput={() => setHasUnsavedChanges(true)}
-                  className="text-white font-black text-[22px] sm:text-[25px] md:text-[27px] tracking-wider leading-snug uppercase whitespace-nowrap outline-none focus:ring-2 focus:ring-amber-300/80 rounded px-2.5 drop-shadow-sm"
+                  className="text-white font-black text-[24px] sm:text-[27px] md:text-[29px] tracking-wider leading-snug uppercase whitespace-nowrap outline-none focus:ring-2 focus:ring-amber-300/80 rounded px-2.5 drop-shadow-sm"
                 >
                   {coverLines.line1}
                 </div>
@@ -637,7 +637,7 @@ export function AnnualReportF4View() {
                   contentEditable={true}
                   suppressContentEditableWarning={true}
                   onInput={() => setHasUnsavedChanges(true)}
-                  className="text-white font-extrabold text-[17px] sm:text-[19.5px] md:text-[21px] tracking-wide leading-snug uppercase whitespace-nowrap mt-2.5 sm:mt-3 outline-none focus:ring-2 focus:ring-amber-300/80 rounded px-2.5 drop-shadow-sm"
+                  className="text-white font-extrabold text-[19px] sm:text-[21.5px] md:text-[23px] tracking-wide leading-snug uppercase whitespace-nowrap mt-2.5 sm:mt-3 outline-none focus:ring-2 focus:ring-amber-300/80 rounded px-2.5 drop-shadow-sm"
                 >
                   {coverLines.line2}
                 </div>
@@ -645,7 +645,7 @@ export function AnnualReportF4View() {
                   contentEditable={true}
                   suppressContentEditableWarning={true}
                   onInput={() => setHasUnsavedChanges(true)}
-                  className="text-white font-extrabold text-[16px] sm:text-[18px] md:text-[19.5px] tracking-wider leading-snug uppercase whitespace-nowrap mt-2.5 sm:mt-3 outline-none focus:ring-2 focus:ring-amber-300/80 rounded px-2.5 drop-shadow-sm"
+                  className="text-white font-extrabold text-[18px] sm:text-[20px] md:text-[21.5px] tracking-wider leading-snug uppercase whitespace-nowrap mt-2.5 sm:mt-3 outline-none focus:ring-2 focus:ring-amber-300/80 rounded px-2.5 drop-shadow-sm"
                 >
                   {coverLines.line3}
                 </div>
