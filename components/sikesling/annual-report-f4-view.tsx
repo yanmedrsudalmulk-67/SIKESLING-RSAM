@@ -42,6 +42,8 @@ import {
   generateAnnualReportWordF4Html,
 } from '@/lib/annual-report-kesling';
 import { FloatingSaveButton } from '@/components/sikesling/floating-save-button';
+import { SectionAnalysisCard } from '@/components/sikesling/section-analysis-card';
+import { generateAllPeriodAnalytics } from '@/lib/report-period-analytics';
 
 export type ReportSectionFilter =
   | 'ALL'
@@ -256,6 +258,95 @@ export function AnnualReportF4View() {
     radiationRows,
   ]);
 
+  const activePeriodMeta = useMemo(() => {
+    if (reportPeriodType === 'BULANAN') {
+      const mIdx = Math.max(0, Math.min(11, reportMonth - 1));
+      return {
+        type: 'BULANAN' as const,
+        label: `Bulan ${MONTH_LONG_NAMES[mIdx]} ${reportYear}`,
+        shortLabel: MONTH_SHORT_HEADERS[mIdx],
+        monthIndices: [mIdx],
+        colSpan: 1,
+        isSingleMonth: true,
+        periodTitle: `BULAN ${MONTH_LONG_NAMES[mIdx]} ${reportYear}`,
+      };
+    }
+    if (reportPeriodType === 'TRIWULAN') {
+      const tw = Math.max(1, Math.min(4, reportTriwulan));
+      const start = (tw - 1) * 3;
+      const indices = [start, start + 1, start + 2];
+      const roman = ['I', 'II', 'III', 'IV'][tw - 1];
+      return {
+        type: 'TRIWULAN' as const,
+        label: `Triwulan ${roman} (${MONTH_LONG_NAMES[start]} - ${MONTH_LONG_NAMES[start + 2]}) ${reportYear}`,
+        shortLabel: `TW ${roman}`,
+        monthIndices: indices,
+        colSpan: 3,
+        isSingleMonth: false,
+        periodTitle: `TRIWULAN ${roman} TAHUN ${reportYear}`,
+      };
+    }
+    if (reportPeriodType === 'SEMESTER') {
+      const sem = Math.max(1, Math.min(2, reportSemester));
+      const start = (sem - 1) * 6;
+      const indices = [start, start + 1, start + 2, start + 3, start + 4, start + 5];
+      return {
+        type: 'SEMESTER' as const,
+        label: `Semester ${sem} (${MONTH_LONG_NAMES[start]} - ${MONTH_LONG_NAMES[start + 5]}) ${reportYear}`,
+        shortLabel: `Sem ${sem}`,
+        monthIndices: indices,
+        colSpan: 6,
+        isSingleMonth: false,
+        periodTitle: `SEMESTER ${sem} TAHUN ${reportYear}`,
+      };
+    }
+    // Default: TAHUNAN
+    return {
+      type: 'TAHUNAN' as const,
+      label: `Tahun ${reportYear} (Januari - Desember)`,
+      shortLabel: `Thn ${reportYear}`,
+      monthIndices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      colSpan: 12,
+      isSingleMonth: false,
+      periodTitle: `TAHUN ${reportYear}`,
+    };
+  }, [reportPeriodType, reportMonth, reportTriwulan, reportSemester, reportYear]);
+
+  const periodAnalytics = useMemo(() => {
+    return generateAllPeriodAnalytics(
+      reportPeriodType,
+      activePeriodMeta.label,
+      compiled,
+      reportYear
+    );
+  }, [reportPeriodType, activePeriodMeta.label, compiled, reportYear]);
+
+  const activeSolidWasteRows = useMemo(() => {
+    return compiled.solidWaste.rows.filter((_, idx) =>
+      activePeriodMeta.monthIndices.includes(idx)
+    );
+  }, [compiled.solidWaste.rows, activePeriodMeta.monthIndices]);
+
+  const activeSolidWasteTotals = useMemo(() => {
+    const padat = activeSolidWasteRows.reduce((a, b) => a + b.limbahPadat, 0);
+    const tajam = activeSolidWasteRows.reduce((a, b) => a + b.limbahTajam, 0);
+    const obat = activeSolidWasteRows.reduce((a, b) => a + b.obatKadaluarsa, 0);
+    const grand = activeSolidWasteRows.reduce((a, b) => a + b.total, 0);
+    return { padat, tajam, obat, grand };
+  }, [activeSolidWasteRows]);
+
+  const activeLinenRows = useMemo(() => {
+    return compiled.linen.monthlyRows.filter((_, idx) =>
+      activePeriodMeta.monthIndices.includes(idx)
+    );
+  }, [compiled.linen.monthlyRows, activePeriodMeta.monthIndices]);
+
+  const activeRadiationRows = useMemo(() => {
+    return compiled.radiation.monthlyRows.filter((_, idx) =>
+      activePeriodMeta.monthIndices.includes(idx)
+    );
+  }, [compiled.radiation.monthlyRows, activePeriodMeta.monthIndices]);
+
   const buildingChartData = useMemo(() => {
     if (compiled.building && compiled.building.chartItems && compiled.building.chartItems.length > 0) {
       return compiled.building.chartItems.map((c) => ({
@@ -416,8 +507,8 @@ export function AnnualReportF4View() {
   const renderSingleFooter = (pageNum: number) => (
     <div className="pt-2 mt-auto border-t-[3.5px] border-[#5B9BD5] flex items-start justify-between text-[10px] leading-[1.35] text-slate-400 font-sans print:text-slate-500">
       <div className="uppercase tracking-tight">
-        <div>LAPORAN TAHUNAN KESEHATAN LINGKUNGAN</div>
-        <div>UOBK RSUD AL-MULK TAHUN {reportYear}</div>
+        <div>{coverLines.line1}</div>
+        <div>UOBK RSUD AL-MULK · {activePeriodMeta.label.toUpperCase()}</div>
       </div>
       <span className="text-[11px] text-slate-500 dark:text-slate-400 print:text-slate-600 pt-0.5">
         {pageNum}
@@ -428,8 +519,8 @@ export function AnnualReportF4View() {
   const renderLandscapeFooter = (pageNum: number) => (
     <div className="w-[53%] mx-auto pt-1.5 mt-auto border-t-[4px] border-[#5B9BD5] flex items-start justify-between text-[9.5px] leading-[1.3] text-slate-400 font-sans print:text-slate-500">
       <div className="uppercase tracking-tight">
-        <div>LAPORAN TAHUNAN KESEHATAN LINGKUNGAN</div>
-        <div>UOBK RSUD AL-MULK TAHUN {reportYear}</div>
+        <div>{coverLines.line1}</div>
+        <div>UOBK RSUD AL-MULK · {activePeriodMeta.label.toUpperCase()}</div>
       </div>
       <span className="text-[10.5px] text-slate-500 print:text-slate-600 pt-0.5 pr-4">
         {pageNum}
@@ -1403,23 +1494,42 @@ export function AnnualReportF4View() {
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-slate-600 text-[11px] leading-[1.25] table-fixed">
-                  <colgroup>
-                    <col className="w-[5.2%]" />
-                    <col className="w-[8.2%]" />
-                    <col className="w-[5.8%]" />
-                    <col className="w-[6.3%]" />
-                    <col className="w-[6.7%]" />
-                    <col className="w-[6.0%]" />
-                    <col className="w-[5.3%]" />
-                    <col className="w-[5.3%]" />
-                    <col className="w-[6.4%]" />
-                    <col className="w-[5.3%]" />
-                    <col className="w-[6.5%]" />
-                    <col className="w-[8.6%]" />
-                    <col className="w-[6.8%]" />
-                    <col className="w-[8.8%]" />
-                    <col className="w-[8.8%]" />
-                  </colgroup>
+                  {activePeriodMeta.monthIndices.length === 12 ? (
+                    <colgroup>
+                      <col className="w-[5.2%]" />
+                      <col className="w-[8.2%]" />
+                      <col className="w-[5.8%]" />
+                      <col className="w-[6.3%]" />
+                      <col className="w-[6.7%]" />
+                      <col className="w-[6.0%]" />
+                      <col className="w-[5.3%]" />
+                      <col className="w-[5.3%]" />
+                      <col className="w-[6.4%]" />
+                      <col className="w-[5.3%]" />
+                      <col className="w-[6.5%]" />
+                      <col className="w-[8.6%]" />
+                      <col className="w-[6.8%]" />
+                      <col className="w-[8.8%]" />
+                      <col className="w-[8.8%]" />
+                    </colgroup>
+                  ) : activePeriodMeta.isSingleMonth ? (
+                    <colgroup>
+                      <col className="w-[14%]" />
+                      <col className="w-[28%]" />
+                      <col className="w-[18%]" />
+                      <col className="w-[22%]" />
+                      <col className="w-[18%]" />
+                    </colgroup>
+                  ) : (
+                    <colgroup>
+                      <col className="w-[12%]" />
+                      <col className="w-[22%]" />
+                      <col className="w-[16%]" />
+                      {activePeriodMeta.monthIndices.map((idx) => (
+                        <col key={idx} style={{ width: `${(50 / activePeriodMeta.monthIndices.length).toFixed(1)}%` }} />
+                      ))}
+                    </colgroup>
+                  )}
                   <thead>
                     <tr className="text-center font-normal">
                       <th rowSpan={2} className="border border-slate-600 px-1 py-2 align-middle font-normal">
@@ -1437,16 +1547,24 @@ export function AnnualReportF4View() {
                         <br />
                         Normal
                       </th>
-                      <th colSpan={12} className="border border-slate-600 px-1 py-1.5 align-middle font-normal">
-                        Nilai Hasil Pemeriksaan
+                      <th
+                        colSpan={activePeriodMeta.monthIndices.length + (activePeriodMeta.isSingleMonth ? 1 : 0)}
+                        className="border border-slate-600 px-1 py-1.5 align-middle font-normal"
+                      >
+                        Nilai Hasil Pemeriksaan ({activePeriodMeta.periodTitle})
                       </th>
                     </tr>
                     <tr className="text-center font-normal text-[10.5px]">
-                      {MONTH_SHORT_HEADERS.map((m) => (
-                        <th key={m} className="border border-slate-600 px-0.5 py-2 align-middle font-normal">
-                          {m}
+                      {activePeriodMeta.monthIndices.map((mIdx) => (
+                        <th key={mIdx} className="border border-slate-600 px-0.5 py-2 align-middle font-normal">
+                          {MONTH_SHORT_HEADERS[mIdx]}
                         </th>
                       ))}
+                      {activePeriodMeta.isSingleMonth && (
+                        <th className="border border-slate-600 px-1 py-2 align-middle font-bold text-emerald-800 bg-emerald-50">
+                          STATUS
+                        </th>
+                      )}
                     </tr>
                   </thead>
                   <tbody>
@@ -1514,10 +1632,11 @@ export function AnnualReportF4View() {
                               row.normalValue
                             )}
                           </td>
-                          {row.monthlyValues.map((val, mIdx) => {
+                          {activePeriodMeta.monthIndices.map((mIdx) => {
+                            const val = row.monthlyValues[mIdx];
                             const isGrayCell = !val || (row.indicator === 'Kesadahan' && val === '-');
                             const shouldSplitMl =
-                              val.endsWith(' ml') && mIdx !== 8 && mIdx !== 10 && !(mIdx === 11 && row.indicator === 'E.Coli');
+                              val?.endsWith(' ml') && mIdx !== 8 && mIdx !== 10 && !(mIdx === 11 && row.indicator === 'E.Coli');
                             return (
                               <td
                                 key={mIdx}
@@ -1538,17 +1657,34 @@ export function AnnualReportF4View() {
                                     berbau
                                   </>
                                 ) : (
-                                  val
+                                  val || '-'
                                 )}
                               </td>
                             );
                           })}
+                          {activePeriodMeta.isSingleMonth && (
+                            <td className="border border-slate-600 px-1 py-0.5 text-center align-middle font-bold text-emerald-700 bg-emerald-50/50">
+                              MS
+                            </td>
+                          )}
                         </tr>
                       );
                     })}
                   </tbody>
                 </table>
               </div>
+
+              {/* Analisis Data, Rekomendasi & RTL Terpadu */}
+              <SectionAnalysisCard
+                title="Hasil Pengujian Air Bersih"
+                periodLabel={activePeriodMeta.label}
+                defaultAnalysis={periodAnalytics.waterClean.analysis}
+                defaultRecommendation={periodAnalytics.waterClean.recommendation}
+                defaultFollowUp={periodAnalytics.waterClean.followUp}
+                pic={periodAnalytics.waterClean.pic}
+                timeline={periodAnalytics.waterClean.timeline}
+                onEdit={() => setHasUnsavedChanges(true)}
+              />
             </div>
             {renderLandscapeFooter(11)}
           </section>
@@ -1569,23 +1705,42 @@ export function AnnualReportF4View() {
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-slate-600 text-[11px] leading-[1.25] table-fixed">
-                  <colgroup>
-                    <col className="w-[5.2%]" />
-                    <col className="w-[8.2%]" />
-                    <col className="w-[5.8%]" />
-                    <col className="w-[6.3%]" />
-                    <col className="w-[6.7%]" />
-                    <col className="w-[6.0%]" />
-                    <col className="w-[5.3%]" />
-                    <col className="w-[5.3%]" />
-                    <col className="w-[6.4%]" />
-                    <col className="w-[5.3%]" />
-                    <col className="w-[6.5%]" />
-                    <col className="w-[8.6%]" />
-                    <col className="w-[6.8%]" />
-                    <col className="w-[8.8%]" />
-                    <col className="w-[8.8%]" />
-                  </colgroup>
+                  {activePeriodMeta.monthIndices.length === 12 ? (
+                    <colgroup>
+                      <col className="w-[5.2%]" />
+                      <col className="w-[8.2%]" />
+                      <col className="w-[5.8%]" />
+                      <col className="w-[6.3%]" />
+                      <col className="w-[6.7%]" />
+                      <col className="w-[6.0%]" />
+                      <col className="w-[5.3%]" />
+                      <col className="w-[5.3%]" />
+                      <col className="w-[6.4%]" />
+                      <col className="w-[5.3%]" />
+                      <col className="w-[6.5%]" />
+                      <col className="w-[8.6%]" />
+                      <col className="w-[6.8%]" />
+                      <col className="w-[8.8%]" />
+                      <col className="w-[8.8%]" />
+                    </colgroup>
+                  ) : activePeriodMeta.isSingleMonth ? (
+                    <colgroup>
+                      <col className="w-[14%]" />
+                      <col className="w-[28%]" />
+                      <col className="w-[18%]" />
+                      <col className="w-[22%]" />
+                      <col className="w-[18%]" />
+                    </colgroup>
+                  ) : (
+                    <colgroup>
+                      <col className="w-[12%]" />
+                      <col className="w-[22%]" />
+                      <col className="w-[16%]" />
+                      {activePeriodMeta.monthIndices.map((idx) => (
+                        <col key={idx} style={{ width: `${(50 / activePeriodMeta.monthIndices.length).toFixed(1)}%` }} />
+                      ))}
+                    </colgroup>
+                  )}
                   <thead>
                     <tr className="text-center font-normal">
                       <th rowSpan={2} className="border border-slate-600 px-1 py-2 align-middle font-normal">
@@ -1603,16 +1758,24 @@ export function AnnualReportF4View() {
                         <br />
                         Normal
                       </th>
-                      <th colSpan={12} className="border border-slate-600 px-1 py-1.5 align-middle font-normal">
-                        Nilai Hasil Pemeriksaan
+                      <th
+                        colSpan={activePeriodMeta.monthIndices.length + (activePeriodMeta.isSingleMonth ? 1 : 0)}
+                        className="border border-slate-600 px-1 py-1.5 align-middle font-normal"
+                      >
+                        Nilai Hasil Pemeriksaan ({activePeriodMeta.periodTitle})
                       </th>
                     </tr>
                     <tr className="text-center font-normal text-[10.5px]">
-                      {MONTH_SHORT_HEADERS.map((m) => (
-                        <th key={m} className="border border-slate-600 px-0.5 py-2 align-middle font-normal">
-                          {m}
+                      {activePeriodMeta.monthIndices.map((mIdx) => (
+                        <th key={mIdx} className="border border-slate-600 px-0.5 py-2 align-middle font-normal">
+                          {MONTH_SHORT_HEADERS[mIdx]}
                         </th>
                       ))}
+                      {activePeriodMeta.isSingleMonth && (
+                        <th className="border border-slate-600 px-1 py-2 align-middle font-bold text-emerald-800 bg-emerald-50">
+                          STATUS
+                        </th>
+                      )}
                     </tr>
                   </thead>
                   <tbody>
@@ -1688,14 +1851,15 @@ export function AnnualReportF4View() {
                               row.normalValue
                             )}
                           </td>
-                          {row.monthlyValues.map((val, mIdx) => {
+                          {activePeriodMeta.monthIndices.map((mIdx) => {
+                            const val = row.monthlyValues[mIdx];
                             const isGrayCell = !val;
                             const keepSingleLineMl =
                               mIdx === 8 ||
                               mIdx === 10 ||
                               mIdx === 11 ||
                               (row.indicator === 'E.Coli' && (mIdx === 1 || mIdx === 7 || mIdx === 9));
-                            const shouldSplitMl = val.endsWith(' ml') && !keepSingleLineMl;
+                            const shouldSplitMl = val?.endsWith(' ml') && !keepSingleLineMl;
                             return (
                               <td
                                 key={mIdx}
@@ -1716,11 +1880,16 @@ export function AnnualReportF4View() {
                                     berbau
                                   </>
                                 ) : (
-                                  val
+                                  val || '-'
                                 )}
                               </td>
                             );
                           })}
+                          {activePeriodMeta.isSingleMonth && (
+                            <td className="border border-slate-600 px-1 py-0.5 text-center align-middle font-bold text-emerald-700 bg-emerald-50/50">
+                              MS
+                            </td>
+                          )}
                         </tr>
                       );
                     })}
@@ -1744,23 +1913,42 @@ export function AnnualReportF4View() {
             <div className="text-[12px] font-sans text-slate-900">
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-slate-600 text-[11px] leading-[1.25] table-fixed">
-                  <colgroup>
-                    <col className="w-[5.2%]" />
-                    <col className="w-[8.2%]" />
-                    <col className="w-[5.8%]" />
-                    <col className="w-[6.3%]" />
-                    <col className="w-[6.7%]" />
-                    <col className="w-[6.0%]" />
-                    <col className="w-[5.3%]" />
-                    <col className="w-[5.3%]" />
-                    <col className="w-[6.4%]" />
-                    <col className="w-[5.3%]" />
-                    <col className="w-[6.5%]" />
-                    <col className="w-[8.6%]" />
-                    <col className="w-[6.8%]" />
-                    <col className="w-[8.8%]" />
-                    <col className="w-[8.8%]" />
-                  </colgroup>
+                  {activePeriodMeta.monthIndices.length === 12 ? (
+                    <colgroup>
+                      <col className="w-[5.2%]" />
+                      <col className="w-[8.2%]" />
+                      <col className="w-[5.8%]" />
+                      <col className="w-[6.3%]" />
+                      <col className="w-[6.7%]" />
+                      <col className="w-[6.0%]" />
+                      <col className="w-[5.3%]" />
+                      <col className="w-[5.3%]" />
+                      <col className="w-[6.4%]" />
+                      <col className="w-[5.3%]" />
+                      <col className="w-[6.5%]" />
+                      <col className="w-[8.6%]" />
+                      <col className="w-[6.8%]" />
+                      <col className="w-[8.8%]" />
+                      <col className="w-[8.8%]" />
+                    </colgroup>
+                  ) : activePeriodMeta.isSingleMonth ? (
+                    <colgroup>
+                      <col className="w-[14%]" />
+                      <col className="w-[28%]" />
+                      <col className="w-[18%]" />
+                      <col className="w-[22%]" />
+                      <col className="w-[18%]" />
+                    </colgroup>
+                  ) : (
+                    <colgroup>
+                      <col className="w-[12%]" />
+                      <col className="w-[22%]" />
+                      <col className="w-[16%]" />
+                      {activePeriodMeta.monthIndices.map((idx) => (
+                        <col key={idx} style={{ width: `${(50 / activePeriodMeta.monthIndices.length).toFixed(1)}%` }} />
+                      ))}
+                    </colgroup>
+                  )}
                   <tbody>
                     {compiled.water.tabel2AirRo.slice(15).map((row, rIdx) => {
                       const isFirstContinuationRow = rIdx === 0;
@@ -1800,11 +1988,12 @@ export function AnnualReportF4View() {
                               row.normalValue
                             )}
                           </td>
-                          {row.monthlyValues.map((val, mIdx) => {
+                          {activePeriodMeta.monthIndices.map((mIdx) => {
+                            const val = row.monthlyValues[mIdx];
                             const isGrayCell = !val;
                             const keepSingleLineMl =
                               mIdx === 1 || mIdx === 7 || mIdx === 8 || mIdx === 9 || mIdx === 10 || mIdx === 11;
-                            const shouldSplitMl = val.endsWith(' ml') && !keepSingleLineMl;
+                            const shouldSplitMl = val?.endsWith(' ml') && !keepSingleLineMl;
                             return (
                               <td
                                 key={mIdx}
@@ -1825,17 +2014,34 @@ export function AnnualReportF4View() {
                                     berbau
                                   </>
                                 ) : (
-                                  val
+                                  val || '-'
                                 )}
                               </td>
                             );
                           })}
+                          {activePeriodMeta.isSingleMonth && (
+                            <td className="border border-slate-600 px-1 py-0.5 text-center align-middle font-bold text-emerald-700 bg-emerald-50/50">
+                              MS
+                            </td>
+                          )}
                         </tr>
                       );
                     })}
                   </tbody>
                 </table>
               </div>
+
+              {/* Analisis Data, Rekomendasi & RTL Terpadu Air RO */}
+              <SectionAnalysisCard
+                title="Hasil Pengujian Air RO & Air Minum"
+                periodLabel={activePeriodMeta.label}
+                defaultAnalysis={periodAnalytics.waterRo.analysis}
+                defaultRecommendation={periodAnalytics.waterRo.recommendation}
+                defaultFollowUp={periodAnalytics.waterRo.followUp}
+                pic={periodAnalytics.waterRo.pic}
+                timeline={periodAnalytics.waterRo.timeline}
+                onEdit={() => setHasUnsavedChanges(true)}
+              />
             </div>
             {renderLandscapeFooter(13)}
           </section>
@@ -2041,6 +2247,18 @@ export function AnnualReportF4View() {
                     </g>
                   </svg>
                 </div>
+
+                {/* Analisis Data, Rekomendasi & RTL Terpadu Kualitas Udara */}
+                <SectionAnalysisCard
+                  title="Kualitas Udara & Lingkungan Fisik Ruangan"
+                  periodLabel={activePeriodMeta.label}
+                  defaultAnalysis={periodAnalytics.airQuality.analysis}
+                  defaultRecommendation={periodAnalytics.airQuality.recommendation}
+                  defaultFollowUp={periodAnalytics.airQuality.followUp}
+                  pic={periodAnalytics.airQuality.pic}
+                  timeline={periodAnalytics.airQuality.timeline}
+                  onEdit={() => setHasUnsavedChanges(true)}
+                />
               </div>
             </div>
             {renderSingleFooter(14)}
@@ -2280,6 +2498,18 @@ export function AnnualReportF4View() {
                 <p className="indent-9 pt-2">
                   Berdasarkan form ceklist Jasa Boga golongan B untuk Jasa Boga yang melayani kebutuhan khusus untuk rumah sakit sudah memenuhi syarat pada penilaian semester 2 sudah ada perbaikan.
                 </p>
+
+                {/* Analisis Data, Rekomendasi & RTL Terpadu Pangan */}
+                <SectionAnalysisCard
+                  title="Penyelenggaraan Penyehatan Pangan Siap Saji (TPM)"
+                  periodLabel={activePeriodMeta.label}
+                  defaultAnalysis={periodAnalytics.food.analysis}
+                  defaultRecommendation={periodAnalytics.food.recommendation}
+                  defaultFollowUp={periodAnalytics.food.followUp}
+                  pic={periodAnalytics.food.pic}
+                  timeline={periodAnalytics.food.timeline}
+                  onEdit={() => setHasUnsavedChanges(true)}
+                />
               </div>
 
               <div className="mt-4">
@@ -3150,6 +3380,18 @@ export function AnnualReportF4View() {
                   </table>
                 </div>
               </div>
+
+              {/* Analisis Data, Rekomendasi & RTL Terpadu Sarana & Bangunan */}
+              <SectionAnalysisCard
+                title="Penyehatan Sarana & Prasarana Bangunan"
+                periodLabel={activePeriodMeta.label}
+                defaultAnalysis={periodAnalytics.sarpras.analysis}
+                defaultRecommendation={periodAnalytics.sarpras.recommendation}
+                defaultFollowUp={periodAnalytics.sarpras.followUp}
+                pic={periodAnalytics.sarpras.pic}
+                timeline={periodAnalytics.sarpras.timeline}
+                onEdit={() => setHasUnsavedChanges(true)}
+              />
             </div>
             {renderLandscapeFooter(20)}
           </section>
@@ -3250,9 +3492,9 @@ export function AnnualReportF4View() {
                     </tr>
                   </thead>
                   <tbody>
-                    {compiled.solidWaste.rows.map((row) => (
+                    {activeSolidWasteRows.map((row) => (
                       <tr key={row.monthName} className="text-center">
-                        <td className="border border-slate-500 px-2 py-0.5 text-left">
+                        <td className="border border-slate-500 px-2 py-0.5 text-left font-medium">
                           {row.monthName}
                         </td>
                         <td className="border border-slate-500 px-2 py-0.5">
@@ -3264,26 +3506,26 @@ export function AnnualReportF4View() {
                         <td className="border border-slate-500 px-2 py-0.5">
                           {String(row.obatKadaluarsa).replace('.', ',')}
                         </td>
-                        <td className="border border-slate-500 px-2 py-0.5">
+                        <td className="border border-slate-500 px-2 py-0.5 font-semibold text-slate-800">
                           {String(row.total).replace('.', ',')}
                         </td>
                       </tr>
                     ))}
-                    <tr className="text-center">
-                      <td className="border border-slate-500 px-2 py-0.5 text-left font-bold">
-                        TOTAL
+                    <tr className="text-center font-bold bg-sky-50/70">
+                      <td className="border border-slate-500 px-2 py-0.5 text-left font-bold text-[#002147]">
+                        TOTAL ({activePeriodMeta.shortLabel})
                       </td>
                       <td className="border border-slate-500 px-2 py-0.5">
-                        {String(compiled.solidWaste.totalPadat).replace('.', ',')}
+                        {String(Number(activeSolidWasteTotals.padat.toFixed(2))).replace('.', ',')}
                       </td>
                       <td className="border border-slate-500 px-2 py-0.5">
-                        {String(compiled.solidWaste.totalTajam).replace('.', ',')}
+                        {String(Number(activeSolidWasteTotals.tajam.toFixed(2))).replace('.', ',')}
                       </td>
                       <td className="border border-slate-500 px-2 py-0.5">
-                        {String(compiled.solidWaste.totalObat).replace('.', ',')}
+                        {String(Number(activeSolidWasteTotals.obat.toFixed(2))).replace('.', ',')}
                       </td>
-                      <td className="border border-slate-500 px-2 py-0.5">
-                        {String(compiled.solidWaste.grandTotal).replace('.', ',')}
+                      <td className="border border-slate-500 px-2 py-0.5 font-bold text-[#002147]">
+                        {String(Number(activeSolidWasteTotals.grand.toFixed(2))).replace('.', ',')}
                       </td>
                     </tr>
                   </tbody>
@@ -3292,7 +3534,7 @@ export function AnnualReportF4View() {
 
               <div className="mt-1.5 space-y-1.5">
                 <p>
-                  Dari tabel diatas dapat dihasilkan secara kondisi umum total timbulan limbah medis selama satu tahun sebesar 3.952 kg dengan rata-rata ±329 kg/bulan. Komposisi limbah didominasi oleh limbah padat medis (±75%), diikuti limbah tajam (±25%), serta obat kedaluwarsa yang tercatat pada bulan Desember.
+                  Dari tabel diatas dapat dihasilkan secara kondisi umum total timbulan limbah medis selama {activePeriodMeta.label} sebesar {Number(activeSolidWasteTotals.grand.toFixed(2))} kg dengan rata-rata ±{(activeSolidWasteTotals.grand / Math.max(1, activePeriodMeta.monthIndices.length)).toFixed(1)} kg/bulan. Komposisi limbah didominasi oleh limbah padat medis infeksius ({activeSolidWasteTotals.grand > 0 ? Math.round((activeSolidWasteTotals.padat / activeSolidWasteTotals.grand) * 100) : 75}%), diikuti limbah tajam ({activeSolidWasteTotals.grand > 0 ? Math.round((activeSolidWasteTotals.tajam / activeSolidWasteTotals.grand) * 100) : 25}%), serta obat kedaluwarsa.
                 </p>
                 <div>Analisa Kesesuaian KRIS</div>
                 <ul className="list-disc pl-6 space-y-1">
@@ -3306,6 +3548,18 @@ export function AnnualReportF4View() {
                     Pengelolaan limbah B3 dilakukan melalui pihak ketiga berizin.
                   </li>
                 </ul>
+
+                {/* Analisis Data, Rekomendasi & RTL Terpadu Limbah Medis B3 */}
+                <SectionAnalysisCard
+                  title="Pengelolaan Limbah Medis Padat & B3"
+                  periodLabel={activePeriodMeta.label}
+                  defaultAnalysis={periodAnalytics.solidWaste.analysis}
+                  defaultRecommendation={periodAnalytics.solidWaste.recommendation}
+                  defaultFollowUp={periodAnalytics.solidWaste.followUp}
+                  pic={periodAnalytics.solidWaste.pic}
+                  timeline={periodAnalytics.solidWaste.timeline}
+                  onEdit={() => setHasUnsavedChanges(true)}
+                />
               </div>
             </div>
             {renderSingleFooter(21)}
@@ -3508,27 +3762,45 @@ export function AnnualReportF4View() {
 
               <div className="max-w-[1060px] mx-auto pt-1">
                 <table className="w-full border-collapse border border-slate-500 text-[9.5px] leading-[1.22] table-fixed">
-                  <colgroup>
-                    <col className="w-[6.0%]" />
-                    <col className="w-[10.8%]" />
-                    <col className="w-[6.4%]" />
-                    <col className="w-[5.8%]" />
-                    <col className="w-[6.8%]" />
-                    <col className="w-[6.0%]" />
-                    <col className="w-[5.8%]" />
-                    <col className="w-[5.8%]" />
-                    <col className="w-[5.0%]" />
-                    <col className="w-[5.8%]" />
-                    <col className="w-[6.0%]" />
-                    <col className="w-[7.8%]" />
-                    <col className="w-[6.8%]" />
-                    <col className="w-[7.6%]" />
-                    <col className="w-[7.6%]" />
-                  </colgroup>
+                  {activePeriodMeta.monthIndices.length === 12 ? (
+                    <colgroup>
+                      <col className="w-[6.0%]" />
+                      <col className="w-[10.8%]" />
+                      <col className="w-[6.4%]" />
+                      <col className="w-[5.8%]" />
+                      <col className="w-[6.8%]" />
+                      <col className="w-[6.0%]" />
+                      <col className="w-[5.8%]" />
+                      <col className="w-[5.8%]" />
+                      <col className="w-[5.0%]" />
+                      <col className="w-[5.8%]" />
+                      <col className="w-[6.0%]" />
+                      <col className="w-[7.8%]" />
+                      <col className="w-[6.8%]" />
+                      <col className="w-[7.6%]" />
+                      <col className="w-[7.6%]" />
+                    </colgroup>
+                  ) : activePeriodMeta.isSingleMonth ? (
+                    <colgroup>
+                      <col className="w-[16%]" />
+                      <col className="w-[32%]" />
+                      <col className="w-[22%]" />
+                      <col className="w-[30%]" />
+                    </colgroup>
+                  ) : (
+                    <colgroup>
+                      <col className="w-[12%]" />
+                      <col className="w-[24%]" />
+                      <col className="w-[16%]" />
+                      {activePeriodMeta.monthIndices.map((idx) => (
+                        <col key={idx} style={{ width: `${(48 / activePeriodMeta.monthIndices.length).toFixed(1)}%` }} />
+                      ))}
+                    </colgroup>
+                  )}
                   <thead>
                     <tr className="text-center font-normal">
-                      <th colSpan={15} className="border border-slate-500 py-0.5 font-normal">
-                        BULAN
+                      <th colSpan={3 + activePeriodMeta.monthIndices.length} className="border border-slate-500 py-0.5 font-normal">
+                        BULAN ({activePeriodMeta.periodTitle})
                       </th>
                     </tr>
                     <tr className="text-center font-normal">
@@ -3545,45 +3817,11 @@ export function AnnualReportF4View() {
                         <br />
                         Normal
                       </th>
-                      <th className="border border-slate-500 px-0.5 py-1 align-middle font-normal">
-                        JANUAR
-                        <br />I
-                      </th>
-                      <th className="border border-slate-500 px-0.5 py-1 align-middle font-normal">
-                        FEBRUARI
-                      </th>
-                      <th className="border border-slate-500 px-0.5 py-1 align-middle font-normal">
-                        MARET
-                      </th>
-                      <th className="border border-slate-500 px-0.5 py-1 align-middle font-normal">
-                        APRIL
-                      </th>
-                      <th className="border border-slate-500 px-0.5 py-1 align-middle font-normal">
-                        MEI
-                      </th>
-                      <th className="border border-slate-500 px-0.5 py-1 align-middle font-normal">
-                        JUNI
-                      </th>
-                      <th className="border border-slate-500 px-0.5 py-1 align-middle font-normal">
-                        JULI
-                      </th>
-                      <th className="border border-slate-500 px-0.5 py-1 align-middle font-normal">
-                        AGUST
-                        <br />
-                        US
-                      </th>
-                      <th className="border border-slate-500 px-0.5 py-1 align-middle font-normal">
-                        SEPTEMBER
-                      </th>
-                      <th className="border border-slate-500 px-0.5 py-1 align-middle font-normal">
-                        OKTOBER
-                      </th>
-                      <th className="border border-slate-500 px-0.5 py-1 align-middle font-normal">
-                        NOVEMBER
-                      </th>
-                      <th className="border border-slate-500 px-0.5 py-1 align-middle font-normal">
-                        DESEMBER
-                      </th>
+                      {activePeriodMeta.monthIndices.map((mIdx) => (
+                        <th key={mIdx} className="border border-slate-500 px-0.5 py-1 align-middle font-normal">
+                          {MONTH_SHORT_HEADERS[mIdx]}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
@@ -3662,12 +3900,12 @@ export function AnnualReportF4View() {
                         <td className="border border-slate-500 px-0.5 py-0.5 align-middle">
                           {row.norm}
                         </td>
-                        {row.vals.map((val, cIdx) => (
+                        {activePeriodMeta.monthIndices.map((mIdx) => (
                           <td
-                            key={cIdx}
+                            key={mIdx}
                             className="border border-slate-500 px-0.5 py-0.5 align-middle whitespace-pre-line"
                           >
-                            {val}
+                            {row.vals[mIdx] || '-'}
                           </td>
                         ))}
                       </tr>
@@ -3749,14 +3987,14 @@ export function AnnualReportF4View() {
                         <td className="border border-slate-500 px-0.5 py-0.5 align-middle">
                           {row.norm}
                         </td>
-                        {row.vals.map((val, cIdx) => (
+                        {activePeriodMeta.monthIndices.map((mIdx) => (
                           <td
-                            key={cIdx}
+                            key={mIdx}
                             className={`border border-slate-500 px-0.5 py-0.5 align-middle whitespace-pre-line ${
-                              row.redCol === cIdx ? 'bg-[#FF0000] text-slate-900' : ''
+                              row.redCol === mIdx ? 'bg-[#FF0000] text-slate-900 font-bold' : ''
                             }`}
                           >
-                            {val}
+                            {row.vals[mIdx] || '-'}
                           </td>
                         ))}
                       </tr>
@@ -3974,6 +4212,18 @@ export function AnnualReportF4View() {
                     Meningkatkan kapasitas SDM pengelola IPAL dan pemeliharaan peralatan.
                   </li>
                 </ol>
+
+                {/* Analisis Data, Rekomendasi & RTL Terpadu IPAL */}
+                <SectionAnalysisCard
+                  title="Pengolahan Air Limbah (IPAL)"
+                  periodLabel={activePeriodMeta.label}
+                  defaultAnalysis={periodAnalytics.wastewater.analysis}
+                  defaultRecommendation={periodAnalytics.wastewater.recommendation}
+                  defaultFollowUp={periodAnalytics.wastewater.followUp}
+                  pic={periodAnalytics.wastewater.pic}
+                  timeline={periodAnalytics.wastewater.timeline}
+                  onEdit={() => setHasUnsavedChanges(true)}
+                />
               </div>
 
               {/* 3.7 Pengamanan Limbah Radiasi */}
@@ -4066,7 +4316,10 @@ export function AnnualReportF4View() {
                       </tr>
                     </thead>
                     <tbody>
-                      {compiled.radiation.monthlyRows.slice(0, 4).map((r) => (
+                      {(activeRadiationRows.length <= 4
+                        ? activeRadiationRows
+                        : activeRadiationRows.slice(0, 4)
+                      ).map((r) => (
                         <tr key={r.no} className="text-center">
                           <td className="border border-slate-500 py-0.5">{r.no}</td>
                           <td className="border border-slate-500 px-1.5 py-0.5 text-left">
@@ -4099,48 +4352,50 @@ export function AnnualReportF4View() {
             className="scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] px-12 sm:px-14 pt-12 pb-10 flex flex-col justify-between print:shadow-none print:border-none"
           >
             <div className="space-y-2.5 text-[13.4px] leading-[1.68] text-justify text-slate-900">
-              {/* Lanjutan Tabel Radiasi (Bulan 5 - 12) */}
-              <div>
-                <table className="w-full border-collapse border border-slate-500 text-[11px] leading-[1.3] table-fixed">
-                  <colgroup>
-                    <col className="w-[4.8%]" />
-                    <col className="w-[14.2%]" />
-                    <col className="w-[12.5%]" />
-                    <col className="w-[14.2%]" />
-                    <col className="w-[7.2%]" />
-                    <col className="w-[13.2%]" />
-                    <col className="w-[10.8%]" />
-                    <col className="w-[12.2%]" />
-                    <col className="w-[10.9%]" />
-                  </colgroup>
-                  <tbody>
-                    {compiled.radiation.monthlyRows.slice(4).map((r) => (
-                      <tr key={r.no} className="text-center">
-                        <td className="border border-slate-500 py-0.5">{r.no}</td>
-                        <td className="border border-slate-500 px-1.5 py-0.5 text-left">
-                          {r.monthName}
-                        </td>
-                        <td className="border border-slate-500 py-0.5">{r.izinBapeten === true ? '✓' : ''}</td>
-                        <td className="border border-slate-500 py-0.5">{r.izinBapeten === false ? '✓' : ''}</td>
-                        <td className="border border-slate-500 py-0.5">{r.apdProteksi === true ? '✓' : ''}</td>
-                        <td className="border border-slate-500 py-0.5">{r.apdProteksi === false ? '✓' : ''}</td>
-                        <td className="border border-slate-500 py-0.5">{r.pemantauanPekerja === true ? '✓' : ''}</td>
-                        <td className="border border-slate-500 py-0.5">{r.pemantauanPekerja === false ? '✓' : ''}</td>
-                        <td className="border border-slate-500 py-0.5">{r.izinBapeten !== null ? `${r.capaianPct}%` : '-'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              {/* Lanjutan Tabel Radiasi (Bila data > 4 bulan) */}
+              {activeRadiationRows.length > 4 && (
+                <div>
+                  <table className="w-full border-collapse border border-slate-500 text-[11px] leading-[1.3] table-fixed">
+                    <colgroup>
+                      <col className="w-[4.8%]" />
+                      <col className="w-[14.2%]" />
+                      <col className="w-[12.5%]" />
+                      <col className="w-[14.2%]" />
+                      <col className="w-[7.2%]" />
+                      <col className="w-[13.2%]" />
+                      <col className="w-[10.8%]" />
+                      <col className="w-[12.2%]" />
+                      <col className="w-[10.9%]" />
+                    </colgroup>
+                    <tbody>
+                      {activeRadiationRows.slice(4).map((r) => (
+                        <tr key={r.no} className="text-center">
+                          <td className="border border-slate-500 py-0.5">{r.no}</td>
+                          <td className="border border-slate-500 px-1.5 py-0.5 text-left">
+                            {r.monthName}
+                          </td>
+                          <td className="border border-slate-500 py-0.5">{r.izinBapeten === true ? '✓' : ''}</td>
+                          <td className="border border-slate-500 py-0.5">{r.izinBapeten === false ? '✓' : ''}</td>
+                          <td className="border border-slate-500 py-0.5">{r.apdProteksi === true ? '✓' : ''}</td>
+                          <td className="border border-slate-500 py-0.5">{r.apdProteksi === false ? '✓' : ''}</td>
+                          <td className="border border-slate-500 py-0.5">{r.pemantauanPekerja === true ? '✓' : ''}</td>
+                          <td className="border border-slate-500 py-0.5">{r.pemantauanPekerja === false ? '✓' : ''}</td>
+                          <td className="border border-slate-500 py-0.5">{r.izinBapeten !== null ? `${r.capaianPct}%` : '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
 
               <div className="pt-1 space-y-1.5">
                 <p>
-                  Berdasarkan tabel pemantauan bulan Januari–Desember, diperoleh hasil sebagai berikut:
+                  Berdasarkan tabel pemantauan {activePeriodMeta.label}, diperoleh hasil sebagai berikut:
                 </p>
 
                 <ol className="list-decimal pl-10 space-y-1">
                   <li className="pl-2">
-                    Izin penggunaan alat dari BAPETEN Selama 12 bulan, rumah sakit memiliki izin resmi dari BAPETEN (100%). Hal ini menunjukkan kepatuhan terhadap regulasi keselamatan radiasi sesuai peraturan perundangan yang berlaku.
+                    Izin penggunaan alat dari BAPETEN Selama periode {activePeriodMeta.label}, rumah sakit memiliki izin resmi dari BAPETEN (100%). Hal ini menunjukkan kepatuhan terhadap regulasi keselamatan radiasi sesuai peraturan perundangan yang berlaku.
                   </li>
                   <li className="pl-2">
                     Ketersediaan peralatan proteksi radiasi Rumah sakit secara konsisten memiliki peralatan proteksi radiasi lengkap (100%), seperti apron timbal, pelindung tiroid, sarung tangan timbal, dan alat pelindung lainnya sesuai kebutuhan layanan.
@@ -4203,6 +4458,18 @@ export function AnnualReportF4View() {
                   </li>
                 </ol>
               </div>
+
+              {/* Analisis Data, Rekomendasi & RTL Terpadu Pengamanan Radiasi */}
+              <SectionAnalysisCard
+                title="Pengamanan Radiasi Rumah Sakit"
+                periodLabel={activePeriodMeta.label}
+                defaultAnalysis={periodAnalytics.radiation.analysis}
+                defaultRecommendation={periodAnalytics.radiation.recommendation}
+                defaultFollowUp={periodAnalytics.radiation.followUp}
+                pic={periodAnalytics.radiation.pic}
+                timeline={periodAnalytics.radiation.timeline}
+                onEdit={() => setHasUnsavedChanges(true)}
+              />
             </div>
             {renderSingleFooter(28)}
           </section>
@@ -4458,6 +4725,18 @@ export function AnnualReportF4View() {
                     </ul>
                   </li>
                 </ol>
+
+                {/* Analisis Data, Rekomendasi & RTL Terpadu Pengendalian Vektor */}
+                <SectionAnalysisCard
+                  title="Pengendalian Vektor & Binatang Pembawa Penyakit"
+                  periodLabel={activePeriodMeta.label}
+                  defaultAnalysis={periodAnalytics.vector.analysis}
+                  defaultRecommendation={periodAnalytics.vector.recommendation}
+                  defaultFollowUp={periodAnalytics.vector.followUp}
+                  pic={periodAnalytics.vector.pic}
+                  timeline={periodAnalytics.vector.timeline}
+                  onEdit={() => setHasUnsavedChanges(true)}
+                />
               </div>
 
               <div className="pt-2 space-y-1.5">
@@ -4522,7 +4801,7 @@ export function AnnualReportF4View() {
                       </tr>
                     </thead>
                     <tbody>
-                      {compiled.linen.monthlyRows.map((r) => (
+                      {activeLinenRows.map((r) => (
                         <tr key={r.no} className="text-center">
                           <td className="border border-slate-500 py-0.5">{r.no}</td>
                           <td className="border border-slate-500 py-0.5">{r.monthName}</td>
@@ -4678,6 +4957,18 @@ export function AnnualReportF4View() {
                     Mendokumentasikan hasil pengawasan sebagai bukti dukung akreditasi dan implementasi KRIS.
                   </li>
                 </ol>
+
+                {/* Analisis Data, Rekomendasi & RTL Terpadu Linen */}
+                <SectionAnalysisCard
+                  title="Penyelenggaraan Pengawasan Linen (Laundry)"
+                  periodLabel={activePeriodMeta.label}
+                  defaultAnalysis={periodAnalytics.linen.analysis}
+                  defaultRecommendation={periodAnalytics.linen.recommendation}
+                  defaultFollowUp={periodAnalytics.linen.followUp}
+                  pic={periodAnalytics.linen.pic}
+                  timeline={periodAnalytics.linen.timeline}
+                  onEdit={() => setHasUnsavedChanges(true)}
+                />
               </div>
 
               {/* 3.10 Penyelenggaraan Pengawasan Proses Dekontaminasi Melalui Disinfeksi dan Sterilisasi */}
@@ -4987,6 +5278,20 @@ export function AnnualReportF4View() {
                   </tr>
                 </tbody>
               </table>
+
+              {/* Analisis Data, Rekomendasi & RTL Terpadu Supervisi & Identifikasi Masalah Kesling */}
+              <div className="mt-4">
+                <SectionAnalysisCard
+                  title="Supervisi & Evaluasi Masalah Kesling"
+                  periodLabel={activePeriodMeta.label}
+                  defaultAnalysis={periodAnalytics.supervision.analysis}
+                  defaultRecommendation={periodAnalytics.supervision.recommendation}
+                  defaultFollowUp={periodAnalytics.supervision.followUp}
+                  pic={periodAnalytics.supervision.pic}
+                  timeline={periodAnalytics.supervision.timeline}
+                  onEdit={() => setHasUnsavedChanges(true)}
+                />
+              </div>
             </div>
             {renderSingleFooter(34)}
           </section>
@@ -5172,7 +5477,7 @@ export function AnnualReportF4View() {
         {/* =====================================================================
             HALAMAN 40: LAMPIRAN 2 (LOGBOOK LIMBAH MEDIS - BULAN JANUARI)
            ===================================================================== */}
-        {shouldRenderPage(40, 'LAMPIRAN_2_LOGBOOK') && (
+        {shouldRenderPage(40, 'LAMPIRAN_2_LOGBOOK') && activePeriodMeta.monthIndices.includes(0) && (
           <section
             id="f4-page-40"
             className="bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-8 sm:p-10 flex flex-col justify-between print:shadow-none print:border-none"
@@ -5237,7 +5542,7 @@ export function AnnualReportF4View() {
         {/* =====================================================================
             HALAMAN 41: LAMPIRAN 2 (LOGBOOK FEBRUARI & MARET)
            ===================================================================== */}
-        {shouldRenderPage(41, 'LAMPIRAN_2_LOGBOOK') && (
+        {shouldRenderPage(41, 'LAMPIRAN_2_LOGBOOK') && activePeriodMeta.monthIndices.some((idx) => [1, 2].includes(idx)) && (
           <section
             id="f4-page-41"
             className="bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-8 sm:p-10 flex flex-col justify-between print:shadow-none print:border-none"
@@ -5249,7 +5554,7 @@ export function AnnualReportF4View() {
                 </h2>
               </div>
 
-              {[1, 2].map((idx) => {
+              {[1, 2].filter((idx) => activePeriodMeta.monthIndices.includes(idx)).map((idx) => {
                 const b = compiled.lampiran2Logbook[idx];
                 if (!b) return null;
                 return (
@@ -5301,7 +5606,7 @@ export function AnnualReportF4View() {
         {/* =====================================================================
             HALAMAN 42: LAMPIRAN 2 (LOGBOOK APRIL & MEI)
            ===================================================================== */}
-        {shouldRenderPage(42, 'LAMPIRAN_2_LOGBOOK') && (
+        {shouldRenderPage(42, 'LAMPIRAN_2_LOGBOOK') && activePeriodMeta.monthIndices.some((idx) => [3, 4].includes(idx)) && (
           <section
             id="f4-page-42"
             className="bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-8 sm:p-10 flex flex-col justify-between print:shadow-none print:border-none"
@@ -5312,7 +5617,7 @@ export function AnnualReportF4View() {
                   LAMPIRAN 2 — LOG BOOK LIMBAH MEDIS (BULAN APRIL & MEI {reportYear})
                 </h2>
               </div>
-              {[3, 4].map((idx) => {
+              {[3, 4].filter((idx) => activePeriodMeta.monthIndices.includes(idx)).map((idx) => {
                 const b = compiled.lampiran2Logbook[idx];
                 if (!b) return null;
                 return (
@@ -5364,7 +5669,7 @@ export function AnnualReportF4View() {
         {/* =====================================================================
             HALAMAN 43: LAMPIRAN 2 (LOGBOOK JUNI & JULI)
            ===================================================================== */}
-        {shouldRenderPage(43, 'LAMPIRAN_2_LOGBOOK') && (
+        {shouldRenderPage(43, 'LAMPIRAN_2_LOGBOOK') && activePeriodMeta.monthIndices.some((idx) => [5, 6].includes(idx)) && (
           <section
             id="f4-page-43"
             className="bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-8 sm:p-10 flex flex-col justify-between print:shadow-none print:border-none"
@@ -5375,7 +5680,7 @@ export function AnnualReportF4View() {
                   LAMPIRAN 2 — LOG BOOK LIMBAH MEDIS (BULAN JUNI & JULI {reportYear})
                 </h2>
               </div>
-              {[5, 6].map((idx) => {
+              {[5, 6].filter((idx) => activePeriodMeta.monthIndices.includes(idx)).map((idx) => {
                 const b = compiled.lampiran2Logbook[idx];
                 if (!b) return null;
                 return (
@@ -5427,7 +5732,7 @@ export function AnnualReportF4View() {
         {/* =====================================================================
             HALAMAN 44: LAMPIRAN 2 (LOGBOOK AGUSTUS & SEPTEMBER)
            ===================================================================== */}
-        {shouldRenderPage(44, 'LAMPIRAN_2_LOGBOOK') && (
+        {shouldRenderPage(44, 'LAMPIRAN_2_LOGBOOK') && activePeriodMeta.monthIndices.some((idx) => [7, 8].includes(idx)) && (
           <section
             id="f4-page-44"
             className="bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-8 sm:p-10 flex flex-col justify-between print:shadow-none print:border-none"
@@ -5438,7 +5743,7 @@ export function AnnualReportF4View() {
                   LAMPIRAN 2 — LOG BOOK LIMBAH MEDIS (BULAN AGUSTUS & SEPTEMBER {reportYear})
                 </h2>
               </div>
-              {[7, 8].map((idx) => {
+              {[7, 8].filter((idx) => activePeriodMeta.monthIndices.includes(idx)).map((idx) => {
                 const b = compiled.lampiran2Logbook[idx];
                 if (!b) return null;
                 return (
@@ -5490,7 +5795,7 @@ export function AnnualReportF4View() {
         {/* =====================================================================
             HALAMAN 45: LAMPIRAN 2 (LOGBOOK OKTOBER & NOVEMBER)
            ===================================================================== */}
-        {shouldRenderPage(45, 'LAMPIRAN_2_LOGBOOK') && (
+        {shouldRenderPage(45, 'LAMPIRAN_2_LOGBOOK') && activePeriodMeta.monthIndices.some((idx) => [9, 10].includes(idx)) && (
           <section
             id="f4-page-45"
             className="bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-8 sm:p-10 flex flex-col justify-between print:shadow-none print:border-none"
@@ -5501,7 +5806,7 @@ export function AnnualReportF4View() {
                   LAMPIRAN 2 — LOG BOOK LIMBAH MEDIS (BULAN OKTOBER & NOVEMBER {reportYear})
                 </h2>
               </div>
-              {[9, 10].map((idx) => {
+              {[9, 10].filter((idx) => activePeriodMeta.monthIndices.includes(idx)).map((idx) => {
                 const b = compiled.lampiran2Logbook[idx];
                 if (!b) return null;
                 return (
@@ -5553,7 +5858,7 @@ export function AnnualReportF4View() {
         {/* =====================================================================
             HALAMAN 46: LAMPIRAN 2 (LOGBOOK DESEMBER & REKAP TAHUNAN)
            ===================================================================== */}
-        {shouldRenderPage(46, 'LAMPIRAN_2_LOGBOOK') && (
+        {shouldRenderPage(46, 'LAMPIRAN_2_LOGBOOK') && activePeriodMeta.monthIndices.includes(11) && (
           <section
             id="f4-page-46"
             className="bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-8 sm:p-10 flex flex-col justify-between print:shadow-none print:border-none"
@@ -5609,13 +5914,13 @@ export function AnnualReportF4View() {
 
               <div className="p-4 rounded-xl border-2 border-[#002147] bg-slate-50 text-xs space-y-1">
                 <div className="font-extrabold text-[#002147] uppercase">
-                  REKAPITULASI AKUMULATIF LOGBOOK LIMBAH MEDIS B3 TAHUN {reportYear}
+                  REKAPITULASI AKUMULATIF LOGBOOK LIMBAH MEDIS B3 {activePeriodMeta.label.toUpperCase()}
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-mono text-[11px]">
-                  <div>Padat Medis: <strong>{compiled.solidWaste.totalPadat.toFixed(2)} kg</strong></div>
-                  <div>Limbah Tajam: <strong>{compiled.solidWaste.totalTajam.toFixed(2)} kg</strong></div>
-                  <div>Obat Kedaluwarsa: <strong>{compiled.solidWaste.totalObat.toFixed(2)} kg</strong></div>
-                  <div>Grand Total: <strong className="text-emerald-700">{compiled.solidWaste.grandTotal.toFixed(2)} kg</strong></div>
+                  <div>Padat Medis: <strong>{activeSolidWasteTotals.padat.toFixed(2)} kg</strong></div>
+                  <div>Limbah Tajam: <strong>{activeSolidWasteTotals.tajam.toFixed(2)} kg</strong></div>
+                  <div>Obat Kedaluwarsa: <strong>{activeSolidWasteTotals.obat.toFixed(2)} kg</strong></div>
+                  <div>Grand Total: <strong className="text-emerald-700">{activeSolidWasteTotals.grand.toFixed(2)} kg</strong></div>
                 </div>
               </div>
             </div>
