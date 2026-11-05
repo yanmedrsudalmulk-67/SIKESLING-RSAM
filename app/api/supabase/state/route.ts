@@ -14,6 +14,8 @@ import {
   ensureCompleteWaterQualityRows,
   WaterQualityRow,
 } from '@/lib/water-quality';
+import { ensureCompleteAirQualityItems } from '@/lib/air-quality-data';
+import { ensureCompleteSaranaPrasaranaData } from '@/lib/sarana-prasarana';
 
 declare global {
   var __sikeslingServerCloudState: SikeslingCloudState | undefined;
@@ -63,6 +65,22 @@ export async function GET() {
           if (upgraded.length !== row.payload.length) {
             void upsertRowsToSupabaseRest(
               buildStoreRowsFromState(state, ['water_quality_2026'])
+            );
+          }
+        } else if (k === 'air_quality_items' && Array.isArray(row.payload)) {
+          const upgraded = ensureCompleteAirQualityItems(row.payload, 2026);
+          state.air_quality_items = upgraded;
+          if (upgraded.length !== row.payload.length) {
+            void upsertRowsToSupabaseRest(
+              buildStoreRowsFromState(state, ['air_quality_items'])
+            );
+          }
+        } else if (k === 'sarana_prasarana' && row.payload) {
+          const upgraded = ensureCompleteSaranaPrasaranaData(row.payload, 2026);
+          state.sarana_prasarana = upgraded;
+          if (!Array.isArray((row.payload as any)?.toilets) || (row.payload as any).toilets.length < 15) {
+            void upsertRowsToSupabaseRest(
+              buildStoreRowsFromState(state, ['sarana_prasarana'])
             );
           }
         } else {

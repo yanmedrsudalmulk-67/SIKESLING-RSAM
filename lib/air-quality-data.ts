@@ -872,3 +872,14 @@ export const AIR_QUALITY_DATA_2025: AirQualityFullRecord[] = AIR_QUALITY_DATA_20
 export function getAirQualityDataByYear(year: number): AirQualityFullRecord[] {
   return year === 2025 ? AIR_QUALITY_DATA_2025 : AIR_QUALITY_DATA_2026;
 }
+
+export function ensureCompleteAirQualityItems(
+  items: unknown,
+  year = 2026
+): AirQualityFullRecord[] {
+  const defaults = getAirQualityDataByYear(year);
+  if (!Array.isArray(items) || items.length <= 5) {
+    return defaults;
+  }
+  return items as AirQualityFullRecord[];
+}

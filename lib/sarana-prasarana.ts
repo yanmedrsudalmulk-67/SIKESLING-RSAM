@@ -636,6 +636,21 @@ export function createInitialSaranaPrasaranaData(year = 2026): SaranaPrasaranaDa
   };
 }
 
+export function ensureCompleteSaranaPrasaranaData(
+  data: unknown,
+  year = 2026
+): SaranaPrasaranaDataset {
+  const defaults = createInitialSaranaPrasaranaData(year);
+  if (!data || typeof data !== 'object') {
+    return defaults;
+  }
+  const s = data as Partial<SaranaPrasaranaDataset>;
+  if (!Array.isArray(s.toilets) || s.toilets.length < 15) {
+    return defaults;
+  }
+  return data as SaranaPrasaranaDataset;
+}
+
 export interface SaranaAspectScore {
   sheetId: string;
   name: string;

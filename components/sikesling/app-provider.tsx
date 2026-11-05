@@ -55,7 +55,9 @@ import {
 import {
   SaranaPrasaranaDataset,
   createInitialSaranaPrasaranaData,
+  ensureCompleteSaranaPrasaranaData,
 } from '@/lib/sarana-prasarana';
+import { ensureCompleteAirQualityItems } from '@/lib/air-quality-data';
 import {
   LinenMonitoringRow,
   createInitialLinenMonitoringData,
@@ -292,7 +294,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       );
     }
     if (Array.isArray(cloud.air_quality_items)) {
-      setAirItems(cloud.air_quality_items);
+      setAirItems(ensureCompleteAirQualityItems(cloud.air_quality_items, 2026));
     }
     if (
       Array.isArray(cloud.wastewater_quality_2026) &&
@@ -325,7 +327,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setFoodRows(cloud.food_sanitation);
     }
     if (cloud.sarana_prasarana && typeof cloud.sarana_prasarana === 'object') {
-      setSaranaPrasaranaData(cloud.sarana_prasarana);
+      setSaranaPrasaranaData(ensureCompleteSaranaPrasaranaData(cloud.sarana_prasarana, 2026));
     }
     if (
       Array.isArray(cloud.linen_monitoring) &&

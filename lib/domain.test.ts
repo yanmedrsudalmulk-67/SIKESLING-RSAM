@@ -32,6 +32,7 @@ import {
   getSupabaseConfig,
   createInitialSikeslingCloudState,
 } from './supabase';
+import { ensureCompleteAirQualityItems } from './air-quality-data';
 
 test('navigation structure includes all 11 main menus and required routes', () => {
   assert.equal(MAIN_NAVIGATION.length, 11);
@@ -302,6 +303,13 @@ test('air quality and indoor physical environment dataset is populated with requ
   const meta = resolveRouteMeta('/monitoring/kualitas-udara');
   assert.equal(meta.title, 'Monitoring Kualitas Udara');
   assert.ok(meta.breadcrumbs.length >= 2);
+
+  // Test ensureCompleteAirQualityItems upgrades legacy dummy data to full 35+ rooms
+  const legacyDummy = [{ id: 'air-1', groupName: 'IGD', unitName: 'Ruang Isolasi', tempResult: 24 }];
+  const upgraded = ensureCompleteAirQualityItems(legacyDummy, 2026);
+  assert.ok(upgraded.length >= 35);
+  assert.equal(upgraded[0].unitName, '1. Ruang Isolasi');
+  assert.equal(upgraded[0].tempResult, 27.6);
 });
 
 test('supabase integration normalizes REST v1 URLs and defines all 21 application collections', () => {

@@ -82,9 +82,15 @@ export function SaranaPrasaranaView() {
   // Sync internal state when context dataset updates (e.g. from Supabase hydration)
   React.useEffect(() => {
     if (saranaPrasaranaData) {
-      setData(saranaPrasaranaData);
+      if (!saranaPrasaranaData.toilets || saranaPrasaranaData.toilets.length < 15) {
+        const fresh = createInitialSaranaPrasaranaData(2026);
+        setData(fresh);
+        void updateSaranaPrasaranaData(fresh);
+      } else {
+        setData(saranaPrasaranaData);
+      }
     }
-  }, [saranaPrasaranaData]);
+  }, [saranaPrasaranaData, updateSaranaPrasaranaData]);
 
   // Delete modal state
   const [deleteConfirmation, setDeleteConfirmation] = useState<{

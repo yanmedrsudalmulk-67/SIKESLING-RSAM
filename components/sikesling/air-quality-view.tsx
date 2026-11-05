@@ -110,7 +110,7 @@ export function AirQualityView() {
 
   // Auto-hydrate from official Excel dataset if empty or year changes
   useEffect(() => {
-    if (!airItems || airItems.length === 0) {
+    if (!airItems || airItems.length <= 5) {
       void updateAirItems(getAirQualityDataByYear(selectedYear));
     }
   }, [airItems, selectedYear, updateAirItems]);
@@ -137,7 +137,12 @@ export function AirQualityView() {
     });
   };
 
-  const items = airItems as AirQualityItem[];
+  const items = useMemo(() => {
+    if (airItems && airItems.length > 5) {
+      return airItems as AirQualityItem[];
+    }
+    return getAirQualityDataByYear(selectedYear) as AirQualityItem[];
+  }, [airItems, selectedYear]);
   const setItems = (
     updater: AirQualityItem[] | ((prev: AirQualityItem[]) => AirQualityItem[])
   ) => {
@@ -393,6 +398,17 @@ export function AirQualityView() {
         breadcrumbs={meta.breadcrumbs}
         actions={
           <div className="flex flex-wrap items-center gap-2.5">
+            {/* Tombol Muat Data Asli Excel */}
+            <button
+              type="button"
+              onClick={handleReloadExcelData}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-[#002147] bg-[#D2B48C] hover:bg-[#e4c9a8] border border-[#002147]/20 shadow-sm transition-all cursor-pointer"
+              title="Muat ulang seluruh 35+ ruangan dari data Excel resmi (Juni 2026 / Desember 2025)"
+            >
+              <RefreshCw className="w-3.5 h-3.5 text-[#002147]" />
+              <span>Muat Data Asli Excel</span>
+            </button>
+
             {/* Tombol Tambah Ruangan Baru */}
             <button
               type="button"
