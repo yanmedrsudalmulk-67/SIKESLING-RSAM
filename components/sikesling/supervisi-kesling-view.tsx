@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Camera,
   CheckCircle2,
@@ -19,6 +19,7 @@ import {
   Shirt,
   Bug,
   Calendar,
+  Layers,
   MapPin,
   ShieldAlert,
 } from 'lucide-react';
@@ -46,6 +47,35 @@ export interface KeslingDocActivity {
   defaultLocation: string;
   photos: KeslingDocPhoto[];
 }
+
+export type SupervisiPeriodType = 'REALTIME' | 'BULANAN' | 'TRIWULAN' | 'SEMESTER' | 'TAHUNAN';
+
+export const SUPERVISI_MONTH_NAMES = [
+  'Januari',
+  'Februari',
+  'Maret',
+  'April',
+  'Mei',
+  'Juni',
+  'Juli',
+  'Agustus',
+  'September',
+  'Oktober',
+  'November',
+  'Desember',
+];
+
+export const SUPERVISI_QUARTERS = [
+  { value: 1, label: 'Triwulan I (Jan – Mar)', shortLabel: 'Triwulan I', months: [1, 2, 3] },
+  { value: 2, label: 'Triwulan II (Apr – Jun)', shortLabel: 'Triwulan II', months: [4, 5, 6] },
+  { value: 3, label: 'Triwulan III (Jul – Sep)', shortLabel: 'Triwulan III', months: [7, 8, 9] },
+  { value: 4, label: 'Triwulan IV (Okt – Des)', shortLabel: 'Triwulan IV', months: [10, 11, 12] },
+];
+
+export const SUPERVISI_SEMESTERS = [
+  { value: 1, label: 'Semester 1 (Jan – Jun)', shortLabel: 'Semester 1', months: [1, 2, 3, 4, 5, 6] },
+  { value: 2, label: 'Semester 2 (Jul – Des)', shortLabel: 'Semester 2', months: [7, 8, 9, 10, 11, 12] },
+];
 
 const STORAGE_KEY = 'sikresmi_supervisi_kesling_docs_v1';
 
@@ -228,6 +258,64 @@ export function SupervisiKeslingView() {
     'vektor-binatang': true,
   });
 
+  // State Filter Periode, Bulan, dan Tahun (Pojok Kanan Sejajar Judul)
+  const [periodType, setPeriodType] = useState<SupervisiPeriodType>('REALTIME');
+  const [selectedYear, setSelectedYear] = useState<number>(2026);
+  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1); // 1-12
+  const [selectedTriwulan, setSelectedTriwulan] = useState<number>(
+    Math.floor(new Date().getMonth() / 3) + 1
+  ); // 1-4
+  const [selectedSemester, setSelectedSemester] = useState<number>(
+    new Date().getMonth() < 6 ? 1 : 2
+  ); // 1-2
+
+  // Label Periode Aktif
+  const activePeriodLabel = useMemo(() => {
+    switch (periodType) {
+      case 'REALTIME':
+        return `Realtime (Data Terkini ${selectedYear})`;
+      case 'BULANAN':
+        return `Bulan ${SUPERVISI_MONTH_NAMES[selectedMonth - 1]} ${selectedYear}`;
+      case 'TRIWULAN': {
+        const q = SUPERVISI_QUARTERS.find((item) => item.value === selectedTriwulan);
+        return `${q ? q.label : 'Triwulan'} ${selectedYear}`;
+      }
+      case 'SEMESTER': {
+        const s = SUPERVISI_SEMESTERS.find((item) => item.value === selectedSemester);
+        return `${s ? s.label : 'Semester'} ${selectedYear}`;
+      }
+      case 'TAHUNAN':
+        return `Tahun ${selectedYear} (Januari – Desember)`;
+      default:
+        return `Tahun ${selectedYear}`;
+    }
+  }, [periodType, selectedYear, selectedMonth, selectedTriwulan, selectedSemester]);
+
+  // Evaluasi apakah foto sesuai dengan filter periode yang aktif
+  const isPhotoInActivePeriod = (photo: KeslingDocPhoto): boolean => {
+    if (periodType === 'REALTIME') return true;
+    if (!photo.date) return true;
+
+    const parts = photo.date.split('-');
+    const y = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10);
+    if (isNaN(y) || isNaN(m)) return true;
+
+    if (y !== selectedYear) return false;
+
+    if (periodType === 'TAHUNAN') return true;
+    if (periodType === 'BULANAN') return m === selectedMonth;
+    if (periodType === 'TRIWULAN') {
+      const q = SUPERVISI_QUARTERS.find((item) => item.value === selectedTriwulan);
+      return q ? q.months.includes(m) : true;
+    }
+    if (periodType === 'SEMESTER') {
+      const s = SUPERVISI_SEMESTERS.find((item) => item.value === selectedSemester);
+      return s ? s.months.includes(m) : true;
+    }
+    return true;
+  };
+
   // Modal Lightbox Preview
   const [previewPhoto, setPreviewPhoto] = useState<{
     url: string;
@@ -269,21 +357,22 @@ export function SupervisiKeslingView() {
     setExpandedCards((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  // Upload new photo(s) handler (up to 6 photos max per card)
+  // Upload new photo(s) handler (up to 6 photos max per card for active period)
   const handleUploadPhotos = async (activityId: string, files: FileList | null) => {
     if (!files || files.length === 0) return;
 
     const targetActivity = activities.find((a) => a.id === activityId);
     if (!targetActivity) return;
 
-    const currentCount = targetActivity.photos.length;
+    const currentPhotos = targetActivity.photos.filter(isPhotoInActivePeriod);
+    const currentCount = currentPhotos.length;
     const remainingSlots = 6 - currentCount;
 
     if (remainingSlots <= 0) {
       pushToast({
         type: 'warning',
         title: 'Batas Maksimal Tercapai',
-        message: 'Maksimal 6 foto dokumentasi telah tercapai pada modul ini.',
+        message: 'Maksimal 6 foto dokumentasi telah tercapai pada modul ini untuk periode terpilih.',
       });
       return;
     }
@@ -298,7 +387,26 @@ export function SupervisiKeslingView() {
       });
 
       const newPhotos: KeslingDocPhoto[] = [];
-      const today = new Date().toISOString().split('T')[0];
+
+      // Tentukan tanggal default sesuai periode yang sedang aktif
+      let defaultDate = new Date().toISOString().split('T')[0];
+      if (periodType === 'BULANAN') {
+        const curDay =
+          new Date().getFullYear() === selectedYear && new Date().getMonth() + 1 === selectedMonth
+            ? String(new Date().getDate()).padStart(2, '0')
+            : '01';
+        defaultDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${curDay}`;
+      } else if (periodType === 'TRIWULAN') {
+        const qMonth =
+          SUPERVISI_QUARTERS.find((q) => q.value === selectedTriwulan)?.months[0] || 1;
+        defaultDate = `${selectedYear}-${String(qMonth).padStart(2, '0')}-01`;
+      } else if (periodType === 'SEMESTER') {
+        const sMonth =
+          SUPERVISI_SEMESTERS.find((s) => s.value === selectedSemester)?.months[0] || 1;
+        defaultDate = `${selectedYear}-${String(sMonth).padStart(2, '0')}-01`;
+      } else if (periodType === 'TAHUNAN') {
+        defaultDate = `${selectedYear}-01-15`;
+      }
 
       for (let i = 0; i < filesToUpload.length; i++) {
         const file = filesToUpload[i];
@@ -310,7 +418,7 @@ export function SupervisiKeslingView() {
           id: `real-doc-${activityId}-${Date.now()}-${i}`,
           url: compressedUrl,
           caption: defaultCaption,
-          date: today,
+          date: defaultDate,
           location: targetActivity.defaultLocation,
           uploadedAt: new Date().toISOString(),
         });
@@ -440,7 +548,7 @@ export function SupervisiKeslingView() {
 
   return (
     <PageContainer>
-      {/* Page Header Bersih: Judul 'Supervisi Kesling' tanpa tombol tambahan */}
+      {/* Page Header: Judul Supervisi Kesling & Tombol Periode, Bulan, Tahun di Pojok Kanan Sejajar Judul */}
       <PageHeader
         title="Supervisi Kesling"
         description="Pencatatan dan arsip foto dokumentasi untuk 8 kegiatan kesehatan lingkungan utama RSUD Al-Mulk Sukabumi (maksimal 6 foto per modul kegiatan)."
@@ -450,13 +558,138 @@ export function SupervisiKeslingView() {
           { label: 'Supervisi Lingkungan', href: '/supervisi/dashboard' },
           { label: 'Supervisi Kesling', href: '/supervisi/kesling' },
         ]}
+        actions={
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+            {/* 1. Tombol Periode (Realtime, Bulanan, Triwulanan, Semesteran, Tahunan) */}
+            <div className="relative inline-flex items-center">
+              <label htmlFor="filter-supervisi-period" className="sr-only">
+                Tipe Periode
+              </label>
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#002147] dark:text-[#D2B48C]">
+                  <Layers className="w-3.5 h-3.5" />
+                </div>
+                <select
+                  id="filter-supervisi-period"
+                  aria-label="Pilih Tipe Periode Supervisi"
+                  value={periodType}
+                  onChange={(e) => setPeriodType(e.target.value as SupervisiPeriodType)}
+                  className="appearance-none pl-8.5 pr-8 py-2 rounded-full text-xs font-bold bg-white/95 dark:bg-[#001835] text-[#002147] dark:text-slate-100 border border-[#D2B48C]/70 dark:border-slate-700 shadow-sm hover:border-[#002147] focus:outline-none focus:ring-2 focus:ring-[#002147]/30 cursor-pointer transition-all"
+                >
+                  <option value="REALTIME">⚡ Realtime</option>
+                  <option value="BULANAN">📅 Bulanan</option>
+                  <option value="TRIWULAN">📊 Triwulanan</option>
+                  <option value="SEMESTER">📈 Semesteran</option>
+                  <option value="TAHUNAN">🏛️ Tahunan</option>
+                </select>
+                <ChevronDown className="w-3.5 h-3.5 text-[#002147] dark:text-[#D2B48C] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+            </div>
+
+            {/* 2. Tombol Bulan / Rentang Sub-Periode */}
+            <div className="relative inline-flex items-center">
+              <label htmlFor="filter-supervisi-subperiod" className="sr-only">
+                Pilihan Bulan / Rentang
+              </label>
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#002147] dark:text-[#D2B48C]">
+                  <Calendar className="w-3.5 h-3.5" />
+                </div>
+                {periodType === 'TRIWULAN' ? (
+                  <select
+                    id="filter-supervisi-subperiod"
+                    aria-label="Pilih Triwulan"
+                    value={selectedTriwulan}
+                    onChange={(e) => setSelectedTriwulan(Number(e.target.value))}
+                    className="appearance-none pl-8.5 pr-8 py-2 rounded-full text-xs font-bold bg-white/95 dark:bg-[#001835] text-[#002147] dark:text-slate-100 border border-[#D2B48C]/70 dark:border-slate-700 shadow-sm hover:border-[#002147] focus:outline-none focus:ring-2 focus:ring-[#002147]/30 cursor-pointer transition-all"
+                  >
+                    {SUPERVISI_QUARTERS.map((q) => (
+                      <option key={q.value} value={q.value}>
+                        {q.label}
+                      </option>
+                    ))}
+                  </select>
+                ) : periodType === 'SEMESTER' ? (
+                  <select
+                    id="filter-supervisi-subperiod"
+                    aria-label="Pilih Semester"
+                    value={selectedSemester}
+                    onChange={(e) => setSelectedSemester(Number(e.target.value))}
+                    className="appearance-none pl-8.5 pr-8 py-2 rounded-full text-xs font-bold bg-white/95 dark:bg-[#001835] text-[#002147] dark:text-slate-100 border border-[#D2B48C]/70 dark:border-slate-700 shadow-sm hover:border-[#002147] focus:outline-none focus:ring-2 focus:ring-[#002147]/30 cursor-pointer transition-all"
+                  >
+                    {SUPERVISI_SEMESTERS.map((s) => (
+                      <option key={s.value} value={s.value}>
+                        {s.label}
+                      </option>
+                    ))}
+                  </select>
+                ) : periodType === 'TAHUNAN' ? (
+                  <div className="pl-8.5 pr-4 py-2 rounded-full text-xs font-bold bg-white/95 dark:bg-[#001835] text-[#002147] dark:text-slate-100 border border-[#D2B48C]/70 dark:border-slate-700 shadow-sm">
+                    Januari – Desember
+                  </div>
+                ) : (
+                  <select
+                    id="filter-supervisi-subperiod"
+                    aria-label="Pilih Bulan"
+                    value={periodType === 'REALTIME' ? 'ALL' : selectedMonth}
+                    onChange={(e) => {
+                      if (e.target.value === 'ALL') {
+                        setPeriodType('REALTIME');
+                      } else {
+                        setPeriodType('BULANAN');
+                        setSelectedMonth(Number(e.target.value));
+                      }
+                    }}
+                    className="appearance-none pl-8.5 pr-8 py-2 rounded-full text-xs font-bold bg-white/95 dark:bg-[#001835] text-[#002147] dark:text-slate-100 border border-[#D2B48C]/70 dark:border-slate-700 shadow-sm hover:border-[#002147] focus:outline-none focus:ring-2 focus:ring-[#002147]/30 cursor-pointer transition-all"
+                  >
+                    <option value="ALL">⚡ Semua Bulan (Realtime)</option>
+                    <optgroup label="Pilih Bulan Spesifik">
+                      {SUPERVISI_MONTH_NAMES.map((m, idx) => (
+                        <option key={idx + 1} value={idx + 1}>
+                          Bulan {m}
+                        </option>
+                      ))}
+                    </optgroup>
+                  </select>
+                )}
+                {periodType !== 'TAHUNAN' && (
+                  <ChevronDown className="w-3.5 h-3.5 text-[#002147] dark:text-[#D2B48C] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                )}
+              </div>
+            </div>
+
+            {/* 3. Tombol Tahun */}
+            <div className="relative inline-flex items-center">
+              <label htmlFor="filter-supervisi-year" className="sr-only">
+                Pilih Tahun
+              </label>
+              <div className="relative">
+                <select
+                  id="filter-supervisi-year"
+                  aria-label="Pilih Tahun"
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(Number(e.target.value))}
+                  className="appearance-none pl-4 pr-8 py-2 rounded-full text-xs font-bold bg-white/95 dark:bg-[#001835] text-[#002147] dark:text-slate-100 border border-[#D2B48C]/70 dark:border-slate-700 shadow-sm hover:border-[#002147] focus:outline-none focus:ring-2 focus:ring-[#002147]/30 cursor-pointer transition-all"
+                >
+                  <option value={2026}>Tahun 2026</option>
+                  <option value={2025}>Tahun 2025</option>
+                  <option value={2024}>Tahun 2024</option>
+                  <option value={2027}>Tahun 2027</option>
+                  <option value={2028}>Tahun 2028</option>
+                </select>
+                <ChevronDown className="w-3.5 h-3.5 text-[#002147] dark:text-[#D2B48C] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+            </div>
+          </div>
+        }
       />
 
       {/* Langsung Tampilkan 8 Cards Isian Dokumentasi Kegiatan */}
       <div className="space-y-6 mt-3">
         {activities.map((act) => {
           const isExpanded = expandedCards[act.id] ?? true;
-          const photoCount = act.photos.length;
+          const filteredPhotos = act.photos.filter(isPhotoInActivePeriod);
+          const photoCount = filteredPhotos.length;
           const isFull = photoCount >= 6;
           const remaining = 6 - photoCount;
 
@@ -484,7 +717,7 @@ export function SupervisiKeslingView() {
                         {act.category}
                       </span>
                       <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                        • {act.periodLabel}
+                        • {activePeriodLabel}
                       </span>
                     </div>
                     <h3 className="text-sm sm:text-base font-bold text-[#002147] dark:text-white truncate">
@@ -526,7 +759,7 @@ export function SupervisiKeslingView() {
                 <div className="p-4 sm:p-5 space-y-4">
                   {/* Photo Grid (Max 6 Photos) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {act.photos.map((photo, idx) => (
+                    {filteredPhotos.map((photo, idx) => (
                       <div
                         key={photo.id}
                         className="group rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-[#002147]/30 p-2.5 hover:shadow-md transition-all flex flex-col justify-between"
