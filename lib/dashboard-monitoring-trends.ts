@@ -146,16 +146,16 @@ export const MONITORING_STORAGE_KEYS = {
 } as const;
 
 const DEFAULT_SOLID_WASTE_ROWS: SolidWasteSnapshotRow[] = [
-  { no: 1, monthUpper: 'JANUARI', monthLabel: 'Januari', monthShort: 'Jan', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 298, limbahTajam: 98, obatKadaluarsa: 0, totalOverride: 396 },
-  { no: 2, monthUpper: 'FEBRUARI', monthLabel: 'Februari', monthShort: 'Feb', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 259, limbahTajam: 74, obatKadaluarsa: 0, totalOverride: 333 },
-  { no: 3, monthUpper: 'MARET', monthLabel: 'Maret', monthShort: 'Mar', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 243, limbahTajam: 51, obatKadaluarsa: 0, totalOverride: 294 },
-  { no: 4, monthUpper: 'APRIL', monthLabel: 'April', monthShort: 'Apr', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 264, limbahTajam: 78, obatKadaluarsa: 0, totalOverride: 342 },
-  { no: 5, monthUpper: 'MEI', monthLabel: 'Mei', monthShort: 'Mei', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 268, limbahTajam: 83, obatKadaluarsa: 0, totalOverride: 351 },
-  { no: 6, monthUpper: 'JUNI', monthLabel: 'Juni', monthShort: 'Jun', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 238, limbahTajam: 83, obatKadaluarsa: 0, totalOverride: 321 },
-  { no: 7, monthUpper: 'JULI', monthLabel: 'Juli', monthShort: 'Jul', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 224, limbahTajam: 70, obatKadaluarsa: 0, totalOverride: 294 },
-  { no: 8, monthUpper: 'AGUSTUS', monthLabel: 'Agustus', monthShort: 'Agu', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 253, limbahTajam: 71, obatKadaluarsa: 0, totalOverride: 324 },
-  { no: 9, monthUpper: 'SEPTEMBER', monthLabel: 'September', monthShort: 'Sep', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 298, limbahTajam: 98, obatKadaluarsa: 0, totalOverride: 396 },
-  { no: 10, monthUpper: 'OKTOBER', monthLabel: 'Oktober', monthShort: 'Okt', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 248, limbahTajam: 80, obatKadaluarsa: 0, totalOverride: 328 },
+  { no: 1, monthUpper: 'JANUARI', monthLabel: 'Januari', monthShort: 'Jan', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 214, limbahTajam: 58, obatKadaluarsa: 0, totalOverride: 272 },
+  { no: 2, monthUpper: 'FEBRUARI', monthLabel: 'Februari', monthShort: 'Feb', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 194, limbahTajam: 58, obatKadaluarsa: 0, totalOverride: 252 },
+  { no: 3, monthUpper: 'MARET', monthLabel: 'Maret', monthShort: 'Mar', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 208, limbahTajam: 77, obatKadaluarsa: 0, totalOverride: 285 },
+  { no: 4, monthUpper: 'APRIL', monthLabel: 'April', monthShort: 'Apr', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 254, limbahTajam: 115, obatKadaluarsa: 12, totalOverride: 381 },
+  { no: 5, monthUpper: 'MEI', monthLabel: 'Mei', monthShort: 'Mei', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 242, limbahTajam: 105, obatKadaluarsa: 0, totalOverride: 347 },
+  { no: 6, monthUpper: 'JUNI', monthLabel: 'Juni', monthShort: 'Jun', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 168, limbahTajam: 101, obatKadaluarsa: 0, totalOverride: 269 },
+  { no: 7, monthUpper: 'JULI', monthLabel: 'Juli', monthShort: 'Jul', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 209, limbahTajam: 75, obatKadaluarsa: 8, totalOverride: 292 },
+  { no: 8, monthUpper: 'AGUSTUS', monthLabel: 'Agustus', monthShort: 'Agu', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 226, limbahTajam: 80, obatKadaluarsa: 0, totalOverride: 306 },
+  { no: 9, monthUpper: 'SEPTEMBER', monthLabel: 'September', monthShort: 'Sep', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 231, limbahTajam: 70, obatKadaluarsa: 0, totalOverride: 301 },
+  { no: 10, monthUpper: 'OKTOBER', monthLabel: 'Oktober', monthShort: 'Okt', pemilahan: true, penyimpanan90Hari: true, tpsBerizin: true, limbahPadat: 0, limbahTajam: 0, obatKadaluarsa: 0, totalOverride: 0 },
   { no: 11, monthUpper: 'NOVEMBER', monthLabel: 'November', monthShort: 'Nov', pemilahan: false, penyimpanan90Hari: false, tpsBerizin: false, limbahPadat: 0, limbahTajam: 0, obatKadaluarsa: 0, totalOverride: 0 },
   { no: 12, monthUpper: 'DESEMBER', monthLabel: 'Desember', monthShort: 'Des', pemilahan: false, penyimpanan90Hari: false, tpsBerizin: false, limbahPadat: 0, limbahTajam: 0, obatKadaluarsa: 0, totalOverride: 0 },
 ];

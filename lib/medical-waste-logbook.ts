@@ -1,3 +1,5 @@
+import { REAL_MEDICAL_WASTE_LOGBOOK_2026 } from './medical-waste-excel-data';
+
 export const DEFAULT_MEDICAL_WASTE_SOURCES: readonly string[] = [
   'IGD',
   'KELAS 1 USMAN',
@@ -233,12 +235,17 @@ export function summarizeBySourceRoom(rows: MedicalWasteLogRow[]): {
 }
 
 /**
- * Creates a clean realtime Log Book batch for the given ISO date (defaults to today)
- * with the 11 standard hospital rooms and NO dummy weights or dummy manifest numbers.
+ * Creates the initial realtime Log Book dataset.
+ * Defaults to the official Year 2026 data extracted from LOOG_BOOK_LIMBAH_2026.xlsx
+ * (Januari s.d. Oktober 2026). If a custom date string is provided, creates a single batch.
  */
 export function createRealtimeInitialMedicalWasteLogbook(
-  todayIso: string = getRealtimeTodayIso()
+  customIso?: string
 ): MedicalWasteLogRow[] {
+  if (!customIso && REAL_MEDICAL_WASTE_LOGBOOK_2026 && REAL_MEDICAL_WASTE_LOGBOOK_2026.length > 0) {
+    return REAL_MEDICAL_WASTE_LOGBOOK_2026;
+  }
+  const todayIso = customIso || getRealtimeTodayIso();
   const batchId = `batch-${todayIso}`;
   return DEFAULT_MEDICAL_WASTE_SOURCES.map((room, idx) => ({
     id: `log-${todayIso}-${idx + 1}`,

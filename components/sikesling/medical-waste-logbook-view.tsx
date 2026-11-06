@@ -17,6 +17,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   X,
+  ChevronDown,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -45,6 +46,21 @@ import {
   summarizeBySourceRoom,
   generateMedicalWasteLogbookAnalysis,
 } from '@/lib/medical-waste-logbook';
+
+export const LOGBOOK_MONTH_NAMES = [
+  'Januari',
+  'Februari',
+  'Maret',
+  'April',
+  'Mei',
+  'Juni',
+  'Juli',
+  'Agustus',
+  'September',
+  'Oktober',
+  'November',
+  'Desember',
+] as const;
 
 type EditableFieldKey =
   | 'sumberLimbah'
@@ -122,6 +138,10 @@ export function MedicalWasteLogbookView() {
   const [pendingDelete, setPendingDelete] =
     useState<PendingDeleteAction | null>(null);
 
+  // Filter Periode: Dropdown Pilih Bulan dan Pilih Tahun (Sejajar Judul)
+  const [selectedMonth, setSelectedMonth] = useState<number | 'ALL'>('ALL');
+  const [selectedYear, setSelectedYear] = useState<number>(2026);
+
   // Filter / search state
   const [searchRoomOrManifest, setSearchRoomOrManifest] = useState<string>('');
   const [filterDateMasuk, setFilterDateMasuk] = useState<string>('');
@@ -150,12 +170,31 @@ export function MedicalWasteLogbookView() {
     return Array.from(set);
   }, [masterRooms, rows]);
 
-  // Filtered rows
+  // Filtered rows respecting Year, Month, Specific Date, and Search
   const filteredRows = useMemo(() => {
     return rows.filter((r) => {
+      // 1. Filter by Year
+      if (r.tanggalMasuk) {
+        const rowYear = parseInt(r.tanggalMasuk.slice(0, 4), 10);
+        if (!isNaN(rowYear) && rowYear !== selectedYear) {
+          return false;
+        }
+      }
+
+      // 2. Filter by Month
+      if (selectedMonth !== 'ALL' && r.tanggalMasuk) {
+        const rowMonth = parseInt(r.tanggalMasuk.slice(5, 7), 10);
+        if (!isNaN(rowMonth) && rowMonth !== selectedMonth) {
+          return false;
+        }
+      }
+
+      // 3. Filter by Specific Date Masuk if selected
       if (filterDateMasuk && r.tanggalMasuk !== filterDateMasuk) {
         return false;
       }
+
+      // 4. Search query
       if (searchRoomOrManifest.trim()) {
         const q = searchRoomOrManifest.toLowerCase();
         const matchRoom = r.sumberLimbah.toLowerCase().includes(q);
@@ -167,7 +206,7 @@ export function MedicalWasteLogbookView() {
       }
       return true;
     });
-  }, [rows, filterDateMasuk, searchRoomOrManifest]);
+  }, [rows, selectedYear, selectedMonth, filterDateMasuk, searchRoomOrManifest]);
 
   const batchGroups = useMemo(
     () => groupLogbookRowsByBatch(filteredRows),
@@ -378,11 +417,22 @@ export function MedicalWasteLogbookView() {
     });
   };
 
-  // Open modal to pick date first before creating a 11-room batch
+  // Open modal to pick date first before creating an 11-room batch
   const handleOpenBatchDateModal = () => {
-    const todayIso = getRealtimeTodayIso();
-    setNewBatchDateMasuk(todayIso);
-    setNewBatchDateKeluar(todayIso);
+    let initialDate = getRealtimeTodayIso();
+    if (selectedMonth !== 'ALL') {
+      const isCur =
+        new Date().getFullYear() === selectedYear &&
+        new Date().getMonth() + 1 === selectedMonth;
+      const curDay = isCur
+        ? String(new Date().getDate()).padStart(2, '0')
+        : '01';
+      initialDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${curDay}`;
+    } else if (selectedYear !== new Date().getFullYear()) {
+      initialDate = `${selectedYear}-01-01`;
+    }
+    setNewBatchDateMasuk(initialDate);
+    setNewBatchDateKeluar(initialDate);
     setShowBatchDateModal(true);
   };
 
@@ -484,7 +534,64 @@ export function MedicalWasteLogbookView() {
         status="Functional"
         breadcrumbs={meta.breadcrumbs}
         actions={
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+            {/* 1. Dropdown Pilih Bulan */}
+            <div className="relative inline-flex items-center">
+              <label htmlFor="filter-logbook-month" className="sr-only">
+                Pilih Bulan
+              </label>
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#002147] dark:text-[#D2B48C]">
+                  <Calendar className="w-3.5 h-3.5" />
+                </div>
+                <select
+                  id="filter-logbook-month"
+                  aria-label="Pilih Bulan"
+                  value={selectedMonth}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSelectedMonth(val === 'ALL' ? 'ALL' : Number(val));
+                  }}
+                  className="appearance-none pl-8.5 pr-8 py-2 rounded-full text-xs font-bold bg-[#FAF6F0] dark:bg-[#001835] text-[#002147] dark:text-[#D2B48C] border border-[#D2B48C]/70 dark:border-slate-700 shadow-2xs hover:border-[#002147] focus:outline-none focus:ring-2 focus:ring-[#002147]/30 cursor-pointer transition-all"
+                >
+                  <option value="ALL">Semua Bulan</option>
+                  {LOGBOOK_MONTH_NAMES.map((m, idx) => (
+                    <option key={m} value={idx + 1}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#002147] dark:text-[#D2B48C]">
+                  <ChevronDown className="w-3 h-3 opacity-60" />
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Dropdown Pilih Tahun */}
+            <div className="relative inline-flex items-center">
+              <label htmlFor="filter-logbook-year" className="sr-only">
+                Pilih Tahun
+              </label>
+              <div className="relative">
+                <select
+                  id="filter-logbook-year"
+                  aria-label="Pilih Tahun"
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(Number(e.target.value))}
+                  className="appearance-none pl-4 pr-8 py-2 rounded-full text-xs font-bold bg-[#FAF6F0] dark:bg-[#001835] text-[#002147] dark:text-[#D2B48C] border border-[#D2B48C]/70 dark:border-slate-700 shadow-2xs hover:border-[#002147] focus:outline-none focus:ring-2 focus:ring-[#002147]/30 cursor-pointer transition-all"
+                >
+                  <option value={2026}>Tahun 2026</option>
+                  <option value={2025}>Tahun 2025</option>
+                  <option value={2024}>Tahun 2024</option>
+                  <option value={2027}>Tahun 2027</option>
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#002147] dark:text-[#D2B48C]">
+                  <ChevronDown className="w-3 h-3 opacity-60" />
+                </div>
+              </div>
+            </div>
+
+            {/* 3. Filter Tanggal Masuk (Spesifik Hari) */}
             <div className="relative inline-flex items-center">
               <button
                 type="button"
@@ -506,7 +613,7 @@ export function MedicalWasteLogbookView() {
                 <Calendar className="w-3.5 h-3.5 text-[#002147] dark:text-[#D2B48C] shrink-0" />
                 <span>
                   {filterDateMasuk
-                    ? `Filter Tgl Masuk (${formatIsoToDisplayDate(filterDateMasuk)})`
+                    ? `Tgl (${formatIsoToDisplayDate(filterDateMasuk)})`
                     : 'Filter Tgl Masuk'}
                 </span>
                 <input
@@ -530,6 +637,7 @@ export function MedicalWasteLogbookView() {
               )}
             </div>
 
+            {/* 4. Tombol + Batch */}
             <button
               type="button"
               onClick={handleOpenBatchDateModal}
@@ -765,10 +873,13 @@ export function MedicalWasteLogbookView() {
       {/* Main Official Log Book Limbah Medis Table Card */}
       <div className="rounded-[28px] bg-white dark:bg-[#00152E] border-[1.5px] border-[#D2B48C]/70 dark:border-[#D2B48C]/30 shadow-[0_18px_50px_rgba(0,33,71,0.10)] overflow-hidden">
         {/* Official Document Banner */}
-        <div className="px-6 py-4 bg-gradient-to-r from-[#FAF6F0] via-white to-[#FAF6F0] dark:from-[#001D3D] dark:via-[#00152E] dark:to-[#001D3D] border-b border-[#D2B48C]/50">
-          <h2 className="text-center text-base sm:text-lg font-extrabold tracking-wide text-[#002147] dark:text-white uppercase">
-            LOG BOOK LIMBAH MEDIS TAHUN {autoAnalysis.activeYear}
+        <div className="px-6 py-4 bg-gradient-to-r from-[#FAF6F0] via-white to-[#FAF6F0] dark:from-[#001D3D] dark:via-[#00152E] dark:to-[#001D3D] border-b border-[#D2B48C]/50 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <h2 className="text-center sm:text-left text-base sm:text-lg font-extrabold tracking-wide text-[#002147] dark:text-white uppercase">
+            LOG BOOK LIMBAH MEDIS {selectedMonth === 'ALL' ? `TAHUN ${selectedYear}` : `BULAN ${LOGBOOK_MONTH_NAMES[selectedMonth - 1].toUpperCase()} ${selectedYear}`}
           </h2>
+          <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-[#002147]/5 dark:bg-white/10 text-[#002147] dark:text-[#D2B48C] border border-[#D2B48C]/40">
+            {filteredRows.length} Baris Pencatatan ({batchGroups.length} Batch)
+          </span>
         </div>
 
         <div className="overflow-x-auto">
