@@ -16,6 +16,10 @@ import {
 } from '@/lib/water-quality';
 import { ensureCompleteAirQualityItems } from '@/lib/air-quality-data';
 import { ensureCompleteSaranaPrasaranaData } from '@/lib/sarana-prasarana';
+import {
+  createRealtimeInitialMedicalWasteLogbook,
+  MedicalWasteLogRow,
+} from '@/lib/medical-waste-logbook';
 
 declare global {
   var __sikeslingServerCloudState: SikeslingCloudState | undefined;
@@ -82,6 +86,26 @@ export async function GET() {
             void upsertRowsToSupabaseRest(
               buildStoreRowsFromState(state, ['sarana_prasarana'])
             );
+          }
+        } else if (k === 'medical_waste_logbook' && Array.isArray(row.payload)) {
+          if ((row.payload as unknown[]).length < 200) {
+            const upgraded = createRealtimeInitialMedicalWasteLogbook();
+            state.medical_waste_logbook = upgraded;
+            void upsertRowsToSupabaseRest(
+              buildStoreRowsFromState(state, ['medical_waste_logbook'])
+            );
+          } else {
+            state.medical_waste_logbook = row.payload as MedicalWasteLogRow[];
+          }
+        } else if (k === 'solid_waste_b3' && Array.isArray(row.payload)) {
+          const janRow = (row.payload as any[]).find((r: any) => r.no === 1);
+          if (janRow && janRow.limbahPadat === 298) {
+            state.solid_waste_b3 = createInitialSikeslingCloudState().solid_waste_b3;
+            void upsertRowsToSupabaseRest(
+              buildStoreRowsFromState(state, ['solid_waste_b3'])
+            );
+          } else {
+            state.solid_waste_b3 = row.payload as any[];
           }
         } else {
           (state as unknown as Record<string, unknown>)[k] = row.payload;

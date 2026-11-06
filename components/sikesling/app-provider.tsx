@@ -310,9 +310,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
     if (
       Array.isArray(cloud.medical_waste_logbook) &&
-      cloud.medical_waste_logbook.length > 0
+      cloud.medical_waste_logbook.length >= 200
     ) {
       setMedicalWasteLogbookRows(cloud.medical_waste_logbook);
+    } else {
+      const realLogbook = createRealtimeInitialMedicalWasteLogbook();
+      setMedicalWasteLogbookRows(realLogbook);
+      void persistCollectionToSupabase('medical_waste_logbook', realLogbook);
     }
     if (cloud.vector_findings && typeof cloud.vector_findings === 'object') {
       setVectorFindings(cloud.vector_findings);

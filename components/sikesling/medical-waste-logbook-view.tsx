@@ -18,6 +18,7 @@ import {
   AlertTriangle,
   X,
   ChevronDown,
+  RefreshCw,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -45,6 +46,7 @@ import {
   groupLogbookRowsByBatch,
   summarizeBySourceRoom,
   generateMedicalWasteLogbookAnalysis,
+  createRealtimeInitialMedicalWasteLogbook,
 } from '@/lib/medical-waste-logbook';
 
 export const LOGBOOK_MONTH_NAMES = [
@@ -92,19 +94,30 @@ export function MedicalWasteLogbookView() {
   const filterDateInputRef = useRef<HTMLInputElement>(null);
 
   // Core logbook rows state synced with AppProvider & Supabase
-  const [rows, setRows] = useState<MedicalWasteLogRow[]>(
-    () => medicalWasteLogbookRows
-  );
+  // If cloud state has old placeholder (< 200 rows), initialize with full 2026 Excel data
+  const [rows, setRows] = useState<MedicalWasteLogRow[]>(() => {
+    if (medicalWasteLogbookRows && medicalWasteLogbookRows.length >= 200) {
+      return medicalWasteLogbookRows;
+    }
+    return createRealtimeInitialMedicalWasteLogbook();
+  });
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
   const [jellyTick, setJellyTick] = useState<number>(0);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [isSyncingExcel, setIsSyncingExcel] = useState<boolean>(false);
 
   // Sync local rows when cloud state hydrates from Supabase (unless user has unsaved local edits)
   useEffect(() => {
-    if (!hasUnsavedChanges && medicalWasteLogbookRows.length > 0) {
-      setRows(medicalWasteLogbookRows);
+    if (!hasUnsavedChanges) {
+      if (medicalWasteLogbookRows.length >= 200) {
+        setRows(medicalWasteLogbookRows);
+      } else {
+        const real = createRealtimeInitialMedicalWasteLogbook();
+        setRows(real);
+        void saveMedicalWasteLogbookRows(real);
+      }
     }
-  }, [medicalWasteLogbookRows, hasUnsavedChanges]);
+  }, [medicalWasteLogbookRows, hasUnsavedChanges, saveMedicalWasteLogbookRows]);
 
   // Editable column headers & custom extra columns
   const [columnLabels, setColumnLabels] = useState<MedicalWasteColumnLabels>(
@@ -526,6 +539,24 @@ export function MedicalWasteLogbookView() {
     }
   };
 
+  // Manual trigger to reload full real data from Excel 2026 (Jan - Okt)
+  const handleReloadExcelData = async () => {
+    setIsSyncingExcel(true);
+    try {
+      const real = createRealtimeInitialMedicalWasteLogbook();
+      setRows(real);
+      setHasUnsavedChanges(false);
+      await saveMedicalWasteLogbookRows(real);
+      pushToast({
+        type: 'success',
+        title: 'Sinkronisasi Data Excel Berhasil',
+        message: `Seluruh ${real.length} baris data dari Excel (Januari s.d. Oktober 2026) berhasil dimuat dan disinkronkan ke Supabase.`,
+      });
+    } finally {
+      setIsSyncingExcel(false);
+    }
+  };
+
   return (
     <PageContainer>
       <PageHeader
@@ -637,7 +668,23 @@ export function MedicalWasteLogbookView() {
               )}
             </div>
 
-            {/* 4. Tombol + Batch */}
+            {/* 4. Tombol Sinkron Data Excel */}
+            <button
+              type="button"
+              onClick={handleReloadExcelData}
+              disabled={isSyncingExcel}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#FAF6F0] dark:bg-[#001835] hover:bg-[#F3ECE0] dark:hover:bg-[#002147] border border-[#D2B48C]/70 text-xs font-bold text-[#002147] dark:text-[#D2B48C] shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+              title="Sinkronkan ulang seluruh data Log Book dari file Excel (Januari s.d. Oktober 2026)"
+            >
+              <RefreshCw
+                className={`w-3.5 h-3.5 text-[#002147] dark:text-[#D2B48C] ${
+                  isSyncingExcel ? 'animate-spin' : ''
+                }`}
+              />
+              <span>{isSyncingExcel ? 'Menyinkron...' : 'Sinkron Data Excel'}</span>
+            </button>
+
+            {/* 5. Tombol + Batch */}
             <button
               type="button"
               onClick={handleOpenBatchDateModal}

@@ -1,5 +1,18 @@
 import rawRows from './medical-waste-excel-data.json';
-import type { MedicalWasteLogRow } from './medical-waste-logbook';
+
+export interface MedicalWasteLogRow {
+  id: string;
+  batchId: string;
+  no: number;
+  sumberLimbah: string;
+  beratTajamKg: number | null;
+  beratPadatKg: number | null;
+  tanggalMasuk: string; // YYYY-MM-DD
+  maksPenyimpananSuhu: string; // '✓'
+  tanggalKeluar: string; // YYYY-MM-DD
+  noManifest: string;
+  customValues?: Record<string, string>;
+}
 
 /**
  * Real Medical Waste Logbook data for Year 2026 extracted directly from
