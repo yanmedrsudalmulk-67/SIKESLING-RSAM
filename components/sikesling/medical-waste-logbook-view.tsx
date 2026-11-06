@@ -622,69 +622,7 @@ export function MedicalWasteLogbookView() {
               </div>
             </div>
 
-            {/* 3. Filter Tanggal Masuk (Spesifik Hari) */}
-            <div className="relative inline-flex items-center">
-              <button
-                type="button"
-                onClick={() => {
-                  const input = filterDateInputRef.current;
-                  if (!input) return;
-                  if (typeof input.showPicker === 'function') {
-                    try {
-                      input.showPicker();
-                    } catch {
-                      input.focus();
-                    }
-                  } else {
-                    input.focus();
-                  }
-                }}
-                className="relative inline-flex items-center gap-2 bg-[#FAF6F0] dark:bg-[#001835] hover:bg-[#F3ECE0] dark:hover:bg-[#002147] border border-[#D2B48C]/70 rounded-full px-3.5 py-2 text-xs font-bold text-[#002147] dark:text-[#D2B48C] shadow-2xs transition-colors cursor-pointer"
-              >
-                <Calendar className="w-3.5 h-3.5 text-[#002147] dark:text-[#D2B48C] shrink-0" />
-                <span>
-                  {filterDateMasuk
-                    ? `Tgl (${formatIsoToDisplayDate(filterDateMasuk)})`
-                    : 'Filter Tgl Masuk'}
-                </span>
-                <input
-                  ref={filterDateInputRef}
-                  type="date"
-                  value={filterDateMasuk}
-                  onChange={(e) => setFilterDateMasuk(e.target.value)}
-                  aria-label="Filter Tgl Masuk"
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                />
-              </button>
-              {filterDateMasuk && (
-                <button
-                  type="button"
-                  onClick={() => setFilterDateMasuk('')}
-                  title="Reset Filter Tanggal Masuk"
-                  className="ml-1.5 p-1.5 rounded-full bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-300 hover:bg-rose-200 transition-colors cursor-pointer"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-
-            {/* 4. Tombol Sinkron Data Excel */}
-            <button
-              type="button"
-              onClick={handleReloadExcelData}
-              disabled={isSyncingExcel}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#FAF6F0] dark:bg-[#001835] hover:bg-[#F3ECE0] dark:hover:bg-[#002147] border border-[#D2B48C]/70 text-xs font-bold text-[#002147] dark:text-[#D2B48C] shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
-              title="Sinkronkan ulang seluruh data Log Book dari file Excel (Januari s.d. Oktober 2026)"
-            >
-              <RefreshCw
-                className={`w-3.5 h-3.5 text-[#002147] dark:text-[#D2B48C] ${
-                  isSyncingExcel ? 'animate-spin' : ''
-                }`}
-              />
-              <span>{isSyncingExcel ? 'Menyinkron...' : 'Sinkron Data Excel'}</span>
-            </button>
-
-            {/* 5. Tombol + Batch */}
+            {/* 3. Tombol + Batch */}
             <button
               type="button"
               onClick={handleOpenBatchDateModal}
