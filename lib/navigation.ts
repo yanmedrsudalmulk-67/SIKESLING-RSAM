@@ -520,11 +520,13 @@ export const MAIN_NAVIGATION: MainMenuItem[] = [
         href: '/laporan/upl-ukl',
         description:
           'Laporan Upaya Pengelolaan Lingkungan dan Upaya Pemantauan Lingkungan Hidup (UKL-UPL) RSUD Al-Mulk berkala ke Dinas Lingkungan Hidup (DLH).',
-        status: 'UI Ready',
+        status: 'Functional',
         plannedFeatures: [
-          'Format pelaporan berkala dokumen lingkungan hidup sesuai regulasi DLH Kota Sukabumi',
-          'Rekapitulasi parameter kepatuhan dokumen lingkungan RSUD Al-Mulk',
-          'Format resmi sedang disiapkan dan diselaraskan bersama Dinas Lingkungan Hidup',
+          'Format resmi Laporan UKL-UPL Semesteran berstandar DLH Kota Sukabumi',
+          'Matriks RKL-RPL 9 Aspek Pengelolaan & Pemantauan Lingkungan Hidup',
+          'Neraca Limbah B3, Rekapitulasi Timbulan Logbook Medis, & Hasil Lab Air',
+          'Checklist Sarana Fisik Bangunan & 18 Modul Galeri Foto Dokumentasi Resmi',
+          'Fitur Cetak Format Dokumen Dinas (Print to PDF) & Ekspor Data JSON',
         ],
       },
     ],
