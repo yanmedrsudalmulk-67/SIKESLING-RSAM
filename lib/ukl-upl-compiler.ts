@@ -83,10 +83,15 @@ export function compileRealtimeUklUplReport(params: {
     saranaPrasaranaData,
   } = params;
 
-  // 1. Tentukan rentang bulan berdasarkan semester
+  // 1. Tentukan rentang bulan berdasarkan semester atau bulan
   const isSemester1 = semester === 'semester-1';
   const isSemester2 = semester === 'semester-2';
-  const targetMonths = isSemester1
+  const isMonth = semester.startsWith('bulan-');
+  const monthNum = isMonth ? parseInt(semester.replace('bulan-', ''), 10) : 1;
+
+  const targetMonths = isMonth
+    ? [monthNum]
+    : isSemester1
     ? [1, 2, 3, 4, 5, 6]
     : isSemester2
     ? [7, 8, 9, 10, 11, 12]
@@ -366,13 +371,17 @@ export function compileRealtimeUklUplReport(params: {
   );
 
   // 6. Label Periode
-  const periodLabel = isSemester1
+  const periodLabel = isMonth
+    ? `Periode Bulan ${monthNamesMap[monthNum]} ${year}`
+    : isSemester1
     ? `Periode Januari – Juni ${year}`
     : isSemester2
     ? `Periode Juli – Desember ${year}`
     : `Periode Januari – Desember ${year}`;
 
-  const semesterLabel = isSemester1
+  const semesterLabel = isMonth
+    ? `BULAN ${monthNamesMap[monthNum]?.toUpperCase()} TAHUN ${year}`
+    : isSemester1
     ? `SEMESTER I TAHUN ${year}`
     : isSemester2
     ? `SEMESTER II TAHUN ${year}`

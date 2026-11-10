@@ -359,189 +359,79 @@ export function LaporanUplUklView() {
   return (
     <div className="w-full space-y-4">
       {/* =====================================================================
-          EXECUTIVE CONTROL BAR (IDENTIK DENGAN LAPORAN KESLING)
+          TOOLBAR MINIMALIS DOKUMEN RESMI UKL-UPL
+          Mempertahankan:
+          1. Pilih Periode (Bulan / Semester)
+          2. Pilih Tahun
+          3. Icon & Tombol Unduh Dokumen
          ===================================================================== */}
-      <div className="max-w-7xl mx-auto rounded-3xl bg-gradient-to-r from-[#002147] via-[#0a3568] to-[#1F4E79] px-6 py-5 text-white shadow-xl border border-[#D2B48C]/30 print:hidden">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-400 text-slate-950 shadow-sm">
-                SIKRESMI — DOKUMEN RESMI DINAS LINGKUNGAN HIDUP (DLH)
-              </span>
-              <span className="text-xs text-amber-200/90 font-mono flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                Data Sinkron Realtime
-              </span>
-            </div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2">
-              <FileCheck2 className="w-6 h-6 text-amber-400" />
-              LAPORAN PELAKSANAAN UKL – UPL
-            </h1>
-            <p className="text-xs text-slate-300">
-              Dokumen Resmi Upaya Pengelolaan Lingkungan & Pemantauan Lingkungan Hidup • UOBK RSUD Al-Mulk Kota Sukabumi
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2.5">
-            {/* Filter Periode */}
+      <div className="max-w-7xl mx-auto rounded-2xl bg-white dark:bg-[#001835] border border-[#D2B48C]/50 shadow-sm px-5 py-3.5 flex flex-wrap items-center justify-between gap-3 print:hidden">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Pilih Periode (Semester / Bulan) */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              Periode:
+            </span>
             <div className="relative inline-flex items-center">
               <select
                 aria-label="Pilih Periode Laporan"
                 value={selectedSemester}
                 onChange={(e) => setSelectedSemester(e.target.value)}
-                className="appearance-none pl-4 pr-8 py-2 rounded-xl text-xs font-bold bg-[#001835] text-[#D2B48C] border border-[#D2B48C]/60 cursor-pointer shadow-sm focus:outline-none"
+                className="appearance-none pl-3.5 pr-8 py-2 rounded-xl text-xs font-bold bg-[#FAF6F0] dark:bg-[#002147] text-[#002147] dark:text-[#D2B48C] border border-[#D2B48C]/70 cursor-pointer shadow-xs focus:outline-none"
               >
-                <option value="semester-1">Semester 1 (Jan – Jun)</option>
-                <option value="semester-2">Semester 2 (Jul – Des)</option>
-                <option value="tahunan">Periode Tahunan (Jan – Des)</option>
+                <optgroup label="Periode Semester & Tahunan">
+                  <option value="semester-1">Semester 1 (Jan – Jun)</option>
+                  <option value="semester-2">Semester 2 (Jul – Des)</option>
+                  <option value="tahunan">Tahun Penuh (Jan – Des)</option>
+                </optgroup>
+                <optgroup label="Periode Bulanan">
+                  <option value="bulan-1">Bulan Januari</option>
+                  <option value="bulan-2">Bulan Februari</option>
+                  <option value="bulan-3">Bulan Maret</option>
+                  <option value="bulan-4">Bulan April</option>
+                  <option value="bulan-5">Bulan Mei</option>
+                  <option value="bulan-6">Bulan Juni</option>
+                  <option value="bulan-7">Bulan Juli</option>
+                  <option value="bulan-8">Bulan Agustus</option>
+                  <option value="bulan-9">Bulan September</option>
+                  <option value="bulan-10">Bulan Oktober</option>
+                  <option value="bulan-11">Bulan November</option>
+                  <option value="bulan-12">Bulan Desember</option>
+                </optgroup>
               </select>
-              <ChevronDown className="w-3.5 h-3.5 text-[#D2B48C] absolute right-2.5 pointer-events-none" />
+              <ChevronDown className="w-3.5 h-3.5 text-[#002147] dark:text-[#D2B48C] absolute right-2.5 pointer-events-none" />
             </div>
+          </div>
 
-            {/* Filter Tahun */}
+          {/* Pilih Tahun */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              Tahun:
+            </span>
             <div className="relative inline-flex items-center">
               <select
                 aria-label="Pilih Tahun Laporan"
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(Number(e.target.value))}
-                className="appearance-none pl-4 pr-8 py-2 rounded-xl text-xs font-bold bg-[#001835] text-[#D2B48C] border border-[#D2B48C]/60 cursor-pointer shadow-sm focus:outline-none"
+                className="appearance-none pl-3.5 pr-8 py-2 rounded-xl text-xs font-bold bg-[#FAF6F0] dark:bg-[#002147] text-[#002147] dark:text-[#D2B48C] border border-[#D2B48C]/70 cursor-pointer shadow-xs focus:outline-none"
               >
                 <option value={2026}>Tahun 2026</option>
                 <option value={2025}>Tahun 2025</option>
               </select>
-              <ChevronDown className="w-3.5 h-3.5 text-[#D2B48C] absolute right-2.5 pointer-events-none" />
+              <ChevronDown className="w-3.5 h-3.5 text-[#002147] dark:text-[#D2B48C] absolute right-2.5 pointer-events-none" />
             </div>
-
-            {/* Lompat ke Bagian */}
-            <div className="relative inline-flex items-center">
-              <select
-                aria-label="Navigasi Cepat Bab Laporan"
-                value={jumpToSection}
-                onChange={(e) => setJumpToSection(e.target.value)}
-                className="appearance-none pl-4 pr-8 py-2 rounded-xl text-xs font-bold bg-[#001835] text-white border border-[#D2B48C]/60 cursor-pointer shadow-sm focus:outline-none"
-              >
-                <option value="ALL">Semua Halaman (Buku Utuh)</option>
-                <option value="COVER">Cover & Lembar Pengesahan</option>
-                <option value="BAB_1">BAB I Pendahuluan & Identitas</option>
-                <option value="BAB_2">BAB II Pelaksanaan 8 Variabel</option>
-                <option value="BAB_3">BAB III Matriks RKL & RPL (9 Kolom)</option>
-                <option value="BAB_4">BAB IV Kesimpulan & Saran</option>
-                <option value="LAMPIRAN_1">Lampiran 1: Fisik Udara & Ruangan</option>
-                <option value="LAMPIRAN_2">Lampiran 2: Hasil Uji Lab Air & RO</option>
-                <option value="LAMPIRAN_3">Lampiran 3: Neraca B3 & Logbook Medis</option>
-                <option value="LAMPIRAN_4">Lampiran 4: Checklist Sarpras Bangunan</option>
-                <option value="LAMPIRAN_5">Lampiran 5: Dokumentasi Foto & GPS</option>
-              </select>
-              <ChevronDown className="w-3.5 h-3.5 text-[#D2B48C] absolute right-2.5 pointer-events-none" />
-            </div>
-
-            {/* Tombol Unduh Dokumen */}
-            <button
-              type="button"
-              onClick={handleDownloadWordDoc}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl bg-[#D2B48C] text-[#002147] hover:bg-[#e4c9a8] transition-all shadow-md cursor-pointer"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Unduh Dokumen</span>
-            </button>
-
-            {/* Tombol Cetak Laporan */}
-            <button
-              type="button"
-              onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl bg-white/10 text-white hover:bg-white/20 border border-white/20 transition-all shadow-md cursor-pointer"
-            >
-              <Printer className="w-3.5 h-3.5" />
-              <span>Print Laporan</span>
-            </button>
           </div>
         </div>
 
-        {/* Secondary Navigation & Zoom Bar */}
-        <div className="mt-4 pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-4 text-slate-300">
-            <span className="font-semibold text-amber-300">
-              Format Dokumen: Folio F4 (21,59 cm × 33,02 cm)
-            </span>
-            <span className="hidden sm:inline text-slate-400">•</span>
-            <span className="hidden sm:inline">Margin: 2,5 cm seluruh sisi</span>
-            <span className="hidden sm:inline text-slate-400">•</span>
-            <span className="hidden sm:inline">Total Timbulan Medis: <strong>{compiled.totalLimbahB3MedisKg} kg</strong> (100% Terkelola)</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* Zoom Controls */}
-            <div className="flex items-center bg-[#001835] border border-[#D2B48C]/40 rounded-xl p-0.5">
-              <button
-                type="button"
-                onClick={() => setZoomPercent((prev) => Math.max(40, prev - 10))}
-                title="Perkecil Zoom"
-                className="p-1.5 hover:bg-white/10 rounded-lg text-slate-300"
-              >
-                <Minus className="w-3.5 h-3.5" />
-              </button>
-              <span className="px-2 text-xs font-mono font-bold text-amber-300 min-w-[46px] text-center">
-                {zoomPercent}%
-              </span>
-              <button
-                type="button"
-                onClick={() => setZoomPercent((prev) => Math.min(150, prev + 10))}
-                title="Perbesar Zoom"
-                className="p-1.5 hover:bg-white/10 rounded-lg text-slate-300"
-              >
-                <Plus className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setZoomPercent(100)}
-                title="Reset Zoom ke 100%"
-                className="px-2 py-1 text-[10px] font-bold text-slate-300 hover:text-white border-l border-white/10 ml-1"
-              >
-                Reset
-              </button>
-            </div>
-
-            {/* View Mode Toggle */}
-            <div className="flex items-center bg-[#001835] border border-[#D2B48C]/40 rounded-xl p-0.5">
-              <button
-                type="button"
-                onClick={() => setViewMode('single')}
-                className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${
-                  viewMode === 'single'
-                    ? 'bg-[#153E75] text-amber-300 shadow-sm'
-                    : 'text-slate-300 hover:text-white'
-                }`}
-              >
-                Single
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('grid')}
-                className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${
-                  viewMode === 'grid'
-                    ? 'bg-[#153E75] text-amber-300 shadow-sm'
-                    : 'text-slate-300 hover:text-white'
-                }`}
-              >
-                Grid
-              </button>
-            </div>
-
-            {/* Fullscreen Button */}
-            <button
-              type="button"
-              onClick={toggleFullscreen}
-              title={isFullscreen ? 'Keluar Layar Penuh' : 'Layar Penuh'}
-              className="p-2 rounded-xl bg-[#001835] border border-[#D2B48C]/40 hover:bg-white/10 text-slate-300 transition-all cursor-pointer"
-            >
-              {isFullscreen ? (
-                <Minimize2 className="w-3.5 h-3.5" />
-              ) : (
-                <Maximize2 className="w-3.5 h-3.5" />
-              )}
-            </button>
-          </div>
-        </div>
+        {/* Tombol Unduh Dokumen (dengan Icon) */}
+        <button
+          type="button"
+          onClick={handleDownloadWordDoc}
+          className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl bg-[#002147] hover:bg-[#0a3568] text-[#D2B48C] hover:text-white border border-[#D2B48C]/40 transition-all shadow-sm cursor-pointer"
+        >
+          <Download className="w-4 h-4 text-[#D2B48C]" />
+          <span>Unduh Dokumen</span>
+        </button>
       </div>
 
       {/* CSS Cetak / Print Resmi F4 Margin 2,5 cm di Seluruh Sisi */}
