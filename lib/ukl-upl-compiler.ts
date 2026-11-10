@@ -30,6 +30,7 @@ import {
 export interface CompiledUklUplState {
   periodLabel: string;
   semesterLabel: string;
+  semesterRoman: string;
   year: number;
   // Realtime Waste Recaps
   monthlyWasteRecaps: MonthlyWasteRecap[];
@@ -387,9 +388,12 @@ export function compileRealtimeUklUplReport(params: {
     ? `SEMESTER II TAHUN ${year}`
     : `TAHUNAN ${year}`;
 
+  const semesterRoman = isSemester2 ? 'SEMESTER II' : 'SEMESTER I';
+
   return {
     periodLabel,
     semesterLabel,
+    semesterRoman,
     year,
     monthlyWasteRecaps: dynamicMonthlyRecaps,
     totalLimbahTajamKg,
