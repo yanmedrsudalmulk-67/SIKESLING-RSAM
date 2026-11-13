@@ -59,6 +59,7 @@ import {
   loadSupervisiAuditRecords,
   parseMultiChoiceValue,
   parseTimestampToParts,
+  refreshSupervisiStoresFromSupabase,
   saveCustomPetugasList,
   saveRoomChecklistRecords,
   saveSupervisiAuditRecords,
@@ -533,6 +534,7 @@ export function SupervisiHubWorkspace({
     setRoomRecords(loadRoomChecklistRecords());
     setAuditRecords(loadSupervisiAuditRecords());
     setCustomPetugasList(loadCustomPetugasList());
+    void refreshSupervisiStoresFromSupabase();
     const nowStr = formatNowTimestamp();
     const currentHari = getCurrentHariIndonesia();
     setTanggal(nowStr);
@@ -1015,6 +1017,50 @@ export function SupervisiHubWorkspace({
     });
   };
 
+  const compressUploadedImage = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const rawResult =
+          typeof reader.result === 'string' ? reader.result : '';
+        if (!rawResult || typeof window === 'undefined') {
+          resolve(rawResult);
+          return;
+        }
+        const img = new window.Image();
+        img.onload = () => {
+          const maxWidth = 1200;
+          const maxHeight = 900;
+          let width = img.width;
+          let height = img.height;
+          if (width > maxWidth || height > maxHeight) {
+            if (width / height > maxWidth / maxHeight) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            } else {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(rawResult);
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.78));
+        };
+        img.onerror = () => resolve(rawResult);
+        img.src = rawResult;
+      };
+      reader.onerror = () => resolve('');
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleRoomPhotoUploadChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -1024,14 +1070,11 @@ export function SupervisiHubWorkspace({
     const taskCfg = activeCardConfig.tasks.find((t) => t.id === taskId);
     const totalSlots = taskCfg ? taskCfg.photoSlotLabels.length : 1;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = typeof reader.result === 'string' ? reader.result : '';
+    void compressUploadedImage(file).then((result) => {
       if (result) {
         setTaskPhotoAtSlot(taskId, slotIdx, result, totalSlots);
       }
-    };
-    reader.readAsDataURL(file);
+    });
     e.target.value = '';
   };
 
@@ -1041,16 +1084,14 @@ export function SupervisiHubWorkspace({
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = typeof reader.result === 'string' ? reader.result : '';
+    void compressUploadedImage(file).then((result) => {
+      if (!result) return;
       if (target === 'temuan') {
         setDokumentasiTemuanUrl(result);
       } else {
         setDokumentasiPerbaikanUrl(result);
       }
-    };
-    reader.readAsDataURL(file);
+    });
   };
 
   // Signature Canvas Helpers (shared geometry logic with responsive scaling)

@@ -560,35 +560,77 @@ export function getProgramSummaryStats(): ProgramSummaryStats {
 
 export const STORAGE_KEY_PROGRAM_KERJA = 'sikesling_program_kerja_v2';
 
-export function loadProgramKerjaData(): ProgramCategory[] {
-  if (typeof window === 'undefined') return PROGRAM_KERJA_CATEGORIES;
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY_PROGRAM_KERJA);
-    if (!raw) return PROGRAM_KERJA_CATEGORIES;
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-  } catch (err) {
-    console.error('Failed to parse program kerja data from storage:', err);
+let cloudProgramKerjaCache: ProgramCategory[] | null = null;
+
+export function hydrateProgramKerjaFromCloud(categories?: ProgramCategory[]): void {
+  if (Array.isArray(categories) && categories.length > 0) {
+    cloudProgramKerjaCache = categories;
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('sikesling_program_updated', { detail: categories })
+      );
+    }
   }
+}
+
+export function loadProgramKerjaData(): ProgramCategory[] {
+  if (cloudProgramKerjaCache && cloudProgramKerjaCache.length > 0) {
+    return cloudProgramKerjaCache;
+  }
+  cloudProgramKerjaCache = PROGRAM_KERJA_CATEGORIES;
   return PROGRAM_KERJA_CATEGORIES;
 }
 
 export function saveProgramKerjaData(categories: ProgramCategory[]) {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(STORAGE_KEY_PROGRAM_KERJA, JSON.stringify(categories));
-    window.dispatchEvent(new CustomEvent('sikesling_program_updated', { detail: categories }));
-  } catch (err) {
-    console.error('Failed to save program kerja data:', err);
+  cloudProgramKerjaCache = categories;
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent('sikesling_program_updated', { detail: categories })
+    );
   }
   if (typeof fetch !== 'undefined') {
-    void fetch('/api/supabase/state', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key: 'program_kerja_categories', payload: categories }),
+    const rawUrl = (
+      process.env.NEXT_PUBLIC_SUPABASE_URL ||
+      'https://jgrgwhfgbmmxjgmjotzr.supabase.co'
+    )
+      .trim()
+      .replace(/\/+$/, '')
+      .replace(/\/rest\/v1$/i, '');
+    const anonKey = (
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impncmd3aGZnYm1teGpnbWpvdHpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ1NDUzNzksImV4cCI6MjExMDEyMTM3OX0.5ZhzeIn36MWDu7dBBTWhZ3YMngH_iEU1eWDoCuWqly4'
+    ).trim();
+
+    void fetch(`${rawUrl}/rest/v1/sikesling_cloud_store?on_conflict=collection_key`, {
+      method: 'POST',
+      headers: {
+        apikey: anonKey,
+        Authorization: `Bearer ${anonKey}`,
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=merge-duplicates,return=minimal',
+      },
+      body: JSON.stringify([
+        {
+          collection_key: 'program_kerja_categories',
+          payload: categories,
+          updated_at: new Date().toISOString(),
+        },
+      ]),
+      cache: 'no-store',
     }).catch(() => {
       // ignore offline error
     });
+
+    if (typeof window !== 'undefined') {
+      void fetch('/api/supabase/state', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: 'program_kerja_categories', payload: categories }),
+      }).catch(() => {
+        // ignore offline error
+      });
+    }
   }
 }
+
 

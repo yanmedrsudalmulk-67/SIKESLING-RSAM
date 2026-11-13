@@ -1250,42 +1250,82 @@ export function createAllAplicleanRecords(): AplicleanRecord[] {
 
 export const APICLEAN_STORAGE_KEY = 'sikesling_apliclean_records_v2';
 
-export function loadAplicleanRecords(): AplicleanRecord[] {
-  const initial = createAllAplicleanRecords();
-  if (typeof window === 'undefined') return initial;
-  try {
-    const raw = window.localStorage.getItem(APICLEAN_STORAGE_KEY);
-    if (!raw) return initial;
-    const parsed = JSON.parse(raw) as AplicleanRecord[];
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      return parsed.map((rec) => ({
-        ...rec,
-        moduleId: rec.moduleId || 'RAWAT_JALAN',
-      }));
+let cloudAplicleanRecordsCache: AplicleanRecord[] | null = null;
+
+export function hydrateAplicleanFromCloud(records?: AplicleanRecord[]): void {
+  if (Array.isArray(records) && records.length > 0) {
+    cloudAplicleanRecordsCache = records.map((rec) => ({
+      ...rec,
+      moduleId: rec.moduleId || 'RAWAT_JALAN',
+    }));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('sikesling_apliclean_updated', {
+          detail: cloudAplicleanRecordsCache,
+        })
+      );
     }
-    return initial;
-  } catch {
-    return initial;
   }
 }
 
+export function loadAplicleanRecords(): AplicleanRecord[] {
+  if (cloudAplicleanRecordsCache && cloudAplicleanRecordsCache.length > 0) {
+    return cloudAplicleanRecordsCache;
+  }
+  const initial = createAllAplicleanRecords();
+  cloudAplicleanRecordsCache = initial;
+  return initial;
+}
+
 export function saveAplicleanRecords(records: AplicleanRecord[]): void {
-  if (typeof window === 'undefined') return;
-  try {
-    window.localStorage.setItem(APICLEAN_STORAGE_KEY, JSON.stringify(records));
+  cloudAplicleanRecordsCache = records;
+  if (typeof window !== 'undefined') {
     window.dispatchEvent(
       new CustomEvent('sikesling_apliclean_updated', { detail: records })
     );
-  } catch {
-    // ignore storage quota errors
   }
   if (typeof fetch !== 'undefined') {
-    void fetch('/api/supabase/state', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key: 'apliclean_records', payload: records }),
+    const rawUrl = (
+      process.env.NEXT_PUBLIC_SUPABASE_URL ||
+      'https://jgrgwhfgbmmxjgmjotzr.supabase.co'
+    )
+      .trim()
+      .replace(/\/+$/, '')
+      .replace(/\/rest\/v1$/i, '');
+    const anonKey = (
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impncmd3aGZnYm1teGpnbWpvdHpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ1NDUzNzksImV4cCI6MjExMDEyMTM3OX0.5ZhzeIn36MWDu7dBBTWhZ3YMngH_iEU1eWDoCuWqly4'
+    ).trim();
+
+    void fetch(`${rawUrl}/rest/v1/sikesling_cloud_store?on_conflict=collection_key`, {
+      method: 'POST',
+      headers: {
+        apikey: anonKey,
+        Authorization: `Bearer ${anonKey}`,
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=merge-duplicates,return=minimal',
+      },
+      body: JSON.stringify([
+        {
+          collection_key: 'apliclean_records',
+          payload: records,
+          updated_at: new Date().toISOString(),
+        },
+      ]),
+      cache: 'no-store',
     }).catch(() => {
       // ignore offline error
     });
+
+    if (typeof window !== 'undefined') {
+      void fetch('/api/supabase/state', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: 'apliclean_records', payload: records }),
+      }).catch(() => {
+        // ignore offline error
+      });
+    }
   }
 }
+

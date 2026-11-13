@@ -647,6 +647,85 @@ export async function upsertRowsToSupabaseRest(
   }
 }
 
+/**
+ * Directly fetches a single collection payload from Supabase REST v1 (`sikesling_cloud_store`).
+ */
+export async function fetchSingleCollectionFromSupabaseRest<T = unknown>(
+  key: SikeslingCloudCollectionKey
+): Promise<T | null> {
+  const cfg = getSupabaseConfig();
+  const headers = {
+    apikey: cfg.anonKey,
+    Authorization: `Bearer ${cfg.anonKey}`,
+    Accept: 'application/json',
+  };
+
+  try {
+    // 1. Try primary schema filter: collection_key=eq.<key>
+    const res1 = await fetch(
+      `${cfg.restUrl}/${SUPABASE_CLOUD_TABLE}?collection_key=eq.${encodeURIComponent(key)}&select=payload`,
+      { method: 'GET', headers, cache: 'no-store' }
+    );
+    if (res1.ok) {
+      const rows = (await res1.json()) as Array<{ payload?: T }>;
+      if (Array.isArray(rows) && rows.length > 0 && rows[0].payload !== undefined) {
+        return rows[0].payload;
+      }
+      return null;
+    }
+
+    // 2. Fallback filter: key=eq.<key>
+    const res2 = await fetch(
+      `${cfg.restUrl}/${SUPABASE_CLOUD_TABLE}?key=eq.${encodeURIComponent(key)}&select=payload`,
+      { method: 'GET', headers, cache: 'no-store' }
+    );
+    if (res2.ok) {
+      const rows = (await res2.json()) as Array<{ payload?: T }>;
+      if (Array.isArray(rows) && rows.length > 0 && rows[0].payload !== undefined) {
+        return rows[0].payload;
+      }
+    }
+  } catch {
+    // ignore transient network error
+  }
+  return null;
+}
+
+/**
+ * Directly upserts a single collection payload to Supabase REST v1 (`sikesling_cloud_store`)
+ * and mirrors to `/api/supabase/state` when running in the browser.
+ */
+export async function upsertSingleCollectionToSupabaseRest(
+  key: SikeslingCloudCollectionKey,
+  payload: unknown
+): Promise<boolean> {
+  const meta = CLOUD_COLLECTION_META[key] || {
+    category: 'MONITORING',
+    title: key,
+  };
+  const directPromise = upsertRowsToSupabaseRest([
+    {
+      key,
+      category: meta.category,
+      title: meta.title,
+      payload,
+    },
+  ]);
+
+  if (typeof window !== 'undefined' && typeof fetch !== 'undefined') {
+    void fetch('/api/supabase/state', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key, payload }),
+    }).catch(() => {
+      // ignore local server sync error
+    });
+  }
+
+  const res = await directPromise;
+  return res.ok;
+}
+
 export const SUPABASE_SETUP_SQL = `-- ============================================================================
 -- SIKRESMI — SUPABASE CLOUD SCHEMA & RLS SETUP
 -- Project Ref : jgrgwhfgbmmxjgmjotzr
@@ -656,10 +735,8 @@ export const SUPABASE_SETUP_SQL = `-- ==========================================
 
 -- 1. Tabel Utama Penyimpanan Terintegrasi SIKRESMI (27 Koleksi Modul)
 CREATE TABLE IF NOT EXISTS public.sikesling_cloud_store (
-  key TEXT PRIMARY KEY,
-  category TEXT NOT NULL DEFAULT 'MONITORING',
-  title TEXT NOT NULL,
-  payload JSONB NOT NULL,
+  collection_key TEXT PRIMARY KEY,
+  payload JSONB NOT NULL DEFAULT '[]'::jsonb,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -679,3 +756,4 @@ GRANT ALL ON TABLE public.sikesling_cloud_store TO anon, authenticated, service_
 -- 3. Reload PostgREST Schema Cache agar endpoint /rest/v1/sikesling_cloud_store langsung aktif
 NOTIFY pgrst, 'reload schema';
 `;
+

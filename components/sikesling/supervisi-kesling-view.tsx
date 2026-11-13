@@ -24,6 +24,10 @@ import {
 } from 'lucide-react';
 import { PageContainer, PageHeader } from '@/components/sikesling/ui-system';
 import { useApp } from '@/components/sikesling/app-provider';
+import {
+  fetchSingleCollectionFromSupabaseRest,
+  upsertSingleCollectionToSupabaseRest,
+} from '@/lib/supabase';
 
 export interface KeslingDocPhoto {
   id: string;
@@ -243,9 +247,30 @@ function cleanDummyPhotos(list: KeslingDocActivity[]): KeslingDocActivity[] {
   }));
 }
 
+let cloudSupervisiKeslingCache: KeslingDocActivity[] | null = null;
+
+export function hydrateSupervisiKeslingFromCloud(
+  incoming?: unknown[]
+): void {
+  if (Array.isArray(incoming) && incoming.length === 8) {
+    cloudSupervisiKeslingCache = cleanDummyPhotos(
+      incoming as KeslingDocActivity[]
+    );
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('sikesling_supervisi_kesling_updated'));
+    }
+  }
+}
+
+export function getSupervisiKeslingActivitiesSnapshot(): KeslingDocActivity[] {
+  return cloudSupervisiKeslingCache || DEFAULT_ACTIVITIES_DATA;
+}
+
 export function SupervisiKeslingView() {
   const { pushToast } = useApp();
-  const [activities, setActivities] = useState<KeslingDocActivity[]>(DEFAULT_ACTIVITIES_DATA);
+  const [activities, setActivities] = useState<KeslingDocActivity[]>(
+    () => cloudSupervisiKeslingCache || DEFAULT_ACTIVITIES_DATA
+  );
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({
     'air-bersih': true,
     'kualitas-udara': true,
@@ -293,47 +318,47 @@ export function SupervisiKeslingView() {
     docNumber: number;
   } | null>(null);
 
-  // Load from localStorage on mount & listen to cloud sync updates
+  // Fetch directly from Supabase Cloud on mount & listen to cloud sync updates
   useEffect(() => {
-    const loadFromLocal = () => {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length === 8) {
-            const cleaned = cleanDummyPhotos(parsed);
-            setActivities(cleaned);
-          }
-        }
-      } catch (e) {
-        console.warn('Gagal memuat dokumentasi tersimpan dari localStorage:', e);
+    let active = true;
+    const syncFromMemoryCache = () => {
+      if (cloudSupervisiKeslingCache && cloudSupervisiKeslingCache.length === 8) {
+        setActivities(cloudSupervisiKeslingCache);
       }
     };
-    loadFromLocal();
-    window.addEventListener('sikesling_supervisi_kesling_updated', loadFromLocal);
-    return () =>
-      window.removeEventListener('sikesling_supervisi_kesling_updated', loadFromLocal);
+    syncFromMemoryCache();
+
+    void fetchSingleCollectionFromSupabaseRest<KeslingDocActivity[]>(
+      'supervisi_kesling_activities'
+    ).then((remote) => {
+      if (!active) return;
+      if (Array.isArray(remote) && remote.length === 8) {
+        const cleaned = cleanDummyPhotos(remote);
+        cloudSupervisiKeslingCache = cleaned;
+        setActivities(cleaned);
+      }
+    });
+
+    window.addEventListener(
+      'sikesling_supervisi_kesling_updated',
+      syncFromMemoryCache
+    );
+    return () => {
+      active = false;
+      window.removeEventListener(
+        'sikesling_supervisi_kesling_updated',
+        syncFromMemoryCache
+      );
+    };
   }, []);
 
-  // Save to localStorage & Supabase Cloud automatically on every state change
+  // Save directly to Supabase Cloud on every state change (No localStorage)
   const saveToStorage = (nextActivities: KeslingDocActivity[]) => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(nextActivities));
-    } catch (e) {
-      console.warn('LocalStorage limit exceeded, skipping silent save:', e);
-    }
-    if (typeof fetch !== 'undefined') {
-      void fetch('/api/supabase/state', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          key: 'supervisi_kesling_activities',
-          payload: nextActivities,
-        }),
-      }).catch(() => {
-        // ignore offline error
-      });
-    }
+    cloudSupervisiKeslingCache = nextActivities;
+    void upsertSingleCollectionToSupabaseRest(
+      'supervisi_kesling_activities',
+      nextActivities
+    );
   };
 
   const handleToggleCard = (id: string) => {

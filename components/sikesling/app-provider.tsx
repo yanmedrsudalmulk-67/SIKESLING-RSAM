@@ -47,6 +47,7 @@ import {
   SikeslingCloudCollectionKey,
   SikeslingCloudState,
   SupabaseSyncDiagnostic,
+  upsertSingleCollectionToSupabaseRest,
 } from '@/lib/supabase';
 import {
   MedicalWasteLogRow,
@@ -67,21 +68,23 @@ import {
   createInitialRadiationMonitoringData,
 } from '@/lib/radiation-monitoring';
 import {
-  SUPERVISI_AUDIT_STORAGE_KEY,
-  ROOM_CHECKLIST_STORAGE_KEY,
-  CUSTOM_PETUGAS_STORAGE_KEY,
+  hydrateSupervisiStoresFromCloud,
   loadSupervisiAuditRecords,
   loadRoomChecklistRecords,
   loadCustomPetugasList,
 } from '@/lib/supervisi-hub';
 import {
-  STORAGE_KEY_PROGRAM_KERJA,
+  hydrateProgramKerjaFromCloud,
   loadProgramKerjaData,
 } from '@/lib/program-kerja';
 import {
-  APICLEAN_STORAGE_KEY,
+  hydrateAplicleanFromCloud,
   loadAplicleanRecords,
 } from '@/lib/apliclean';
+import {
+  getSupervisiKeslingActivitiesSnapshot,
+  hydrateSupervisiKeslingFromCloud,
+} from '@/components/sikesling/supervisi-kesling-view';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -298,6 +301,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     async (key: SikeslingCloudCollectionKey, payload: unknown) => {
       try {
         setIsSyncingSupabase(true);
+        void upsertSingleCollectionToSupabaseRest(key, payload);
         const res = await fetch('/api/supabase/state', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -420,82 +424,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setHospitalProfile(cloud.hospital_profile);
       }
 
-      if (typeof window !== 'undefined') {
-        try {
-          if (
-            Array.isArray(cloud.supervisi_audit_records) &&
-            cloud.supervisi_audit_records.length > 0
-          ) {
-            window.localStorage.setItem(
-              SUPERVISI_AUDIT_STORAGE_KEY,
-              JSON.stringify(cloud.supervisi_audit_records)
-            );
-            window.dispatchEvent(new Event('sikesling-supervisi-updated'));
-          }
-          if (
-            Array.isArray(cloud.room_checklist_records) &&
-            cloud.room_checklist_records.length > 0
-          ) {
-            window.localStorage.setItem(
-              ROOM_CHECKLIST_STORAGE_KEY,
-              JSON.stringify(cloud.room_checklist_records)
-            );
-            window.dispatchEvent(new Event('sikesling-room-checklist-updated'));
-          }
-          if (
-            Array.isArray(cloud.custom_petugas_list) &&
-            cloud.custom_petugas_list.length > 0
-          ) {
-            window.localStorage.setItem(
-              CUSTOM_PETUGAS_STORAGE_KEY,
-              JSON.stringify(cloud.custom_petugas_list)
-            );
-            window.dispatchEvent(new Event('sikesling-supervisi-updated'));
-          }
-          if (
-            Array.isArray(cloud.program_kerja_categories) &&
-            cloud.program_kerja_categories.length > 0
-          ) {
-            window.localStorage.setItem(
-              STORAGE_KEY_PROGRAM_KERJA,
-              JSON.stringify(cloud.program_kerja_categories)
-            );
-            window.dispatchEvent(
-              new CustomEvent('sikesling_program_updated', {
-                detail: cloud.program_kerja_categories,
-              })
-            );
-          }
-          if (
-            Array.isArray(cloud.apliclean_records) &&
-            cloud.apliclean_records.length > 0
-          ) {
-            window.localStorage.setItem(
-              APICLEAN_STORAGE_KEY,
-              JSON.stringify(cloud.apliclean_records)
-            );
-            window.dispatchEvent(
-              new CustomEvent('sikesling_apliclean_updated', {
-                detail: cloud.apliclean_records,
-              })
-            );
-          }
-          if (
-            Array.isArray(cloud.supervisi_kesling_activities) &&
-            cloud.supervisi_kesling_activities.length > 0
-          ) {
-            window.localStorage.setItem(
-              'sikesling_supervisi_kesling_v2',
-              JSON.stringify(cloud.supervisi_kesling_activities)
-            );
-            window.dispatchEvent(
-              new Event('sikesling_supervisi_kesling_updated')
-            );
-          }
-        } catch {
-          // ignore localStorage hydration error
-        }
-      }
+      hydrateSupervisiStoresFromCloud({
+        auditRecords: cloud.supervisi_audit_records,
+        roomRecords: cloud.room_checklist_records,
+        customPetugas: cloud.custom_petugas_list,
+      });
+      hydrateProgramKerjaFromCloud(cloud.program_kerja_categories);
+      hydrateAplicleanFromCloud(cloud.apliclean_records);
+      hydrateSupervisiKeslingFromCloud(cloud.supervisi_kesling_activities);
     },
     [persistCollectionToSupabase]
   );
@@ -525,20 +461,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const syncAllToSupabase = useCallback(async () => {
     try {
       setIsSyncingSupabase(true);
-      let keslingActivities: unknown[] = [];
-      if (typeof window !== 'undefined') {
-        try {
-          const rawKesling = window.localStorage.getItem(
-            'sikesling_supervisi_kesling_v2'
-          );
-          if (rawKesling) {
-            const parsed = JSON.parse(rawKesling);
-            if (Array.isArray(parsed)) keslingActivities = parsed;
-          }
-        } catch {
-          // ignore
-        }
-      }
+      const keslingActivities = getSupervisiKeslingActivitiesSnapshot();
 
       const clientState: Partial<SikeslingCloudState> = {
         water_quality_2026: waterRows,

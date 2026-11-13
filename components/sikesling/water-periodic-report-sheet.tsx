@@ -72,8 +72,12 @@ export function WaterPeriodicReportSheet({
   const [wellIdentity, setWellIdentity] = useState<string>(
     initialRow?.wellIdentity || DEFAULT_WELL_SIPA_IDENTITY
   );
-  const [wellOptions, setWellOptions] = useState<string[]>(() =>
+  const [customWellOptions, setCustomWellOptions] = useState<string[]>(() =>
     mergeWellSipaOptions(WELL_SIPA_OPTIONS, rows)
+  );
+  const wellOptions = useMemo(
+    () => mergeWellSipaOptions(customWellOptions, rows),
+    [customWellOptions, rows]
   );
   const [isWellDropdownOpen, setIsWellDropdownOpen] = useState<boolean>(false);
   const [hoveredWellTarget, setHoveredWellTarget] = useState<string | null>(null);
@@ -101,21 +105,6 @@ export function WaterPeriodicReportSheet({
   const [uploadTargetMonthIndex, setUploadTargetMonthIndex] = useState<number | null>(null);
   const [previewPhotoRow, setPreviewPhotoRow] = useState<WaterPeriodicReportRow | null>(null);
 
-  // Load saved well options from localStorage on mount
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(WELL_OPTIONS_STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setWellOptions((prev) => mergeWellSipaOptions(parsed, rows.length ? rows : prev.map((w) => ({ wellIdentity: w }))));
-        }
-      }
-    } catch {
-      // ignore storage errors
-    }
-  }, [rows]);
-
   // Close well dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -131,12 +120,7 @@ export function WaterPeriodicReportSheet({
   }, []);
 
   const persistWellOptions = (nextOptions: string[]) => {
-    setWellOptions(nextOptions);
-    try {
-      localStorage.setItem(WELL_OPTIONS_STORAGE_KEY, JSON.stringify(nextOptions));
-    } catch {
-      // ignore storage errors
-    }
+    setCustomWellOptions(nextOptions);
   };
 
   // Inline editing state for Rekapan Table

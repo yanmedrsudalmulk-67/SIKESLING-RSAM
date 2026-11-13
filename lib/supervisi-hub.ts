@@ -1436,97 +1436,217 @@ export function createInitialSupervisiAuditRecords(): SupervisiAuditRecord[] {
 export const SUPERVISI_AUDIT_STORAGE_KEY = 'sikesling_supervisi_audit_v2';
 export const ROOM_CHECKLIST_STORAGE_KEY = 'sikesling_room_checklist_v2';
 
-export function loadSupervisiAuditRecords(): SupervisiAuditRecord[] {
+const SUPABASE_FALLBACK_REST_URL =
+  'https://jgrgwhfgbmmxjgmjotzr.supabase.co/rest/v1';
+const SUPABASE_FALLBACK_ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impncmd3aGZnYm1teGpnbWpvdHpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ1NDUzNzksImV4cCI6MjExMDEyMTM3OX0.5ZhzeIn36MWDu7dBBTWhZ3YMngH_iEU1eWDoCuWqly4';
+
+function getDirectSupabaseEndpoint(): { restUrl: string; anonKey: string } {
+  const rawUrl = (
+    process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    'https://jgrgwhfgbmmxjgmjotzr.supabase.co'
+  )
+    .trim()
+    .replace(/\/+$/, '')
+    .replace(/\/rest\/v1$/i, '');
+  const anonKey = (
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || SUPABASE_FALLBACK_ANON_KEY
+  ).trim();
+  return {
+    restUrl: `${rawUrl}/rest/v1` || SUPABASE_FALLBACK_REST_URL,
+    anonKey,
+  };
+}
+
+let cloudAuditRecordsCache: SupervisiAuditRecord[] | null = null;
+let cloudRoomChecklistCache: RoomChecklistRecord[] | null = null;
+let cloudCustomPetugasCache: string[] | null = null;
+
+function mergeAuditRecordsWithInitial(
+  parsed: SupervisiAuditRecord[]
+): SupervisiAuditRecord[] {
   const initial = createInitialSupervisiAuditRecords();
-  if (typeof window === 'undefined') return initial;
-  try {
-    const raw = window.localStorage.getItem(SUPERVISI_AUDIT_STORAGE_KEY);
-    if (!raw) return initial;
-    const parsed = JSON.parse(raw) as SupervisiAuditRecord[];
-    if (!Array.isArray(parsed) || parsed.length === 0) return initial;
-    const initialMap = new Map(initial.map((item) => [item.id, item]));
-    const existingIds = new Set(parsed.map((r) => r.id));
-    const merged = parsed.map((r) => {
-      const seed = initialMap.get(r.id);
-      if (!seed) return r;
-      return {
-        ...seed,
-        ...r,
-        prosesPerbaikan: r.prosesPerbaikan ?? seed.prosesPerbaikan ?? '',
-        tanggalPerbaikan: r.tanggalPerbaikan ?? seed.tanggalPerbaikan ?? '',
-        dokumentasiPerbaikanUrl:
-          r.dokumentasiPerbaikanUrl || seed.dokumentasiPerbaikanUrl || '',
-        tandaTanganPerbaikanUrl:
-          r.tandaTanganPerbaikanUrl ?? seed.tandaTanganPerbaikanUrl ?? '',
-      };
-    });
-    for (const item of initial) {
-      if (!existingIds.has(item.id)) {
-        merged.push(item);
-      }
+  if (!Array.isArray(parsed) || parsed.length === 0) return initial;
+  const initialMap = new Map(initial.map((item) => [item.id, item]));
+  const existingIds = new Set(parsed.map((r) => r.id));
+  const merged = parsed.map((r) => {
+    const seed = initialMap.get(r.id);
+    if (!seed) return r;
+    return {
+      ...seed,
+      ...r,
+      prosesPerbaikan: r.prosesPerbaikan ?? seed.prosesPerbaikan ?? '',
+      tanggalPerbaikan: r.tanggalPerbaikan ?? seed.tanggalPerbaikan ?? '',
+      dokumentasiPerbaikanUrl:
+        r.dokumentasiPerbaikanUrl || seed.dokumentasiPerbaikanUrl || '',
+      tandaTanganPerbaikanUrl:
+        r.tandaTanganPerbaikanUrl ?? seed.tandaTanganPerbaikanUrl ?? '',
+    };
+  });
+  for (const item of initial) {
+    if (!existingIds.has(item.id)) {
+      merged.push(item);
     }
-    return merged;
-  } catch {
-    return initial;
+  }
+  return merged;
+}
+
+function mergeRoomRecordsWithInitial(
+  parsed: RoomChecklistRecord[]
+): RoomChecklistRecord[] {
+  const initial = createInitialRoomChecklistRecords();
+  if (!Array.isArray(parsed) || parsed.length === 0) return initial;
+  const existingIds = new Set(parsed.map((r) => r.id));
+  const merged = [...parsed];
+  for (const item of initial) {
+    if (!existingIds.has(item.id)) {
+      merged.push(item);
+    }
+  }
+  return merged;
+}
+
+export function hydrateSupervisiStoresFromCloud(data: {
+  auditRecords?: SupervisiAuditRecord[];
+  roomRecords?: RoomChecklistRecord[];
+  customPetugas?: string[];
+}): void {
+  if (Array.isArray(data.auditRecords) && data.auditRecords.length > 0) {
+    cloudAuditRecordsCache = mergeAuditRecordsWithInitial(data.auditRecords);
+  }
+  if (Array.isArray(data.roomRecords) && data.roomRecords.length > 0) {
+    cloudRoomChecklistCache = mergeRoomRecordsWithInitial(data.roomRecords);
+  }
+  if (Array.isArray(data.customPetugas) && data.customPetugas.length > 0) {
+    cloudCustomPetugasCache = data.customPetugas.filter(
+      (item): item is string => typeof item === 'string' && item.trim().length > 0
+    );
+  }
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('sikesling-supervisi-updated'));
+    window.dispatchEvent(new Event('sikesling-room-checklist-updated'));
   }
 }
 
+export async function refreshSupervisiStoresFromSupabase(): Promise<void> {
+  if (typeof fetch === 'undefined') return;
+  const { restUrl, anonKey } = getDirectSupabaseEndpoint();
+  try {
+    const res = await fetch(
+      `${restUrl}/sikesling_cloud_store?collection_key=in.(supervisi_audit_records,room_checklist_records,custom_petugas_list)&select=collection_key,payload`,
+      {
+        method: 'GET',
+        headers: {
+          apikey: anonKey,
+          Authorization: `Bearer ${anonKey}`,
+          Accept: 'application/json',
+        },
+        cache: 'no-store',
+      }
+    );
+    if (res.ok) {
+      const rows = (await res.json()) as Array<{
+        collection_key?: string;
+        payload?: unknown;
+      }>;
+      const nextData: {
+        auditRecords?: SupervisiAuditRecord[];
+        roomRecords?: RoomChecklistRecord[];
+        customPetugas?: string[];
+      } = {};
+      for (const row of rows) {
+        if (
+          row.collection_key === 'supervisi_audit_records' &&
+          Array.isArray(row.payload)
+        ) {
+          nextData.auditRecords = row.payload as SupervisiAuditRecord[];
+        } else if (
+          row.collection_key === 'room_checklist_records' &&
+          Array.isArray(row.payload)
+        ) {
+          nextData.roomRecords = row.payload as RoomChecklistRecord[];
+        } else if (
+          row.collection_key === 'custom_petugas_list' &&
+          Array.isArray(row.payload)
+        ) {
+          nextData.customPetugas = row.payload as string[];
+        }
+      }
+      hydrateSupervisiStoresFromCloud(nextData);
+    }
+  } catch {
+    // ignore transient network error
+  }
+}
+
+export function loadSupervisiAuditRecords(): SupervisiAuditRecord[] {
+  if (cloudAuditRecordsCache && cloudAuditRecordsCache.length > 0) {
+    return cloudAuditRecordsCache;
+  }
+  const initial = createInitialSupervisiAuditRecords();
+  cloudAuditRecordsCache = initial;
+  return initial;
+}
+
 function syncSupervisiCollectionToSupabase(key: string, payload: unknown): void {
-  if (typeof window === 'undefined' || typeof fetch === 'undefined') return;
-  void fetch('/api/supabase/state', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ key, payload }),
+  if (typeof fetch === 'undefined') return;
+  const { restUrl, anonKey } = getDirectSupabaseEndpoint();
+  const nowIso = new Date().toISOString();
+
+  // 1. Direct write to Supabase REST v1 (`public.sikesling_cloud_store`)
+  void fetch(`${restUrl}/sikesling_cloud_store?on_conflict=collection_key`, {
+    method: 'POST',
+    headers: {
+      apikey: anonKey,
+      Authorization: `Bearer ${anonKey}`,
+      'Content-Type': 'application/json',
+      Prefer: 'resolution=merge-duplicates,return=minimal',
+    },
+    body: JSON.stringify([
+      {
+        collection_key: key,
+        payload,
+        updated_at: nowIso,
+      },
+    ]),
+    cache: 'no-store',
   }).catch(() => {
     // ignore transient offline error
   });
+
+  // 2. Mirror to Next.js server state endpoint
+  if (typeof window !== 'undefined') {
+    void fetch('/api/supabase/state', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key, payload }),
+    }).catch(() => {
+      // ignore transient offline error
+    });
+  }
 }
 
 export function saveSupervisiAuditRecords(records: SupervisiAuditRecord[]): void {
-  if (typeof window === 'undefined') return;
-  try {
-    window.localStorage.setItem(
-      SUPERVISI_AUDIT_STORAGE_KEY,
-      JSON.stringify(records)
-    );
+  cloudAuditRecordsCache = records;
+  if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event('sikesling-supervisi-updated'));
-  } catch {
-    // ignore storage quota errors
   }
   syncSupervisiCollectionToSupabase('supervisi_audit_records', records);
 }
 
 export function loadRoomChecklistRecords(): RoomChecklistRecord[] {
-  const initial = createInitialRoomChecklistRecords();
-  if (typeof window === 'undefined') return initial;
-  try {
-    const raw = window.localStorage.getItem(ROOM_CHECKLIST_STORAGE_KEY);
-    if (!raw) return initial;
-    const parsed = JSON.parse(raw) as RoomChecklistRecord[];
-    if (!Array.isArray(parsed) || parsed.length === 0) return initial;
-    const existingIds = new Set(parsed.map((r) => r.id));
-    const merged = [...parsed];
-    for (const item of initial) {
-      if (!existingIds.has(item.id)) {
-        merged.push(item);
-      }
-    }
-    return merged;
-  } catch {
-    return initial;
+  if (cloudRoomChecklistCache && cloudRoomChecklistCache.length > 0) {
+    return cloudRoomChecklistCache;
   }
+  const initial = createInitialRoomChecklistRecords();
+  cloudRoomChecklistCache = initial;
+  return initial;
 }
 
 export function saveRoomChecklistRecords(records: RoomChecklistRecord[]): void {
-  if (typeof window === 'undefined') return;
-  try {
-    window.localStorage.setItem(
-      ROOM_CHECKLIST_STORAGE_KEY,
-      JSON.stringify(records)
-    );
+  cloudRoomChecklistCache = records;
+  if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event('sikesling-room-checklist-updated'));
-  } catch {
-    // ignore storage quota errors
   }
   syncSupervisiCollectionToSupabase('room_checklist_records', records);
 }
@@ -1691,31 +1811,22 @@ export function deletePetugasName(
 }
 
 export function loadCustomPetugasList(): string[] {
-  if (typeof window === 'undefined') return [...DEFAULT_PETUGAS_LIST];
-  try {
-    const raw = window.localStorage.getItem(CUSTOM_PETUGAS_STORAGE_KEY);
-    if (!raw) return [...DEFAULT_PETUGAS_LIST];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [...DEFAULT_PETUGAS_LIST];
-    return parsed.filter(
-      (item): item is string => typeof item === 'string' && item.trim().length > 0
-    );
-  } catch {
-    return [...DEFAULT_PETUGAS_LIST];
+  if (cloudCustomPetugasCache && cloudCustomPetugasCache.length > 0) {
+    return cloudCustomPetugasCache;
   }
+  const initial = [...DEFAULT_PETUGAS_LIST];
+  cloudCustomPetugasCache = initial;
+  return initial;
 }
 
 export function saveCustomPetugasList(list: string[]): void {
-  if (typeof window === 'undefined') return;
-  try {
-    window.localStorage.setItem(
-      CUSTOM_PETUGAS_STORAGE_KEY,
-      JSON.stringify(list)
-    );
-  } catch {
-    // ignore storage errors
+  cloudCustomPetugasCache = list.filter(
+    (item): item is string => typeof item === 'string' && item.trim().length > 0
+  );
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('sikesling-supervisi-updated'));
   }
-  syncSupervisiCollectionToSupabase('custom_petugas_list', list);
+  syncSupervisiCollectionToSupabase('custom_petugas_list', cloudCustomPetugasCache);
 }
 
 export type TemuanWorkflowStatus =
