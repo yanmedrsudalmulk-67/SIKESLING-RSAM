@@ -420,7 +420,7 @@ export function PengaturanView({ routePath }: { routePath: string }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormSection
               title="Integrasi Cloud Supabase REST v1 (Aktif)"
-              description="Seluruh 16 modul data SIKRESMI kini terhubung penuh ke Supabase tanpa penyimpanan lokal browser (Zero Local Storage)."
+              description="Seluruh 27 koleksi modul data SIKRESMI kini terhubung penuh ke Supabase Cloud."
             >
               <div className="space-y-2.5 text-xs">
                 <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800 gap-2">
@@ -432,13 +432,13 @@ export function PengaturanView({ routePath }: { routePath: string }) {
                 <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
                   <span className="text-slate-500">Project Reference:</span>
                   <span className="font-mono font-semibold">
-                    {supabaseDiagnostic?.projectRef || 'zwsshqpenadbpytvwkje'}
+                    {supabaseDiagnostic?.projectRef || 'jgrgwhfgbmmxjgmjotzr'}
                   </span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
                   <span className="text-slate-500">Mode Penyimpanan:</span>
                   <span className="font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
-                    100% Terintegrasi Supabase Cloud (Tanpa Data Lokal)
+                    100% Terintegrasi Supabase Cloud (27 Koleksi Modul)
                   </span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
@@ -446,7 +446,7 @@ export function PengaturanView({ routePath }: { routePath: string }) {
                   <span className="font-mono font-semibold text-[#153E75] dark:text-[#60A5FA]">
                     {supabaseDiagnostic?.tableReady
                       ? 'Tabel sikesling_cloud_store Aktif'
-                      : 'Siap Sinkronisasi (16 Koleksi Aktif)'}
+                      : 'Siap Sinkronisasi (27 Koleksi Aktif)'}
                   </span>
                 </div>
                 <div className="pt-2 flex flex-wrap gap-2">
@@ -461,7 +461,7 @@ export function PengaturanView({ routePath }: { routePath: string }) {
                     className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#002147] text-[#FAF6F0] text-xs font-semibold hover:bg-[#003166] transition-colors disabled:opacity-60"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${syncingSupabase ? 'animate-spin' : ''}`} />
-                    {syncingSupabase ? 'Menyinkronkan...' : 'Sinkronkan 16 Modul ke Supabase'}
+                    {syncingSupabase ? 'Menyinkronkan...' : 'Sinkronkan 27 Modul ke Supabase'}
                   </button>
                   <button
                     type="button"

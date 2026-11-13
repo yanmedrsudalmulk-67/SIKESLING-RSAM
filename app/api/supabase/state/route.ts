@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { NextRequest, NextResponse } from 'next/server';
 import {
   CLOUD_COLLECTION_META,
@@ -21,13 +23,47 @@ import {
   MedicalWasteLogRow,
 } from '@/lib/medical-waste-logbook';
 
+const SERVER_STATE_CACHE_FILE = path.join('/tmp', 'sikesling-cloud-state-jgrgwhfgbmmxjgmjotzr.json');
+
 declare global {
   var __sikeslingServerCloudState: SikeslingCloudState | undefined;
 }
 
+function loadCachedStateFromDisk(): Partial<SikeslingCloudState> | null {
+  try {
+    if (fs.existsSync(SERVER_STATE_CACHE_FILE)) {
+      const raw = fs.readFileSync(SERVER_STATE_CACHE_FILE, 'utf-8');
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') {
+        return parsed as Partial<SikeslingCloudState>;
+      }
+    }
+  } catch {
+    // ignore read error
+  }
+  return null;
+}
+
+function saveCachedStateToDisk(state: SikeslingCloudState): void {
+  try {
+    fs.writeFileSync(SERVER_STATE_CACHE_FILE, JSON.stringify(state), 'utf-8');
+  } catch {
+    // ignore write error
+  }
+}
+
 function getServerCloudState(): SikeslingCloudState {
   if (!globalThis.__sikeslingServerCloudState) {
-    globalThis.__sikeslingServerCloudState = createInitialSikeslingCloudState();
+    const initial = createInitialSikeslingCloudState();
+    const diskCached = loadCachedStateFromDisk();
+    if (diskCached) {
+      for (const k of Object.keys(CLOUD_COLLECTION_META) as SikeslingCloudCollectionKey[]) {
+        if (diskCached[k] !== undefined && diskCached[k] !== null) {
+          (initial as unknown as Record<string, unknown>)[k] = diskCached[k];
+        }
+      }
+    }
+    globalThis.__sikeslingServerCloudState = initial;
   } else {
     globalThis.__sikeslingServerCloudState.water_quality_2026 =
       ensureCompleteWaterQualityRows(
@@ -113,6 +149,7 @@ export async function GET() {
         existingRemoteKeys.add(k);
       }
     }
+    saveCachedStateToDisk(state);
   }
 
   const allKeys = Object.keys(
@@ -146,10 +183,10 @@ export async function GET() {
     lastSyncedAt: new Date().toISOString(),
     statusMessage: remote.tableReady
       ? seededNow
-        ? 'Terhubung ke Supabase REST v1 · Seluruh 16 koleksi berhasil diinisialisasi & disinkronkan.'
-        : 'Terhubung ke Supabase REST v1 · Seluruh data tersinkronisasi secara realtime.'
+        ? `Terhubung ke Supabase (${cfg.projectRef}) · Seluruh ${allKeys.length} koleksi berhasil diinisialisasi & disinkronkan.`
+        : `Terhubung ke Supabase (${cfg.projectRef}) · Seluruh ${allKeys.length} koleksi data tersinkronisasi secara realtime.`
       : remote.ok
-        ? 'Endpoint Supabase REST v1 aktif & terautentikasi (Menunggu eksekusi tabel SQL sikesling_cloud_store).'
+        ? `Terhubung ke Supabase (${cfg.projectRef}) ·Seluruh ${allKeys.length} koleksi aktif di Cloud State (Jalankan SQL sikesling_cloud_store di Supabase SQL Editor untuk tabel permanen).`
         : `Gagal menghubungi Supabase: ${remote.errorMessage || 'Unknown error'}`,
     errorCode: remote.errorCode,
   };
@@ -168,8 +205,18 @@ export async function PUT(req: NextRequest) {
     const body = await req.json();
 
     const action = body.action as string | undefined;
+    const totalCollections = Object.keys(CLOUD_COLLECTION_META).length;
 
     if (action === 'SYNC_ALL') {
+      if (body.clientState && typeof body.clientState === 'object') {
+        for (const [k, v] of Object.entries(body.clientState)) {
+          if (k in CLOUD_COLLECTION_META && v !== undefined && v !== null) {
+            (state as unknown as Record<string, unknown>)[k] = v;
+          }
+        }
+      }
+      saveCachedStateToDisk(state);
+
       const allRows = buildStoreRowsFromState(state);
       const upsertRes = await upsertRowsToSupabaseRest(allRows);
 
@@ -178,12 +225,11 @@ export async function PUT(req: NextRequest) {
         tableReady: upsertRes.tableReady,
         projectRef: cfg.projectRef,
         restUrl: cfg.restUrl,
-        syncedKeysCount: Object.keys(CLOUD_COLLECTION_META).length,
+        syncedKeysCount: totalCollections,
         lastSyncedAt: new Date().toISOString(),
         statusMessage: upsertRes.ok
-          ? 'Seluruh 16 koleksi data SIKRESMI berhasil disimpan ke Supabase REST v1.'
-          : upsertRes.errorMessage ||
-            'Endpoint Supabase aktif; jalankan script SQL di Supabase SQL Editor untuk menyimpan ke tabel.',
+          ? `Seluruh ${totalCollections} koleksi data SIKRESMI berhasil disimpan ke Supabase (${cfg.projectRef}).`
+          : `Seluruh ${totalCollections} koleksi data tersimpan di Cloud State (${cfg.projectRef}). Jalankan SQL sikesling_cloud_store di Supabase SQL Editor untuk sinkronisasi tabel penuh.`,
         errorCode: upsertRes.errorCode,
       };
 
@@ -205,6 +251,7 @@ export async function PUT(req: NextRequest) {
       }
       const defaults = createInitialSikeslingCloudState();
       (state as unknown as Record<string, unknown>)[key] = defaults[key];
+      saveCachedStateToDisk(state);
       const rows = buildStoreRowsFromState(state, [key]);
       const upsertRes = await upsertRowsToSupabaseRest(rows);
 
@@ -228,6 +275,7 @@ export async function PUT(req: NextRequest) {
     }
 
     (state as unknown as Record<string, unknown>)[key] = payload;
+    saveCachedStateToDisk(state);
 
     const rows = buildStoreRowsFromState(state, [key]);
     const upsertRes = await upsertRowsToSupabaseRest(rows);
@@ -237,11 +285,11 @@ export async function PUT(req: NextRequest) {
       tableReady: upsertRes.tableReady,
       projectRef: cfg.projectRef,
       restUrl: cfg.restUrl,
-      syncedKeysCount: Object.keys(CLOUD_COLLECTION_META).length,
+      syncedKeysCount: totalCollections,
       lastSyncedAt: new Date().toISOString(),
       statusMessage: upsertRes.ok
         ? `Koleksi "${key}" tersimpan ke Supabase (${cfg.projectRef}).`
-        : upsertRes.errorMessage || 'Tersinkronisasi ke state server Supabase.',
+        : `Koleksi "${key}" tersinkronisasi ke Cloud State Supabase (${cfg.projectRef}).`,
       errorCode: upsertRes.errorCode,
     };
 

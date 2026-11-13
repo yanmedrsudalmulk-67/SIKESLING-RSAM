@@ -313,17 +313,21 @@ test('air quality and indoor physical environment dataset is populated with requ
   assert.equal(upgraded[0].tempResult, 27.6);
 });
 
-test('supabase integration normalizes REST v1 URLs and defines all 21 application collections', () => {
-  const parsed = normalizeSupabaseUrls('https://zwsshqpenadbpytvwkje.supabase.co/rest/v1/');
-  assert.equal(parsed.projectUrl, 'https://zwsshqpenadbpytvwkje.supabase.co');
-  assert.equal(parsed.restUrl, 'https://zwsshqpenadbpytvwkje.supabase.co/rest/v1');
+test('supabase integration normalizes REST v1 URLs and defines all 27 application collections', () => {
+  const parsed = normalizeSupabaseUrls('https://jgrgwhfgbmmxjgmjotzr.supabase.co/rest/v1/');
+  assert.equal(parsed.projectUrl, 'https://jgrgwhfgbmmxjgmjotzr.supabase.co');
+  assert.equal(parsed.restUrl, 'https://jgrgwhfgbmmxjgmjotzr.supabase.co/rest/v1');
 
   const cfg = getSupabaseConfig();
-  assert.equal(cfg.restUrl, 'https://zwsshqpenadbpytvwkje.supabase.co/rest/v1');
+  assert.equal(cfg.restUrl, 'https://jgrgwhfgbmmxjgmjotzr.supabase.co/rest/v1');
+  assert.equal(cfg.projectRef, 'jgrgwhfgbmmxjgmjotzr');
   assert.ok(cfg.anonKey.startsWith('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'));
 
   const initialState = createInitialSikeslingCloudState();
-  assert.equal(Object.keys(initialState).length, 21);
+  assert.equal(Object.keys(initialState).length, 27);
+  assert.ok(Array.isArray(initialState.supervisi_audit_records));
+  assert.ok(Array.isArray(initialState.room_checklist_records));
 });
+
 
 

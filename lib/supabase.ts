@@ -42,16 +42,31 @@ import {
 } from './radiation-monitoring';
 import { OFFICIAL_MASTER_ROOMS_74 } from './master-rooms-data';
 import { OFFICIAL_FINDING_RECORDS_11 } from './master-findings-data';
+import {
+  SupervisiAuditRecord,
+  RoomChecklistRecord,
+  DEFAULT_PETUGAS_LIST,
+  createInitialSupervisiAuditRecords,
+  createInitialRoomChecklistRecords,
+} from './supervisi-hub';
+import {
+  ProgramCategory,
+  PROGRAM_KERJA_CATEGORIES,
+} from './program-kerja';
+import {
+  AplicleanRecord,
+  createAllAplicleanRecords,
+} from './apliclean';
 
 export const INITIAL_FINDINGS: FindingFollowUpRecord[] = [
   ...OFFICIAL_FINDING_RECORDS_11,
 ];
 
 export const DEFAULT_SUPABASE_RAW_URL =
-  'https://zwsshqpenadbpytvwkje.supabase.co/rest/v1/';
+  'https://jgrgwhfgbmmxjgmjotzr.supabase.co';
 
 export const DEFAULT_SUPABASE_ANON_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3c3NocXBlbmFkYnB5dHZ3a2plIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM0NzA0MDUsImV4cCI6MjEwOTA0NjQwNX0.rdRDwcEiYOnR8rXSm9ngpohZqOXrYu0-nNRPKjNjcsg';
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impncmd3aGZnYm1teGpnbWpvdHpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ1NDUzNzksImV4cCI6MjExMDEyMTM3OX0.5ZhzeIn36MWDu7dBBTWhZ3YMngH_iEU1eWDoCuWqly4';
 
 export const SUPABASE_CLOUD_TABLE = 'sikesling_cloud_store';
 
@@ -66,8 +81,8 @@ export interface SupabaseEndpointConfig {
 
 /**
  * Normalizes NEXT_PUBLIC_SUPABASE_URL whether provided as
- * "https://zwsshqpenadbpytvwkje.supabase.co/rest/v1/" or
- * "https://zwsshqpenadbpytvwkje.supabase.co"
+ * "https://jgrgwhfgbmmxjgmjotzr.supabase.co/rest/v1/" or
+ * "https://jgrgwhfgbmmxjgmjotzr.supabase.co"
  */
 export function normalizeSupabaseUrls(rawInput?: string): {
   rawUrl: string;
@@ -80,7 +95,7 @@ export function normalizeSupabaseUrls(rawInput?: string): {
   const projectUrl = withoutTrailingSlash.replace(/\/rest\/v1$/i, '');
   const restUrl = `${projectUrl}/rest/v1`;
 
-  let projectRef = 'zwsshqpenadbpytvwkje';
+  let projectRef = 'jgrgwhfgbmmxjgmjotzr';
   try {
     const parsed = new URL(projectUrl);
     const hostParts = parsed.hostname.split('.');
@@ -181,6 +196,12 @@ export interface SikeslingCloudState {
   master_officers: MasterOfficerItem[];
   master_standards: MasterStandardItem[];
   hospital_profile: HospitalProfileData;
+  supervisi_audit_records: SupervisiAuditRecord[];
+  room_checklist_records: RoomChecklistRecord[];
+  custom_petugas_list: string[];
+  program_kerja_categories: ProgramCategory[];
+  apliclean_records: AplicleanRecord[];
+  supervisi_kesling_activities: unknown[];
 }
 
 export type SikeslingCloudCollectionKey = keyof SikeslingCloudState;
@@ -301,6 +322,12 @@ export function createInitialSikeslingCloudState(): SikeslingCloudState {
     master_officers: [...INITIAL_MASTER_OFFICERS],
     master_standards: [],
     hospital_profile: { ...INITIAL_HOSPITAL_PROFILE },
+    supervisi_audit_records: createInitialSupervisiAuditRecords(),
+    room_checklist_records: createInitialRoomChecklistRecords(),
+    custom_petugas_list: [...DEFAULT_PETUGAS_LIST],
+    program_kerja_categories: [...PROGRAM_KERJA_CATEGORIES],
+    apliclean_records: createAllAplicleanRecords(),
+    supervisi_kesling_activities: [],
   };
 }
 
@@ -392,6 +419,30 @@ export const CLOUD_COLLECTION_META: Record<
     category: 'PENGATURAN',
     title: 'Profil Resmi Instansi UOBK RSUD Al-Mulk Kota Sukabumi',
   },
+  supervisi_audit_records: {
+    category: 'SUPERVISI',
+    title: 'Data Audit Supervisi (5 Aspek Kinerja, Skor 1-4, Temuan & Tindak Lanjut)',
+  },
+  room_checklist_records: {
+    category: 'SUPERVISI',
+    title: 'Rekap Ceklist Kebersihan 9 Unit Ruangan (Rawat Jalan, IGD, Ranap, ICU/IBS, Manajemen, Halaman)',
+  },
+  custom_petugas_list: {
+    category: 'SUPERVISI',
+    title: 'Daftar Petugas Kebersihan & Pelaksana Supervisi Lapangan',
+  },
+  program_kerja_categories: {
+    category: 'PROGRAM_KERJA',
+    title: 'Matriks Program Kerja Tahunan & Bulanan Kesehatan Lingkungan (9 Bidang)',
+  },
+  apliclean_records: {
+    category: 'SUPERVISI',
+    title: 'Data Integrasi Apliclean Supervisi Ruangan',
+  },
+  supervisi_kesling_activities: {
+    category: 'SUPERVISI',
+    title: 'Dokumentasi Foto 8 Kegiatan Utama Supervisi Kesehatan Lingkungan',
+  },
 };
 
 export interface SupabaseStoreRow {
@@ -414,7 +465,8 @@ export interface SupabaseSyncDiagnostic {
 }
 
 /**
- * Fetches all rows from https://zwsshqpenadbpytvwkje.supabase.co/rest/v1/sikesling_cloud_store
+ * Fetches all rows from https://jgrgwhfgbmmxjgmjotzr.supabase.co/rest/v1/sikesling_cloud_store
+ * Supports both (collection_key, payload, updated_at) and (key, category, title, payload, updated_at) schemas.
  */
 export async function fetchAllFromSupabaseRest(): Promise<{
   ok: boolean;
@@ -424,7 +476,7 @@ export async function fetchAllFromSupabaseRest(): Promise<{
   errorMessage?: string;
 }> {
   const cfg = getSupabaseConfig();
-  const endpoint = `${cfg.restUrl}/${SUPABASE_CLOUD_TABLE}?select=key,category,title,payload,updated_at`;
+  const endpoint = `${cfg.restUrl}/${SUPABASE_CLOUD_TABLE}?select=*`;
 
   try {
     const res = await fetch(endpoint, {
@@ -438,11 +490,25 @@ export async function fetchAllFromSupabaseRest(): Promise<{
     });
 
     if (res.ok) {
-      const data = (await res.json()) as SupabaseStoreRow[];
+      const data = (await res.json()) as Array<Record<string, unknown>>;
+      const normalizedRows: SupabaseStoreRow[] = (Array.isArray(data) ? data : [])
+        .map((r) => {
+          const resolvedKey = String(r.key || r.collection_key || '') as SikeslingCloudCollectionKey;
+          const meta = CLOUD_COLLECTION_META[resolvedKey];
+          return {
+            key: resolvedKey,
+            category: String(r.category || meta?.category || 'MONITORING'),
+            title: String(r.title || meta?.title || resolvedKey),
+            payload: r.payload,
+            updated_at: typeof r.updated_at === 'string' ? r.updated_at : undefined,
+          };
+        })
+        .filter((r) => Boolean(r.key));
+
       return {
         ok: true,
         tableReady: true,
-        rows: Array.isArray(data) ? data : [],
+        rows: normalizedRows,
       };
     }
 
@@ -486,7 +552,8 @@ export async function fetchAllFromSupabaseRest(): Promise<{
 }
 
 /**
- * Upserts one or multiple collection records into Supabase REST v1 (`sikesling_cloud_store`)
+ * Upserts one or multiple collection records into Supabase REST v1 (`sikesling_cloud_store`).
+ * Automatically supports both `collection_key` and `key` table column schemas.
  */
 export async function upsertRowsToSupabaseRest(
   rows: SupabaseStoreRow[]
@@ -497,34 +564,57 @@ export async function upsertRowsToSupabaseRest(
   errorMessage?: string;
 }> {
   const cfg = getSupabaseConfig();
-  const endpoint = `${cfg.restUrl}/${SUPABASE_CLOUD_TABLE}?on_conflict=key`;
+  const nowIso = new Date().toISOString();
+
+  const headers = {
+    apikey: cfg.anonKey,
+    Authorization: `Bearer ${cfg.anonKey}`,
+    'Content-Type': 'application/json',
+    Prefer: 'resolution=merge-duplicates,return=minimal',
+  };
 
   try {
-    const res = await fetch(endpoint, {
+    // 1. Try primary schema: (collection_key, payload, updated_at)
+    const primaryEndpoint = `${cfg.restUrl}/${SUPABASE_CLOUD_TABLE}?on_conflict=collection_key`;
+    const primaryRes = await fetch(primaryEndpoint, {
       method: 'POST',
-      headers: {
-        apikey: cfg.anonKey,
-        Authorization: `Bearer ${cfg.anonKey}`,
-        'Content-Type': 'application/json',
-        Prefer: 'resolution=merge-duplicates,return=minimal',
-      },
+      headers,
+      body: JSON.stringify(
+        rows.map((r) => ({
+          collection_key: r.key,
+          payload: r.payload,
+          updated_at: nowIso,
+        }))
+      ),
+      cache: 'no-store',
+    });
+
+    if (primaryRes.ok) {
+      return { ok: true, tableReady: true };
+    }
+
+    // 2. Fallback to extended schema: (key, category, title, payload, updated_at)
+    const fallbackEndpoint = `${cfg.restUrl}/${SUPABASE_CLOUD_TABLE}?on_conflict=key`;
+    const fallbackRes = await fetch(fallbackEndpoint, {
+      method: 'POST',
+      headers,
       body: JSON.stringify(
         rows.map((r) => ({
           key: r.key,
           category: r.category,
           title: r.title,
           payload: r.payload,
-          updated_at: new Date().toISOString(),
+          updated_at: nowIso,
         }))
       ),
       cache: 'no-store',
     });
 
-    if (res.ok) {
+    if (fallbackRes.ok) {
       return { ok: true, tableReady: true };
     }
 
-    const errText = await res.text();
+    const errText = await primaryRes.text();
     let parsedErr: { code?: string; message?: string } = {};
     try {
       parsedErr = JSON.parse(errText);
@@ -532,7 +622,7 @@ export async function upsertRowsToSupabaseRest(
       parsedErr = { message: errText };
     }
 
-    if (parsedErr.code === 'PGRST205' || res.status === 404) {
+    if (parsedErr.code === 'PGRST205' || primaryRes.status === 404) {
       return {
         ok: false,
         tableReady: false,
@@ -544,8 +634,8 @@ export async function upsertRowsToSupabaseRest(
     return {
       ok: false,
       tableReady: true,
-      errorCode: parsedErr.code || `HTTP_${res.status}`,
-      errorMessage: parsedErr.message || `HTTP ${res.status}`,
+      errorCode: parsedErr.code || `HTTP_${primaryRes.status}`,
+      errorMessage: parsedErr.message || `HTTP ${primaryRes.status}`,
     };
   } catch (err) {
     return {
@@ -559,12 +649,12 @@ export async function upsertRowsToSupabaseRest(
 
 export const SUPABASE_SETUP_SQL = `-- ============================================================================
 -- SIKRESMI — SUPABASE CLOUD SCHEMA & RLS SETUP
--- Project Ref : zwsshqpenadbpytvwkje
--- Endpoint    : https://zwsshqpenadbpytvwkje.supabase.co/rest/v1/
+-- Project Ref : jgrgwhfgbmmxjgmjotzr
+-- Endpoint    : https://jgrgwhfgbmmxjgmjotzr.supabase.co/rest/v1/
 -- Jalankan script ini di Supabase Dashboard -> SQL Editor -> New Query -> Run
 -- ============================================================================
 
--- 1. Tabel Utama Penyimpanan Terintegrasi SIKRESMI (16 Koleksi Modul)
+-- 1. Tabel Utama Penyimpanan Terintegrasi SIKRESMI (27 Koleksi Modul)
 CREATE TABLE IF NOT EXISTS public.sikesling_cloud_store (
   key TEXT PRIMARY KEY,
   category TEXT NOT NULL DEFAULT 'MONITORING',

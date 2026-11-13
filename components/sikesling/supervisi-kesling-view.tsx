@@ -293,30 +293,46 @@ export function SupervisiKeslingView() {
     docNumber: number;
   } | null>(null);
 
-  // Load from localStorage on mount & bersihkan seluruh foto dummy secara otomatis
+  // Load from localStorage on mount & listen to cloud sync updates
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length === 8) {
-          const cleaned = cleanDummyPhotos(parsed);
-          setActivities(cleaned);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned));
-          return;
+    const loadFromLocal = () => {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length === 8) {
+            const cleaned = cleanDummyPhotos(parsed);
+            setActivities(cleaned);
+          }
         }
+      } catch (e) {
+        console.warn('Gagal memuat dokumentasi tersimpan dari localStorage:', e);
       }
-    } catch (e) {
-      console.warn('Gagal memuat dokumentasi tersimpan dari localStorage:', e);
-    }
+    };
+    loadFromLocal();
+    window.addEventListener('sikesling_supervisi_kesling_updated', loadFromLocal);
+    return () =>
+      window.removeEventListener('sikesling_supervisi_kesling_updated', loadFromLocal);
   }, []);
 
-  // Save to localStorage automatically on every state change
+  // Save to localStorage & Supabase Cloud automatically on every state change
   const saveToStorage = (nextActivities: KeslingDocActivity[]) => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(nextActivities));
     } catch (e) {
       console.warn('LocalStorage limit exceeded, skipping silent save:', e);
+    }
+    if (typeof fetch !== 'undefined') {
+      void fetch('/api/supabase/state', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          key: 'supervisi_kesling_activities',
+          payload: nextActivities,
+        }),
+      }).catch(() => {
+        // ignore offline error
+      });
     }
   };
 

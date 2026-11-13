@@ -763,28 +763,131 @@ export const CRITERIA_QUICK_OPTIONS = {
     'Seragam kerja lengkap, rapi, bersih & menggunakan atribut ID Card',
     'Atribut kerja cukup rapi, sepatu tertutup sesuai standar',
     'Perlu perapihan atribut kerja & kelengkapan identitas petugas',
+    'Tidak menggunakan ID Card / atribut identitas saat bertugas',
+    'Sepatu kerja tidak tertutup / kurang rapi saat bertugas di ruangan',
   ],
   prosedur: [
     'Pembersihan dilakukan sesuai SPO dari area bersih ke area kotor',
     'Tahapan menyapu, mengepel, dan desinfeksi dilaksanakan berurutan',
     'Prosedur pengenceran desinfektan dan teknik mop perlu ditingkatkan',
+    'Pembersihan kaca, wastafel, dan langit-langit belum menyeluruh',
+    'Jadwal general cleaning dan desinfeksi permukaan perlu dioptimalkan',
   ],
   alatDanBahan: [
     'Troli kebersihan, mop, ember warna, dan cairan desinfektan lengkap',
     'Alat kebersihan tertata rapi di janitor dan siap digunakan',
     'Perlu penggantian kain pel/mikrofiber yang sudah aus',
+    'Cairan pembersih / desinfektan dan pengharum ruangan perlu ditambah',
+    'Pemisahan alat pel infeksius dan non-infeksius perlu dipertegas',
   ],
   k3: [
     'Menggunakan APD lengkap (masker, sarung tangan/handscoon, sepatu tertutup) & pasang wet floor sign',
     'APD digunakan dengan tertib selama menangani area infeksius',
     'Rambu lantai basah (wet floor sign) wajib dipasang saat mengepel koridor',
+    'Petugas belum menggunakan sarung tangan (handscoon) / masker secara konsisten',
+    'Penanganan kantong limbah medis & domestik sesuai prosedur K3RS',
   ],
   sikapDanPerilaku: [
     'Disiplin waktu, ramah, sopan, dan responsif terhadap arahan supervisor',
     'Kooperatif dalam menindaklanjuti temuan kebersihan di ruangan',
     'Komunikasi efektif dengan kepala ruangan dan perawat jaga',
+    'Perlu peningkatan ketepatan waktu kehadiran pada pergantian shift',
+    'Perlu lebih proaktif memeriksa kebersihan toilet & ruang tunggu',
+  ],
+  temuan: [
+    'Kondisi ruangan bersih, rapi & sesuai standar SOP Kesehatan Lingkungan',
+    'Lantai sudut ruangan & kolong tempat tidur masih berdebu',
+    'Kaca jendela / pintu dan wastafel terdapat bercak air & perlu dibersihkan ulang',
+    'Langit-langit / plafon berdebu atau terdapat sarang laba-laba',
+    'Toilet / WC pasien berbau atau lantai basah licin',
+    'Tempat sampah medis / domestik hampir penuh (>3/4) belum diangkut',
+  ],
+  rekomendasi: [
+    'Pertahankan jadwal pembersihan rutin pagi & siang sesuai SPO',
+    'Segera lakukan pembersihan ulang (re-cleaning) pada area temuan hari ini',
+    'Lakukan general cleaning berkala dan desinfeksi menyeluruh pada ruangan',
+    'Koordinasi dengan IPSRS untuk perbaikan fasilitas fisik / plafon / sanitair',
+    'Tingkatkan kepatuhan penggunaan APD dan pemasangan rambu wet floor sign',
+    'Monitoring ulang oleh supervisor pada shift berikutnya',
   ],
 };
+
+export type CriteriaQuestionKey = keyof typeof CRITERIA_QUICK_OPTIONS;
+
+/**
+ * Parses a semicolon-delimited multi-choice string into an array of distinct non-empty values.
+ */
+export function parseMultiChoiceValue(raw: string): string[] {
+  if (!raw || !raw.trim()) return [];
+  const parts = raw
+    .split(';')
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const part of parts) {
+    const lower = part.toLowerCase();
+    if (!seen.has(lower)) {
+      seen.add(lower);
+      result.push(part);
+    }
+  }
+  return result;
+}
+
+/**
+ * Formats an array of selected multi-choice strings into a canonical "; "-separated string.
+ */
+export function formatMultiChoiceValue(items: string[]): string {
+  return parseMultiChoiceValue(items.join('; ')).join('; ');
+}
+
+/**
+ * Checks whether a specific option is currently selected in the multi-choice string.
+ */
+export function isMultiChoiceOptionSelected(raw: string, option: string): boolean {
+  const target = (option || '').trim().toLowerCase();
+  if (!target) return false;
+  return parseMultiChoiceValue(raw).some((item) => item.toLowerCase() === target);
+}
+
+/**
+ * Toggles an option inside a multi-choice value string (adds if absent, removes if present).
+ */
+export function toggleMultiChoiceOption(raw: string, option: string): string {
+  const trimmedOpt = (option || '').trim();
+  if (!trimmedOpt) return formatMultiChoiceValue(parseMultiChoiceValue(raw));
+  const current = parseMultiChoiceValue(raw);
+  const lowerOpt = trimmedOpt.toLowerCase();
+  const exists = current.some((item) => item.toLowerCase() === lowerOpt);
+  const next = exists
+    ? current.filter((item) => item.toLowerCase() !== lowerOpt)
+    : [...current, trimmedOpt];
+  return next.join('; ');
+}
+
+/**
+ * Selects all provided options (or deselects them if all are already selected).
+ */
+export function selectAllMultiChoiceOptions(
+  raw: string,
+  options: readonly string[]
+): string {
+  const current = parseMultiChoiceValue(raw);
+  const cleanOptions = options.map((o) => o.trim()).filter(Boolean);
+  const allSelected =
+    cleanOptions.length > 0 &&
+    cleanOptions.every((opt) =>
+      current.some((item) => item.toLowerCase() === opt.toLowerCase())
+    );
+
+  if (allSelected) {
+    const optionSet = new Set(cleanOptions.map((o) => o.toLowerCase()));
+    return current.filter((item) => !optionSet.has(item.toLowerCase())).join('; ');
+  }
+
+  return formatMultiChoiceValue([...current, ...cleanOptions]);
+}
 
 export function calculateSupervisiScores(scores: {
   skorKerapihan: ScoreValue;
@@ -1368,6 +1471,17 @@ export function loadSupervisiAuditRecords(): SupervisiAuditRecord[] {
   }
 }
 
+function syncSupervisiCollectionToSupabase(key: string, payload: unknown): void {
+  if (typeof window === 'undefined' || typeof fetch === 'undefined') return;
+  void fetch('/api/supabase/state', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ key, payload }),
+  }).catch(() => {
+    // ignore transient offline error
+  });
+}
+
 export function saveSupervisiAuditRecords(records: SupervisiAuditRecord[]): void {
   if (typeof window === 'undefined') return;
   try {
@@ -1379,6 +1493,7 @@ export function saveSupervisiAuditRecords(records: SupervisiAuditRecord[]): void
   } catch {
     // ignore storage quota errors
   }
+  syncSupervisiCollectionToSupabase('supervisi_audit_records', records);
 }
 
 export function loadRoomChecklistRecords(): RoomChecklistRecord[] {
@@ -1409,9 +1524,11 @@ export function saveRoomChecklistRecords(records: RoomChecklistRecord[]): void {
       ROOM_CHECKLIST_STORAGE_KEY,
       JSON.stringify(records)
     );
+    window.dispatchEvent(new Event('sikesling-room-checklist-updated'));
   } catch {
     // ignore storage quota errors
   }
+  syncSupervisiCollectionToSupabase('room_checklist_records', records);
 }
 
 /**
@@ -1598,6 +1715,7 @@ export function saveCustomPetugasList(list: string[]): void {
   } catch {
     // ignore storage errors
   }
+  syncSupervisiCollectionToSupabase('custom_petugas_list', list);
 }
 
 export type TemuanWorkflowStatus =

@@ -66,6 +66,22 @@ import {
   RadiationMonitoringRow,
   createInitialRadiationMonitoringData,
 } from '@/lib/radiation-monitoring';
+import {
+  SUPERVISI_AUDIT_STORAGE_KEY,
+  ROOM_CHECKLIST_STORAGE_KEY,
+  CUSTOM_PETUGAS_STORAGE_KEY,
+  loadSupervisiAuditRecords,
+  loadRoomChecklistRecords,
+  loadCustomPetugasList,
+} from '@/lib/supervisi-hub';
+import {
+  STORAGE_KEY_PROGRAM_KERJA,
+  loadProgramKerjaData,
+} from '@/lib/program-kerja';
+import {
+  APICLEAN_STORAGE_KEY,
+  loadAplicleanRecords,
+} from '@/lib/apliclean';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -278,108 +294,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const applyCloudState = useCallback((cloud: Partial<SikeslingCloudState>) => {
-    if (
-      Array.isArray(cloud.water_quality_2026) &&
-      cloud.water_quality_2026.length > 0
-    ) {
-      setWaterRows(ensureCompleteWaterQualityRows(cloud.water_quality_2026));
-    }
-    if (
-      Array.isArray(cloud.water_periodic_reports) &&
-      cloud.water_periodic_reports.length > 0
-    ) {
-      setWaterPeriodicReports(
-        ensureCompleteWaterPeriodicReports(cloud.water_periodic_reports)
-      );
-    }
-    if (Array.isArray(cloud.air_quality_items)) {
-      setAirItems(ensureCompleteAirQualityItems(cloud.air_quality_items, 2026));
-    }
-    if (
-      Array.isArray(cloud.wastewater_quality_2026) &&
-      cloud.wastewater_quality_2026.length > 0
-    ) {
-      setWastewaterRows(cloud.wastewater_quality_2026);
-    }
-    if (
-      Array.isArray(cloud.solid_waste_b3) &&
-      cloud.solid_waste_b3.length === 12
-    ) {
-      setSolidWasteRows(cloud.solid_waste_b3);
-    }
-    if (
-      Array.isArray(cloud.medical_waste_logbook) &&
-      cloud.medical_waste_logbook.length >= 200
-    ) {
-      setMedicalWasteLogbookRows(cloud.medical_waste_logbook);
-    } else {
-      const realLogbook = createRealtimeInitialMedicalWasteLogbook();
-      setMedicalWasteLogbookRows(realLogbook);
-      void persistCollectionToSupabase('medical_waste_logbook', realLogbook);
-    }
-    if (cloud.vector_findings && typeof cloud.vector_findings === 'object') {
-      setVectorFindings(cloud.vector_findings);
-    }
-    if (Array.isArray(cloud.vector_units) && cloud.vector_units.length > 0) {
-      setVectorUnits(cloud.vector_units);
-    }
-    if (
-      Array.isArray(cloud.food_sanitation) &&
-      cloud.food_sanitation.length === 12
-    ) {
-      setFoodRows(cloud.food_sanitation);
-    }
-    if (cloud.sarana_prasarana && typeof cloud.sarana_prasarana === 'object') {
-      setSaranaPrasaranaData(ensureCompleteSaranaPrasaranaData(cloud.sarana_prasarana, 2026));
-    }
-    if (
-      Array.isArray(cloud.linen_monitoring) &&
-      cloud.linen_monitoring.length > 0
-    ) {
-      setLinenRows(cloud.linen_monitoring);
-    }
-    if (
-      Array.isArray(cloud.radiation_monitoring) &&
-      cloud.radiation_monitoring.length > 0
-    ) {
-      setRadiationRows(cloud.radiation_monitoring);
-    }
-    if (Array.isArray(cloud.activities)) {
-      setActivities(cloud.activities);
-    }
-    if (Array.isArray(cloud.supervisions)) {
-      setSupervisions(cloud.supervisions);
-    }
-    if (Array.isArray(cloud.findings)) {
-      setFindings(cloud.findings);
-    }
-    if (Array.isArray(cloud.schedules)) {
-      setSchedules(cloud.schedules);
-    }
-    if (Array.isArray(cloud.master_rooms) && cloud.master_rooms.length > 0) {
-      setMasterRooms(cloud.master_rooms);
-    }
-    if (
-      Array.isArray(cloud.master_activity_categories) &&
-      cloud.master_activity_categories.length > 0
-    ) {
-      setMasterActivityCategories(cloud.master_activity_categories);
-    }
-    if (
-      Array.isArray(cloud.master_officers) &&
-      cloud.master_officers.length > 0
-    ) {
-      setMasterOfficers(cloud.master_officers);
-    }
-    if (Array.isArray(cloud.master_standards)) {
-      setMasterStandards(cloud.master_standards);
-    }
-    if (cloud.hospital_profile && typeof cloud.hospital_profile === 'object') {
-      setHospitalProfile(cloud.hospital_profile);
-    }
-  }, []);
-
   const persistCollectionToSupabase = useCallback(
     async (key: SikeslingCloudCollectionKey, payload: unknown) => {
       try {
@@ -400,6 +314,190 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
     },
     []
+  );
+
+  const applyCloudState = useCallback(
+    (cloud: Partial<SikeslingCloudState>) => {
+      if (
+        Array.isArray(cloud.water_quality_2026) &&
+        cloud.water_quality_2026.length > 0
+      ) {
+        setWaterRows(ensureCompleteWaterQualityRows(cloud.water_quality_2026));
+      }
+      if (
+        Array.isArray(cloud.water_periodic_reports) &&
+        cloud.water_periodic_reports.length > 0
+      ) {
+        setWaterPeriodicReports(
+          ensureCompleteWaterPeriodicReports(cloud.water_periodic_reports)
+        );
+      }
+      if (Array.isArray(cloud.air_quality_items)) {
+        setAirItems(ensureCompleteAirQualityItems(cloud.air_quality_items, 2026));
+      }
+      if (
+        Array.isArray(cloud.wastewater_quality_2026) &&
+        cloud.wastewater_quality_2026.length > 0
+      ) {
+        setWastewaterRows(cloud.wastewater_quality_2026);
+      }
+      if (
+        Array.isArray(cloud.solid_waste_b3) &&
+        cloud.solid_waste_b3.length === 12
+      ) {
+        setSolidWasteRows(cloud.solid_waste_b3);
+      }
+      if (
+        Array.isArray(cloud.medical_waste_logbook) &&
+        cloud.medical_waste_logbook.length >= 200
+      ) {
+        setMedicalWasteLogbookRows(cloud.medical_waste_logbook);
+      } else {
+        const realLogbook = createRealtimeInitialMedicalWasteLogbook();
+        setMedicalWasteLogbookRows(realLogbook);
+        void persistCollectionToSupabase('medical_waste_logbook', realLogbook);
+      }
+      if (cloud.vector_findings && typeof cloud.vector_findings === 'object') {
+        setVectorFindings(cloud.vector_findings);
+      }
+      if (Array.isArray(cloud.vector_units) && cloud.vector_units.length > 0) {
+        setVectorUnits(cloud.vector_units);
+      }
+      if (
+        Array.isArray(cloud.food_sanitation) &&
+        cloud.food_sanitation.length === 12
+      ) {
+        setFoodRows(cloud.food_sanitation);
+      }
+      if (cloud.sarana_prasarana && typeof cloud.sarana_prasarana === 'object') {
+        setSaranaPrasaranaData(
+          ensureCompleteSaranaPrasaranaData(cloud.sarana_prasarana, 2026)
+        );
+      }
+      if (
+        Array.isArray(cloud.linen_monitoring) &&
+        cloud.linen_monitoring.length > 0
+      ) {
+        setLinenRows(cloud.linen_monitoring);
+      }
+      if (
+        Array.isArray(cloud.radiation_monitoring) &&
+        cloud.radiation_monitoring.length > 0
+      ) {
+        setRadiationRows(cloud.radiation_monitoring);
+      }
+      if (Array.isArray(cloud.activities)) {
+        setActivities(cloud.activities);
+      }
+      if (Array.isArray(cloud.supervisions)) {
+        setSupervisions(cloud.supervisions);
+      }
+      if (Array.isArray(cloud.findings)) {
+        setFindings(cloud.findings);
+      }
+      if (Array.isArray(cloud.schedules)) {
+        setSchedules(cloud.schedules);
+      }
+      if (Array.isArray(cloud.master_rooms) && cloud.master_rooms.length > 0) {
+        setMasterRooms(cloud.master_rooms);
+      }
+      if (
+        Array.isArray(cloud.master_activity_categories) &&
+        cloud.master_activity_categories.length > 0
+      ) {
+        setMasterActivityCategories(cloud.master_activity_categories);
+      }
+      if (
+        Array.isArray(cloud.master_officers) &&
+        cloud.master_officers.length > 0
+      ) {
+        setMasterOfficers(cloud.master_officers);
+      }
+      if (Array.isArray(cloud.master_standards)) {
+        setMasterStandards(cloud.master_standards);
+      }
+      if (cloud.hospital_profile && typeof cloud.hospital_profile === 'object') {
+        setHospitalProfile(cloud.hospital_profile);
+      }
+
+      if (typeof window !== 'undefined') {
+        try {
+          if (
+            Array.isArray(cloud.supervisi_audit_records) &&
+            cloud.supervisi_audit_records.length > 0
+          ) {
+            window.localStorage.setItem(
+              SUPERVISI_AUDIT_STORAGE_KEY,
+              JSON.stringify(cloud.supervisi_audit_records)
+            );
+            window.dispatchEvent(new Event('sikesling-supervisi-updated'));
+          }
+          if (
+            Array.isArray(cloud.room_checklist_records) &&
+            cloud.room_checklist_records.length > 0
+          ) {
+            window.localStorage.setItem(
+              ROOM_CHECKLIST_STORAGE_KEY,
+              JSON.stringify(cloud.room_checklist_records)
+            );
+            window.dispatchEvent(new Event('sikesling-room-checklist-updated'));
+          }
+          if (
+            Array.isArray(cloud.custom_petugas_list) &&
+            cloud.custom_petugas_list.length > 0
+          ) {
+            window.localStorage.setItem(
+              CUSTOM_PETUGAS_STORAGE_KEY,
+              JSON.stringify(cloud.custom_petugas_list)
+            );
+            window.dispatchEvent(new Event('sikesling-supervisi-updated'));
+          }
+          if (
+            Array.isArray(cloud.program_kerja_categories) &&
+            cloud.program_kerja_categories.length > 0
+          ) {
+            window.localStorage.setItem(
+              STORAGE_KEY_PROGRAM_KERJA,
+              JSON.stringify(cloud.program_kerja_categories)
+            );
+            window.dispatchEvent(
+              new CustomEvent('sikesling_program_updated', {
+                detail: cloud.program_kerja_categories,
+              })
+            );
+          }
+          if (
+            Array.isArray(cloud.apliclean_records) &&
+            cloud.apliclean_records.length > 0
+          ) {
+            window.localStorage.setItem(
+              APICLEAN_STORAGE_KEY,
+              JSON.stringify(cloud.apliclean_records)
+            );
+            window.dispatchEvent(
+              new CustomEvent('sikesling_apliclean_updated', {
+                detail: cloud.apliclean_records,
+              })
+            );
+          }
+          if (
+            Array.isArray(cloud.supervisi_kesling_activities) &&
+            cloud.supervisi_kesling_activities.length > 0
+          ) {
+            window.localStorage.setItem(
+              'sikesling_supervisi_kesling_v2',
+              JSON.stringify(cloud.supervisi_kesling_activities)
+            );
+            window.dispatchEvent(
+              new Event('sikesling_supervisi_kesling_updated')
+            );
+          }
+        } catch {
+          // ignore localStorage hydration error
+        }
+      }
+    },
+    [persistCollectionToSupabase]
   );
 
   const refreshFromSupabase = useCallback(async () => {
@@ -427,10 +525,55 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const syncAllToSupabase = useCallback(async () => {
     try {
       setIsSyncingSupabase(true);
+      let keslingActivities: unknown[] = [];
+      if (typeof window !== 'undefined') {
+        try {
+          const rawKesling = window.localStorage.getItem(
+            'sikesling_supervisi_kesling_v2'
+          );
+          if (rawKesling) {
+            const parsed = JSON.parse(rawKesling);
+            if (Array.isArray(parsed)) keslingActivities = parsed;
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      const clientState: Partial<SikeslingCloudState> = {
+        water_quality_2026: waterRows,
+        water_periodic_reports: waterPeriodicReports,
+        air_quality_items: airItems,
+        wastewater_quality_2026: wastewaterRows,
+        solid_waste_b3: solidWasteRows,
+        medical_waste_logbook: medicalWasteLogbookRows,
+        vector_findings: vectorFindings,
+        vector_units: vectorUnits,
+        food_sanitation: foodRows,
+        sarana_prasarana: saranaPrasaranaData,
+        linen_monitoring: linenRows,
+        radiation_monitoring: radiationRows,
+        activities,
+        supervisions,
+        findings,
+        schedules,
+        master_rooms: masterRooms,
+        master_activity_categories: masterActivityCategories,
+        master_officers: masterOfficers,
+        master_standards: masterStandards,
+        hospital_profile: hospitalProfile,
+        supervisi_audit_records: loadSupervisiAuditRecords(),
+        room_checklist_records: loadRoomChecklistRecords(),
+        custom_petugas_list: loadCustomPetugasList(),
+        program_kerja_categories: loadProgramKerjaData(),
+        apliclean_records: loadAplicleanRecords(),
+        supervisi_kesling_activities: keslingActivities,
+      };
+
       const res = await fetch('/api/supabase/state', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'SYNC_ALL' }),
+        body: JSON.stringify({ action: 'SYNC_ALL', clientState }),
       });
       const data = await res.json();
       if (data?.diagnostic) {
@@ -441,15 +584,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           type: 'success',
           title: 'Sinkronisasi Supabase Berhasil',
           message:
-            'Seluruh 16 koleksi data SIKRESMI telah tersimpan di tabel Supabase.',
+            'Seluruh 27 koleksi data SIKRESMI telah tersimpan di tabel Supabase.',
         });
       } else {
         pushToast({
           type: 'info',
-          title: 'Endpoint Supabase Terautentikasi',
+          title: 'Cloud State Supabase Tersinkronisasi',
           message:
             data?.diagnostic?.statusMessage ||
-            'Jalankan script SQL di Supabase SQL Editor untuk mengaktifkan penyimpanan tabel.',
+            'Seluruh 27 koleksi data tersimpan di Cloud State Supabase.',
         });
       }
     } catch {
@@ -461,7 +604,30 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsSyncingSupabase(false);
     }
-  }, [pushToast]);
+  }, [
+    waterRows,
+    waterPeriodicReports,
+    airItems,
+    wastewaterRows,
+    solidWasteRows,
+    medicalWasteLogbookRows,
+    vectorFindings,
+    vectorUnits,
+    foodRows,
+    saranaPrasaranaData,
+    linenRows,
+    radiationRows,
+    activities,
+    supervisions,
+    findings,
+    schedules,
+    masterRooms,
+    masterActivityCategories,
+    masterOfficers,
+    masterStandards,
+    hospitalProfile,
+    pushToast,
+  ]);
 
   // Initial Hydration from Supabase REST v1 (No browser localStorage / sessionStorage for data)
   useEffect(() => {

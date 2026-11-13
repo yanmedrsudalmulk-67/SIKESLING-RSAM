@@ -1248,7 +1248,7 @@ export function createAllAplicleanRecords(): AplicleanRecord[] {
   ];
 }
 
-const APICLEAN_STORAGE_KEY = 'sikesling_apliclean_records_v2';
+export const APICLEAN_STORAGE_KEY = 'sikesling_apliclean_records_v2';
 
 export function loadAplicleanRecords(): AplicleanRecord[] {
   const initial = createAllAplicleanRecords();
@@ -1278,5 +1278,14 @@ export function saveAplicleanRecords(records: AplicleanRecord[]): void {
     );
   } catch {
     // ignore storage quota errors
+  }
+  if (typeof fetch !== 'undefined') {
+    void fetch('/api/supabase/state', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: 'apliclean_records', payload: records }),
+    }).catch(() => {
+      // ignore offline error
+    });
   }
 }

@@ -581,5 +581,14 @@ export function saveProgramKerjaData(categories: ProgramCategory[]) {
   } catch (err) {
     console.error('Failed to save program kerja data:', err);
   }
+  if (typeof fetch !== 'undefined') {
+    void fetch('/api/supabase/state', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: 'program_kerja_categories', payload: categories }),
+    }).catch(() => {
+      // ignore offline error
+    });
+  }
 }
 

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  CRITERIA_QUICK_OPTIONS,
   DEFAULT_PETUGAS_LIST,
   SUPERVISI_CARDS,
   addPetugasName,
@@ -14,9 +15,14 @@ import {
   deletePetugasName,
   deriveTemuanWorkflowStatus,
   editPetugasName,
+  formatMultiChoiceValue,
   getHariFromDateInput,
+  isMultiChoiceOptionSelected,
+  parseMultiChoiceValue,
   parseTimestampToParts,
   scaleCanvasCoordinates,
+  selectAllMultiChoiceOptions,
+  toggleMultiChoiceOption,
   updateSupervisiFindingFollowUp,
 } from './supervisi-hub';
 
@@ -196,6 +202,37 @@ test('deriveTemuanWorkflowStatus, updateSupervisiFindingFollowUp, and buildAudit
     syncedFinding!.temuan.includes('Kamar mandi pasien perlu desinfeksi ulang')
   );
 });
+
+test('multi-choice Supervisi question helpers support selecting, toggling, and preserving options containing commas', () => {
+  const opt1 = CRITERIA_QUICK_OPTIONS.kerapihan[0]; // contains commas
+  const opt2 = CRITERIA_QUICK_OPTIONS.kerapihan[2];
+
+  let current = '';
+  current = toggleMultiChoiceOption(current, opt1);
+  assert.equal(isMultiChoiceOptionSelected(current, opt1), true);
+  assert.equal(isMultiChoiceOptionSelected(current, opt2), false);
+
+  current = toggleMultiChoiceOption(current, opt2);
+  const parsed = parseMultiChoiceValue(current);
+  assert.equal(parsed.length, 2);
+  assert.equal(parsed[0], opt1);
+  assert.equal(parsed[1], opt2);
+
+  // Toggling opt1 again removes it while keeping opt2 intact
+  current = toggleMultiChoiceOption(current, opt1);
+  assert.equal(isMultiChoiceOptionSelected(current, opt1), false);
+  assert.equal(isMultiChoiceOptionSelected(current, opt2), true);
+  assert.deepEqual(parseMultiChoiceValue(current), [opt2]);
+
+  // Select all options
+  const all = selectAllMultiChoiceOptions(current, CRITERIA_QUICK_OPTIONS.kerapihan);
+  assert.equal(
+    parseMultiChoiceValue(all).length,
+    CRITERIA_QUICK_OPTIONS.kerapihan.length
+  );
+  assert.equal(formatMultiChoiceValue([opt1, opt1, opt2]), `${opt1}; ${opt2}`);
+});
+
 
 
 

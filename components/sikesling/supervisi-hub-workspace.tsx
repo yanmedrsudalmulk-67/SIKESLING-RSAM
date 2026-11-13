@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import {
   CRITERIA_QUICK_OPTIONS,
+  CriteriaQuestionKey,
   DEFAULT_PETUGAS_LIST,
   HARI_OPTIONS,
   HariValue,
@@ -52,14 +53,18 @@ import {
   deletePetugasName,
   editPetugasName,
   getHariFromDateInput,
+  isMultiChoiceOptionSelected,
   loadCustomPetugasList,
   loadRoomChecklistRecords,
   loadSupervisiAuditRecords,
+  parseMultiChoiceValue,
   parseTimestampToParts,
   saveCustomPetugasList,
   saveRoomChecklistRecords,
   saveSupervisiAuditRecords,
   scaleCanvasCoordinates,
+  selectAllMultiChoiceOptions,
+  toggleMultiChoiceOption,
 } from '@/lib/supervisi-hub';
 
 interface SupervisiHubWorkspaceProps {
@@ -501,14 +506,20 @@ export function SupervisiHubWorkspace({
     useState<string>('');
   const [tandaTanganUrl, setTandaTanganUrl] = useState<string>('');
 
-  const [openPickerKey, setOpenPickerKey] = useState<
-    | 'kerapihan'
-    | 'prosedur'
-    | 'alatDanBahan'
-    | 'k3'
-    | 'sikapDanPerilaku'
-    | null
-  >(null);
+  const [openPickerKey, setOpenPickerKey] =
+    useState<CriteriaQuestionKey | null>(null);
+  const [customCriteriaOptions, setCustomCriteriaOptions] = useState<
+    Record<CriteriaQuestionKey, string[]>
+  >({
+    kerapihan: [...CRITERIA_QUICK_OPTIONS.kerapihan],
+    prosedur: [...CRITERIA_QUICK_OPTIONS.prosedur],
+    alatDanBahan: [...CRITERIA_QUICK_OPTIONS.alatDanBahan],
+    k3: [...CRITERIA_QUICK_OPTIONS.k3],
+    sikapDanPerilaku: [...CRITERIA_QUICK_OPTIONS.sikapDanPerilaku],
+    temuan: [...CRITERIA_QUICK_OPTIONS.temuan],
+    rekomendasi: [...CRITERIA_QUICK_OPTIONS.rekomendasi],
+  });
+  const [customOptionDraft, setCustomOptionDraft] = useState<string>('');
 
   const [isSignatureUnlocked, setIsSignatureUnlocked] =
     useState<boolean>(true);
@@ -531,11 +542,258 @@ export function SupervisiHubWorkspace({
 
     const handleSync = () => {
       setAuditRecords(loadSupervisiAuditRecords());
+      setCustomPetugasList(loadCustomPetugasList());
+    };
+    const handleRoomSync = () => {
+      setRoomRecords(loadRoomChecklistRecords());
     };
     window.addEventListener('sikesling-supervisi-updated', handleSync);
-    return () =>
+    window.addEventListener('sikesling-room-checklist-updated', handleRoomSync);
+    return () => {
       window.removeEventListener('sikesling-supervisi-updated', handleSync);
+      window.removeEventListener(
+        'sikesling-room-checklist-updated',
+        handleRoomSync
+      );
+    };
   }, []);
+
+  const handleAddCustomCriteriaOption = (
+    key: CriteriaQuestionKey,
+    currentVal: string,
+    setter: (val: string) => void
+  ) => {
+    const trimmed = customOptionDraft.trim();
+    if (!trimmed) return;
+    setCustomCriteriaOptions((prev) => {
+      const list = prev[key] || [];
+      const exists = list.some(
+        (item) => item.toLowerCase() === trimmed.toLowerCase()
+      );
+      if (exists) return prev;
+      return {
+        ...prev,
+        [key]: [...list, trimmed],
+      };
+    });
+    if (!isMultiChoiceOptionSelected(currentVal, trimmed)) {
+      setter(toggleMultiChoiceOption(currentVal, trimmed));
+    }
+    setCustomOptionDraft('');
+  };
+
+  const renderMultiChoiceQuestionDropdown = (params: {
+    pickerKey: CriteriaQuestionKey;
+    inputId: string;
+    label: string;
+    placeholder: string;
+    buttonTitle: string;
+    value: string;
+    onChange: (nextVal: string) => void;
+  }) => {
+    const {
+      pickerKey,
+      inputId,
+      label,
+      placeholder,
+      buttonTitle,
+      value,
+      onChange,
+    } = params;
+    const isOpen = openPickerKey === pickerKey;
+    const optionsList =
+      customCriteriaOptions[pickerKey] || CRITERIA_QUICK_OPTIONS[pickerKey];
+    const selectedItems = parseMultiChoiceValue(value);
+    const allSelected =
+      optionsList.length > 0 &&
+      optionsList.every((opt) => isMultiChoiceOptionSelected(value, opt));
+
+    return (
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <label
+            htmlFor={inputId}
+            className="block text-xs font-extrabold uppercase tracking-wide text-[#002147] dark:text-slate-200"
+          >
+            {label}
+          </label>
+          <div className="flex items-center gap-2">
+            {selectedItems.length > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#1B8720]/12 text-[#1B8720] dark:text-emerald-400 text-[11px] font-extrabold">
+                {selectedItems.length} Temuan Dipilih
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                setCustomOptionDraft('');
+                setOpenPickerKey(isOpen ? null : pickerKey);
+              }}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#FAF6F0] dark:bg-slate-900 border border-[#D2B48C]/70 text-[11px] font-bold text-[#002147] dark:text-[#D2B48C] hover:bg-[#EFE8DC] cursor-pointer"
+            >
+              <span>{isOpen ? 'Tutup Pilihan' : 'Pilih Multi-Opsi'}</span>
+              <ChevronDown
+                className={`w-3.5 h-3.5 transition-transform ${
+                  isOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+
+        <div className="relative">
+          <input
+            id={inputId}
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onFocus={() => {
+              if (openPickerKey !== pickerKey) {
+                setCustomOptionDraft('');
+                setOpenPickerKey(pickerKey);
+              }
+            }}
+            placeholder={placeholder}
+            className="w-full px-3.5 py-3 pr-10 rounded-xl border border-slate-300 dark:border-slate-600 bg-[#FAF6F0]/50 dark:bg-slate-900 text-sm text-[#002147] dark:text-white focus:outline-none focus:border-[#002147]"
+          />
+          <button
+            type="button"
+            onClick={() => {
+              setCustomOptionDraft('');
+              setOpenPickerKey(isOpen ? null : pickerKey);
+            }}
+            title={buttonTitle}
+            aria-label={buttonTitle}
+            aria-expanded={isOpen}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-900 dark:text-slate-300 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Selected Multi-Choice Chips / Tags */}
+        {selectedItems.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 pt-0.5">
+            {selectedItems.map((chip) => (
+              <span
+                key={chip}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#002147]/8 dark:bg-slate-700/80 border border-[#002147]/20 dark:border-slate-600 text-[11px] font-semibold text-[#002147] dark:text-slate-100"
+              >
+                <CheckCircle2 className="w-3 h-3 text-[#1B8720] shrink-0" />
+                <span className="line-clamp-1">{chip}</span>
+                <button
+                  type="button"
+                  onClick={() => onChange(toggleMultiChoiceOption(value, chip))}
+                  title={`Hapus "${chip}"`}
+                  aria-label={`Hapus ${chip}`}
+                  className="p-0.5 rounded hover:bg-rose-100 dark:hover:bg-rose-900/40 text-slate-500 hover:text-rose-600 cursor-pointer shrink-0"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Multi-Choice Dropdown Panel */}
+        {isOpen && (
+          <div className="rounded-xl border border-[#D2B48C] dark:border-slate-700 bg-[#FAF6F0] dark:bg-slate-900 p-3 space-y-2 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#D2B48C]/40 dark:border-slate-800">
+              <span className="text-[11px] font-extrabold text-[#002147] dark:text-[#D2B48C]">
+                Pilih satu atau beberapa temuan penilaian (Multi-Choice):
+              </span>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() =>
+                    onChange(selectAllMultiChoiceOptions(value, optionsList))
+                  }
+                  className="px-2 py-1 rounded-md bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-[11px] font-bold text-[#002147] dark:text-slate-200 hover:bg-slate-100 cursor-pointer"
+                >
+                  {allSelected ? 'Batal Pilih Semua' : 'Pilih Semua'}
+                </button>
+                {selectedItems.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => onChange('')}
+                    className="px-2 py-1 rounded-md bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-[11px] font-bold text-rose-700 dark:text-rose-300 hover:bg-rose-100 cursor-pointer"
+                  >
+                    Reset
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setOpenPickerKey(null)}
+                  className="px-2.5 py-1 rounded-md bg-[#002147] text-[#D2B48C] text-[11px] font-extrabold hover:bg-[#082B54] cursor-pointer"
+                >
+                  Selesai
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1">
+              {optionsList.map((item) => {
+                const isSelected = isMultiChoiceOptionSelected(value, item);
+                return (
+                  <button
+                    key={item}
+                    type="button"
+                    role="checkbox"
+                    aria-checked={isSelected}
+                    onClick={() =>
+                      onChange(toggleMultiChoiceOption(value, item))
+                    }
+                    className={`w-full flex items-start gap-2.5 text-left px-3 py-2.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer border ${
+                      isSelected
+                        ? 'bg-[#1B8720]/12 dark:bg-emerald-950/40 border-[#1B8720]/50 text-[#002147] dark:text-white'
+                        : 'bg-white/80 dark:bg-slate-800/80 border-transparent hover:bg-white dark:hover:bg-slate-800 text-[#002147] dark:text-slate-200'
+                    }`}
+                  >
+                    <span
+                      className={`mt-0.5 w-4 h-4 rounded flex items-center justify-center border shrink-0 transition-colors ${
+                        isSelected
+                          ? 'bg-[#1B8720] border-[#1B8720] text-white'
+                          : 'bg-white dark:bg-slate-900 border-slate-400 dark:border-slate-600'
+                      }`}
+                    >
+                      {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                    </span>
+                    <span className="flex-1 leading-snug">{item}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Add custom assessment finding option into this multi-choice dropdown */}
+            <div className="pt-2 border-t border-[#D2B48C]/40 dark:border-slate-800 flex items-center gap-2">
+              <input
+                type="text"
+                value={customOptionDraft}
+                onChange={(e) => setCustomOptionDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddCustomCriteriaOption(pickerKey, value, onChange);
+                  }
+                }}
+                placeholder="Tambah opsi temuan penilaian lainnya..."
+                className="flex-1 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-[#002147] dark:text-white focus:outline-none focus:border-[#002147]"
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  handleAddCustomCriteriaOption(pickerKey, value, onChange)
+                }
+                className="px-3 py-1.5 rounded-lg bg-[#002147] text-[#D2B48C] hover:bg-[#082B54] text-xs font-extrabold cursor-pointer shrink-0"
+              >
+                + Tambah
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const handleAddCustomPetugas = (name: string) => {
     setCustomPetugasList((prev) => {
@@ -2073,51 +2331,16 @@ export function SupervisiHubWorkspace({
 
                 {/* 5. KERAPIHAN & 6. SKOR */}
                 <div className="space-y-2 pb-4 border-b border-slate-100 dark:border-slate-700/60">
-                  <label
-                    htmlFor="supervisi-kerapihan"
-                    className="block text-xs font-extrabold uppercase tracking-wide text-[#002147] dark:text-slate-200"
-                  >
-                    KERAPIHAN
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="supervisi-kerapihan"
-                      type="text"
-                      value={kerapihan}
-                      onChange={(e) => setKerapihan(e.target.value)}
-                      placeholder="Klik + untuk opsi cepat atau ketik catatan kerapihan..."
-                      className="w-full px-3.5 py-3 pr-10 rounded-xl border border-slate-300 dark:border-slate-600 bg-[#FAF6F0]/50 dark:bg-slate-900 text-sm text-[#002147] dark:text-white focus:outline-none focus:border-[#002147]"
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setOpenPickerKey(
-                          openPickerKey === 'kerapihan' ? null : 'kerapihan'
-                        )
-                      }
-                      title="Pilih Kriteria Kerapihan"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-900 cursor-pointer"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
-                  </div>
-                  {openPickerKey === 'kerapihan' && (
-                    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FAF6F0] dark:bg-slate-900 p-2 space-y-1">
-                      {CRITERIA_QUICK_OPTIONS.kerapihan.map((item) => (
-                        <button
-                          key={item}
-                          type="button"
-                          onClick={() => {
-                            setKerapihan(item);
-                            setOpenPickerKey(null);
-                          }}
-                          className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-[#002147] dark:text-slate-200 hover:bg-white dark:hover:bg-slate-800 cursor-pointer"
-                        >
-                          {item}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  {renderMultiChoiceQuestionDropdown({
+                    pickerKey: 'kerapihan',
+                    inputId: 'supervisi-kerapihan',
+                    label: 'KERAPIHAN',
+                    placeholder:
+                      'Klik + untuk pilih multi-opsi atau ketik catatan kerapihan...',
+                    buttonTitle: 'Pilih Kriteria Kerapihan',
+                    value: kerapihan,
+                    onChange: setKerapihan,
+                  })}
 
                   <div className="pt-1 space-y-1">
                     <span className="block text-[11px] font-bold tracking-wide text-slate-500">
@@ -2146,51 +2369,16 @@ export function SupervisiHubWorkspace({
 
                 {/* 7. PROSEDUR & 8. SKOR_8 */}
                 <div className="space-y-2 pb-4 border-b border-slate-100 dark:border-slate-700/60">
-                  <label
-                    htmlFor="supervisi-prosedur"
-                    className="block text-xs font-extrabold uppercase tracking-wide text-[#002147] dark:text-slate-200"
-                  >
-                    PROSEDUR
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="supervisi-prosedur"
-                      type="text"
-                      value={prosedur}
-                      onChange={(e) => setProsedur(e.target.value)}
-                      placeholder="Klik + untuk opsi cepat atau ketik evaluasi prosedur..."
-                      className="w-full px-3.5 py-3 pr-10 rounded-xl border border-slate-300 dark:border-slate-600 bg-[#FAF6F0]/50 dark:bg-slate-900 text-sm text-[#002147] dark:text-white focus:outline-none focus:border-[#002147]"
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setOpenPickerKey(
-                          openPickerKey === 'prosedur' ? null : 'prosedur'
-                        )
-                      }
-                      title="Pilih Kriteria Prosedur"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-900 cursor-pointer"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
-                  </div>
-                  {openPickerKey === 'prosedur' && (
-                    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FAF6F0] dark:bg-slate-900 p-2 space-y-1">
-                      {CRITERIA_QUICK_OPTIONS.prosedur.map((item) => (
-                        <button
-                          key={item}
-                          type="button"
-                          onClick={() => {
-                            setProsedur(item);
-                            setOpenPickerKey(null);
-                          }}
-                          className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-[#002147] dark:text-slate-200 hover:bg-white dark:hover:bg-slate-800 cursor-pointer"
-                        >
-                          {item}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  {renderMultiChoiceQuestionDropdown({
+                    pickerKey: 'prosedur',
+                    inputId: 'supervisi-prosedur',
+                    label: 'PROSEDUR',
+                    placeholder:
+                      'Klik + untuk pilih multi-opsi atau ketik evaluasi prosedur...',
+                    buttonTitle: 'Pilih Kriteria Prosedur',
+                    value: prosedur,
+                    onChange: setProsedur,
+                  })}
 
                   <div className="pt-1 space-y-1">
                     <span className="block text-[11px] font-bold tracking-wide text-slate-500">
@@ -2219,53 +2407,16 @@ export function SupervisiHubWorkspace({
 
                 {/* 9. ALAT DAN BAHAN & 10. SKOR_10 */}
                 <div className="space-y-2 pb-4 border-b border-slate-100 dark:border-slate-700/60">
-                  <label
-                    htmlFor="supervisi-alat"
-                    className="block text-xs font-extrabold uppercase tracking-wide text-[#002147] dark:text-slate-200"
-                  >
-                    ALAT DAN BAHAN
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="supervisi-alat"
-                      type="text"
-                      value={alatDanBahan}
-                      onChange={(e) => setAlatDanBahan(e.target.value)}
-                      placeholder="Klik + untuk opsi cepat atau ketik kelengkapan alat dan bahan..."
-                      className="w-full px-3.5 py-3 pr-10 rounded-xl border border-slate-300 dark:border-slate-600 bg-[#FAF6F0]/50 dark:bg-slate-900 text-sm text-[#002147] dark:text-white focus:outline-none focus:border-[#002147]"
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setOpenPickerKey(
-                          openPickerKey === 'alatDanBahan'
-                            ? null
-                            : 'alatDanBahan'
-                        )
-                      }
-                      title="Pilih Kriteria Alat dan Bahan"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-900 cursor-pointer"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
-                  </div>
-                  {openPickerKey === 'alatDanBahan' && (
-                    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FAF6F0] dark:bg-slate-900 p-2 space-y-1">
-                      {CRITERIA_QUICK_OPTIONS.alatDanBahan.map((item) => (
-                        <button
-                          key={item}
-                          type="button"
-                          onClick={() => {
-                            setAlatDanBahan(item);
-                            setOpenPickerKey(null);
-                          }}
-                          className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-[#002147] dark:text-slate-200 hover:bg-white dark:hover:bg-slate-800 cursor-pointer"
-                        >
-                          {item}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  {renderMultiChoiceQuestionDropdown({
+                    pickerKey: 'alatDanBahan',
+                    inputId: 'supervisi-alat',
+                    label: 'ALAT DAN BAHAN',
+                    placeholder:
+                      'Klik + untuk pilih multi-opsi atau ketik kelengkapan alat dan bahan...',
+                    buttonTitle: 'Pilih Kriteria Alat dan Bahan',
+                    value: alatDanBahan,
+                    onChange: setAlatDanBahan,
+                  })}
 
                   <div className="pt-1 space-y-1">
                     <span className="block text-[11px] font-bold tracking-wide text-slate-500">
@@ -2296,49 +2447,16 @@ export function SupervisiHubWorkspace({
 
                 {/* 11. KESELAMATAN DAN KESEHATAN KERJA (K3) & 12. SKOR_12 */}
                 <div className="space-y-2 pb-4 border-b border-slate-100 dark:border-slate-700/60">
-                  <label
-                    htmlFor="supervisi-k3"
-                    className="block text-xs font-extrabold uppercase tracking-wide text-[#002147] dark:text-slate-200"
-                  >
-                    KESELAMATAN DAN KESEHATAN KERJA (K3)
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="supervisi-k3"
-                      type="text"
-                      value={k3}
-                      onChange={(e) => setK3(e.target.value)}
-                      placeholder="Klik + untuk opsi cepat atau ketik kepatuhan K3 / APD..."
-                      className="w-full px-3.5 py-3 pr-10 rounded-xl border border-slate-300 dark:border-slate-600 bg-[#FAF6F0]/50 dark:bg-slate-900 text-sm text-[#002147] dark:text-white focus:outline-none focus:border-[#002147]"
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setOpenPickerKey(openPickerKey === 'k3' ? null : 'k3')
-                      }
-                      title="Pilih Kriteria K3"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-900 cursor-pointer"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
-                  </div>
-                  {openPickerKey === 'k3' && (
-                    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FAF6F0] dark:bg-slate-900 p-2 space-y-1">
-                      {CRITERIA_QUICK_OPTIONS.k3.map((item) => (
-                        <button
-                          key={item}
-                          type="button"
-                          onClick={() => {
-                            setK3(item);
-                            setOpenPickerKey(null);
-                          }}
-                          className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-[#002147] dark:text-slate-200 hover:bg-white dark:hover:bg-slate-800 cursor-pointer"
-                        >
-                          {item}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  {renderMultiChoiceQuestionDropdown({
+                    pickerKey: 'k3',
+                    inputId: 'supervisi-k3',
+                    label: 'KESELAMATAN DAN KESEHATAN KERJA (K3)',
+                    placeholder:
+                      'Klik + untuk pilih multi-opsi atau ketik kepatuhan K3 / APD...',
+                    buttonTitle: 'Pilih Kriteria K3',
+                    value: k3,
+                    onChange: setK3,
+                  })}
 
                   <div className="pt-1 space-y-1">
                     <span className="block text-[11px] font-bold tracking-wide text-slate-500">
@@ -2365,53 +2483,16 @@ export function SupervisiHubWorkspace({
 
                 {/* 13. SIKAP DAN PERILAKU & 14. SKOR_14 */}
                 <div className="space-y-2">
-                  <label
-                    htmlFor="supervisi-sikap"
-                    className="block text-xs font-extrabold uppercase tracking-wide text-[#002147] dark:text-slate-200"
-                  >
-                    SIKAP DAN PERILAKU
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="supervisi-sikap"
-                      type="text"
-                      value={sikapDanPerilaku}
-                      onChange={(e) => setSikapDanPerilaku(e.target.value)}
-                      placeholder="Klik + untuk opsi cepat atau ketik evaluasi sikap & perilaku..."
-                      className="w-full px-3.5 py-3 pr-10 rounded-xl border border-slate-300 dark:border-slate-600 bg-[#FAF6F0]/50 dark:bg-slate-900 text-sm text-[#002147] dark:text-white focus:outline-none focus:border-[#002147]"
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setOpenPickerKey(
-                          openPickerKey === 'sikapDanPerilaku'
-                            ? null
-                            : 'sikapDanPerilaku'
-                        )
-                      }
-                      title="Pilih Kriteria Sikap dan Perilaku"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-900 cursor-pointer"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
-                  </div>
-                  {openPickerKey === 'sikapDanPerilaku' && (
-                    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FAF6F0] dark:bg-slate-900 p-2 space-y-1">
-                      {CRITERIA_QUICK_OPTIONS.sikapDanPerilaku.map((item) => (
-                        <button
-                          key={item}
-                          type="button"
-                          onClick={() => {
-                            setSikapDanPerilaku(item);
-                            setOpenPickerKey(null);
-                          }}
-                          className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-[#002147] dark:text-slate-200 hover:bg-white dark:hover:bg-slate-800 cursor-pointer"
-                        >
-                          {item}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  {renderMultiChoiceQuestionDropdown({
+                    pickerKey: 'sikapDanPerilaku',
+                    inputId: 'supervisi-sikap',
+                    label: 'SIKAP DAN PERILAKU',
+                    placeholder:
+                      'Klik + untuk pilih multi-opsi atau ketik evaluasi sikap & perilaku...',
+                    buttonTitle: 'Pilih Kriteria Sikap dan Perilaku',
+                    value: sikapDanPerilaku,
+                    onChange: setSikapDanPerilaku,
+                  })}
 
                   <div className="pt-1 space-y-1">
                     <span className="block text-[11px] font-bold tracking-wide text-slate-500">
@@ -2448,40 +2529,28 @@ export function SupervisiHubWorkspace({
                 </h4>
 
                 {/* 15. TEMUAN */}
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor="supervisi-temuan"
-                    className="block text-xs font-extrabold uppercase tracking-wide text-[#002147] dark:text-slate-200"
-                  >
-                    TEMUAN
-                  </label>
-                  <input
-                    id="supervisi-temuan"
-                    type="text"
-                    value={temuan}
-                    onChange={(e) => setTemuan(e.target.value)}
-                    placeholder="Ketik temuan supervisi di lapangan..."
-                    className="w-full px-3.5 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-[#FAF6F0]/50 dark:bg-slate-900 text-sm text-[#002147] dark:text-white focus:outline-none focus:border-[#002147]"
-                  />
-                </div>
+                {renderMultiChoiceQuestionDropdown({
+                  pickerKey: 'temuan',
+                  inputId: 'supervisi-temuan',
+                  label: 'TEMUAN',
+                  placeholder:
+                    'Klik + untuk pilih multi-opsi temuan atau ketik temuan supervisi di lapangan...',
+                  buttonTitle: 'Pilih Temuan Supervisi',
+                  value: temuan,
+                  onChange: setTemuan,
+                })}
 
                 {/* 16. REKOMENDASI */}
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor="supervisi-rekomendasi"
-                    className="block text-xs font-extrabold uppercase tracking-wide text-[#002147] dark:text-slate-200"
-                  >
-                    REKOMENDASI
-                  </label>
-                  <input
-                    id="supervisi-rekomendasi"
-                    type="text"
-                    value={rekomendasi}
-                    onChange={(e) => setRekomendasi(e.target.value)}
-                    placeholder="Ketik rekomendasi tindak lanjut (misal: koordinasi dengan IPSRS)..."
-                    className="w-full px-3.5 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-[#FAF6F0]/50 dark:bg-slate-900 text-sm text-[#002147] dark:text-white focus:outline-none focus:border-[#002147]"
-                  />
-                </div>
+                {renderMultiChoiceQuestionDropdown({
+                  pickerKey: 'rekomendasi',
+                  inputId: 'supervisi-rekomendasi',
+                  label: 'REKOMENDASI',
+                  placeholder:
+                    'Klik + untuk pilih multi-opsi rekomendasi atau ketik rekomendasi tindak lanjut...',
+                  buttonTitle: 'Pilih Rekomendasi Supervisi',
+                  value: rekomendasi,
+                  onChange: setRekomendasi,
+                })}
 
                 {/* 17. DOKUMENTASI TEMUAN & 18. DOKUMENTASI PERBAIKAN */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
