@@ -7,6 +7,8 @@ import {
   Printer,
   Maximize2,
   Minimize2,
+  LayoutTemplate,
+  FileText,
 } from 'lucide-react';
 import { useApp } from '@/components/sikesling/app-provider';
 import {
@@ -59,6 +61,8 @@ export function LaporanUplUklView() {
 
   const [selectedSemester, setSelectedSemester] = useState<string>('semester-1');
   const [selectedYear, setSelectedYear] = useState<number>(2026);
+  const [paperOrientation, setPaperOrientation] = useState<'landscape' | 'portrait'>('landscape');
+  const isLandscape = paperOrientation === 'landscape';
   const [zoomPercent, setZoomPercent] = useState<number>(100);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [jumpSection, setJumpSection] = useState<string>('ALL');
@@ -133,6 +137,7 @@ export function LaporanUplUklView() {
       title: docTitle,
       bodyHtml,
       year: selectedYear,
+      orientation: paperOrientation,
     });
 
     const blob = new Blob(['\ufeff' + wordHtml], {
@@ -150,7 +155,7 @@ export function LaporanUplUklView() {
     pushToast({
       type: 'success',
       title: 'Dokumen Word Berhasil Diunduh',
-      message: `File ${docTitle}.doc telah disiapkan dengan format resmi F4 dan margin 2,5 cm.`,
+      message: `File ${docTitle}.doc telah disiapkan dengan format resmi F4 ${isLandscape ? 'Landscape (33,02 x 21,59 cm)' : 'Portrait (21,59 x 33,02 cm)'} dan margin resmi.`,
     });
   };
 
@@ -225,6 +230,36 @@ export function LaporanUplUklView() {
             </div>
           </div>
 
+          {/* Pilihan Orientasi Kertas (Landscape / Portrait) */}
+          <div className="flex items-center gap-1 bg-[#FAF6F0] dark:bg-[#002147] p-1 rounded-xl border border-[#D2B48C]/70 shadow-xs">
+            <button
+              type="button"
+              onClick={() => setPaperOrientation('landscape')}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                isLandscape
+                  ? 'bg-[#002147] dark:bg-[#D2B48C] text-[#D2B48C] dark:text-[#002147] shadow-xs'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+              }`}
+              title="Kertas F4 Landscape (33,02 cm x 21,59 cm) - Format Standar Pelaporan Matriks"
+            >
+              <LayoutTemplate className="w-3.5 h-3.5" />
+              <span>Landscape</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPaperOrientation('portrait')}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                !isLandscape
+                  ? 'bg-[#002147] dark:bg-[#D2B48C] text-[#D2B48C] dark:text-[#002147] shadow-xs'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+              }`}
+              title="Kertas F4 Portrait (21,59 cm x 33,02 cm)"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>Portrait</span>
+            </button>
+          </div>
+
           {/* Navigasi Cepat Bagian Laporan */}
           <div className="relative inline-flex items-center">
             <select
@@ -283,17 +318,17 @@ export function LaporanUplUklView() {
         </div>
       </div>
 
-      {/* CSS Cetak / Print Resmi F4 Margin 2,5 cm di Seluruh Sisi */}
+      {/* CSS Cetak / Print Resmi F4 Disesuaikan Orientasi (Landscape / Portrait) */}
       <style
         dangerouslySetInnerHTML={{
           __html: `
             @page {
-              size: 215.9mm 330.2mm; /* F4 Portrait standard */
-              margin: 25mm !important;
+              size: ${isLandscape ? '330.2mm 215.9mm' : '215.9mm 330.2mm'}; /* F4 / FOLIO STANDAR RESMI */
+              margin: ${isLandscape ? '16mm 20mm' : '25mm'} !important;
             }
             @page landscape-f4 {
               size: 330.2mm 215.9mm; /* F4 Landscape standard */
-              margin: 20mm !important;
+              margin: 16mm 20mm !important;
             }
             @media print {
               body, html {
@@ -310,9 +345,15 @@ export function LaporanUplUklView() {
                 box-shadow: none !important;
                 border: none !important;
                 margin: 0 !important;
+                width: ${isLandscape ? '330.2mm' : '215.9mm'} !important;
+                max-width: ${isLandscape ? '330.2mm' : '215.9mm'} !important;
+                min-height: ${isLandscape ? '215.9mm' : '330.2mm'} !important;
               }
               .f4-landscape {
                 page: landscape-f4 !important;
+                width: 330.2mm !important;
+                max-width: 330.2mm !important;
+                min-height: 215.9mm !important;
                 page-break-after: always !important;
                 break-after: page !important;
               }
@@ -338,7 +379,11 @@ export function LaporanUplUklView() {
             fontFamily: 'Arial, Helvetica, sans-serif',
             zoom: zoomPercent / 100,
           }}
-          className="mx-auto w-full space-y-12 flex flex-col items-center [&>section]:shrink-0 [&>section:not(.f4-landscape)]:w-[215.9mm] [&>section:not(.f4-landscape)]:max-w-[215.9mm] [&>section.f4-landscape]:w-[330.2mm] [&>section.f4-landscape]:max-w-[330.2mm]"
+          className={`mx-auto w-full space-y-12 flex flex-col items-center [&>section]:shrink-0 ${
+            isLandscape
+              ? '[&>section]:w-[330.2mm] [&>section]:max-w-[330.2mm]'
+              : '[&>section:not(.f4-landscape)]:w-[215.9mm] [&>section:not(.f4-landscape)]:max-w-[215.9mm] [&>section.f4-landscape]:w-[330.2mm] [&>section.f4-landscape]:max-w-[330.2mm]'
+          }`}
         >
           {/* =====================================================================
               HALAMAN 1: COVER RESMI LAPORAN UKL - UPL (100% IDENTIK DENGAN PDF)
@@ -346,54 +391,148 @@ export function LaporanUplUklView() {
           {shouldRender('COVER_KATA_PENGANTAR') && (
             <section
               id="ukl-page-1"
-              className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] overflow-hidden relative print:shadow-none print:border-none p-0 flex flex-col box-border"
+              className={`f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full ${
+                isLandscape
+                  ? 'max-w-[330.2mm] min-h-[215.9mm]'
+                  : 'max-w-[215.9mm] min-h-[330.2mm]'
+              } overflow-hidden relative print:shadow-none print:border-none p-0 flex flex-col box-border`}
             >
-              <div className="relative w-full aspect-[215.9/330.2] min-h-[330.2mm] flex flex-col justify-between overflow-hidden bg-white select-none">
-                {/* Official Cover Background Image with RSUD Al-Mulk Building Photo & Graphic Banners */}
-                <img
-                  src="/assets/aistudio/cover_kesling_official_clean.jpg"
-                  alt="Cover Resmi Laporan UKL-UPL RSUD Al-Mulk"
-                  className="w-full h-full object-fill block"
-                />
+              {isLandscape ? (
+                /* ================= LANDSCAPE COVER RESMI (F4 LANDSCAPE 330.2 x 215.9 mm) ================= */
+                <div className="relative w-full aspect-[330.2/215.9] min-h-[215.9mm] flex flex-row items-stretch overflow-hidden bg-white select-none">
+                  {/* Kolom Kiri (38%): Foto Gedung RSUD Al-Mulk & Grafis Poligon Hijau-Biru */}
+                  <div className="relative w-[38%] h-full overflow-hidden bg-[#001835] flex-shrink-0 border-r-2 border-[#D2B48C]/40">
+                    <img
+                      src="/assets/aistudio/cover_kesling_official_clean.jpg"
+                      alt="Cover Resmi Laporan UKL-UPL RSUD Al-Mulk"
+                      className="w-full h-full object-cover object-top block"
+                    />
+                    {/* Badge UKL/UPL & Tahun */}
+                    <div className="absolute left-6 top-6 select-text">
+                      <span className="inline-block bg-[#00c853] text-black font-black text-xs sm:text-sm px-4 py-1.5 rounded-md uppercase tracking-wider shadow-md">
+                        LAPORAN UKL/UPL
+                      </span>
+                    </div>
+                    <div className="absolute left-6 top-16 select-text">
+                      <span className="inline-block bg-[#002147] text-white font-black text-xs sm:text-sm px-4 py-1.5 rounded-md uppercase tracking-wider shadow-md border border-[#D2B48C]/50">
+                        TAHUN {selectedYear}
+                      </span>
+                    </div>
+                  </div>
 
-                {/* Banner 1: LAPORAN UKL/UPL (pada Poligon Hijau Atas Kiri) */}
-                <div
-                  className="absolute left-[7%] top-[7.2%] select-text"
-                  style={{ pointerEvents: 'auto' }}
-                >
-                  <span className="font-black text-[18px] sm:text-[21px] md:text-[23px] text-black tracking-wider uppercase drop-shadow-xs">
-                    LAPORAN UKL/UPL
-                  </span>
-                </div>
+                  {/* Kolom Kanan (62%): Identitas Resmi Eksekutif & Judul Laporan */}
+                  <div className="flex-1 flex flex-col justify-between p-8 bg-gradient-to-br from-white via-[#FAF6F0]/60 to-[#EFE7DA]/50 text-slate-900">
+                    {/* Kop Surat Resmi */}
+                    <div className="border-b-2 border-[#002147] pb-3 flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-xl bg-[#002147] flex items-center justify-center p-2 shadow-sm flex-shrink-0">
+                        <img
+                          src="/assets/aistudio/logo-1_06649eb7.png"
+                          alt="Logo RSUD Al-Mulk"
+                          className="max-w-full max-h-full object-contain"
+                        />
+                      </div>
+                      <div>
+                        <h4 className="font-extrabold text-[9.5pt] text-[#002147] tracking-wider uppercase">
+                          PEMERINTAH KOTA SUKABUMI • DINAS KESEHATAN
+                        </h4>
+                        <h2 className="font-black text-[13pt] text-[#002147] uppercase tracking-wide">
+                          UOBK RUMAH SAKIT UMUM DAERAH AL-MULK
+                        </h2>
+                        <p className="text-[8.5pt] text-slate-600">
+                          Jl. Pelabuhan II KM 6 RT 02 RW 07, Lembursitu, Kota Sukabumi | Telp. (0266) 6243088
+                        </p>
+                      </div>
+                    </div>
 
-                {/* Banner 2: TAHUN 2026 (pada Poligon Biru Tua Bawahnya) */}
-                <div
-                  className="absolute left-[7%] top-[16.0%] select-text"
-                  style={{ pointerEvents: 'auto' }}
-                >
-                  <span className="font-black text-[18px] sm:text-[21px] md:text-[23px] text-white tracking-wider uppercase drop-shadow-xs">
-                    TAHUN {selectedYear}
-                  </span>
-                </div>
+                    {/* Kotak Judul Dokumen Utama (Navy & Gold) */}
+                    <div className="my-auto py-2">
+                      <div className="bg-[#002147] text-white rounded-2xl p-5 border-2 border-[#D2B48C] shadow-lg text-center space-y-2">
+                        <p className="text-[9pt] font-bold text-[#D2B48C] tracking-widest uppercase">
+                          DOKUMEN RESMI PELAPORAN LINGKUNGAN HIDUP
+                        </p>
+                        <h1 className="font-black text-[13pt] sm:text-[14.5pt] md:text-[15.5pt] text-white tracking-wide leading-snug uppercase">
+                          HASIL PELAKSANAAN UPAYA PENGELOLAAN LINGKUNGAN DAN
+                          <br />
+                          UPAYA PEMANTAUAN LINGKUNGAN (UKL – UPL)
+                        </h1>
+                        <div className="inline-block bg-[#D2B48C] text-[#002147] font-black text-xs sm:text-sm px-6 py-1 rounded-full uppercase tracking-wider mt-1 shadow-xs">
+                          {compiled.semesterRoman === 'SEMESTER II'
+                            ? 'SEMESTER II PERIODE JULI – DESEMBER'
+                            : 'SEMESTER I PERIODE JANUARI – JUNI'}{' '}
+                          TAHUN {selectedYear}
+                        </div>
+                      </div>
+                    </div>
 
-                {/* Center Lower Dark Blue Title Box (Persis Identik Halaman 1 PDF) */}
-                <div
-                  className="absolute left-0 right-0 top-[66.8%] bottom-[13.2%] flex flex-col items-center justify-center px-4 sm:px-8 text-center select-text"
-                  style={{ pointerEvents: 'auto' }}
-                >
-                  <div className="text-black font-black text-[14px] sm:text-[17px] md:text-[19px] tracking-wide leading-tight uppercase whitespace-normal max-w-[94%]">
-                    HASIL PELAKSANAAN UPAYA PENGELOLAAN LINGKUNGAN DAN
-                    <br />
-                    UPAYA PEMANTAUAN LINGKUNGAN (UKL – UPL)
-                    <br />
-                    {compiled.semesterRoman === 'SEMESTER II'
-                      ? 'SEMESTER II PERIODE JULI - DESEMBER'
-                      : 'SEMESTER I PERIODE JANUARI - JUNI'}
-                    <br />
-                    TAHUN {selectedYear}
+                    {/* Metadata & Lembar Penyerahan */}
+                    <div className="space-y-2 pt-2 border-t border-[#D2B48C]/40 text-xs">
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-slate-700">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-[#002147]">Instansi Penerima:</span>
+                          <span className="font-semibold bg-white px-2.5 py-1 rounded-lg border border-slate-200">
+                            Dinas Lingkungan Hidup (DLH) Kota Sukabumi
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="bg-[#002147]/10 text-[#002147] font-bold px-2 py-0.5 rounded text-[8.5pt]">
+                            NIB: 1101220030984
+                          </span>
+                          <span className="bg-[#002147]/10 text-[#002147] font-bold px-2 py-0.5 rounded text-[8.5pt]">
+                            Rumah Sakit Tipe D
+                          </span>
+                          <span className="bg-[#002147]/10 text-[#002147] font-bold px-2 py-0.5 rounded text-[8.5pt]">
+                            53 Tempat Tidur
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-[8pt] text-slate-500 italic text-center">
+                        Disusun berdasarkan UU No. 32/2009, PermenLH No. 13/2010, PP No. 22/2021, dan Permenkes No. 7/2019 tentang Kesehatan Lingkungan Rumah Sakit.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                /* ================= PORTRAIT COVER ASLI (F4 PORTRAIT 215.9 x 330.2 mm) ================= */
+                <div className="relative w-full aspect-[215.9/330.2] min-h-[330.2mm] flex flex-col justify-between overflow-hidden bg-white select-none">
+                  <img
+                    src="/assets/aistudio/cover_kesling_official_clean.jpg"
+                    alt="Cover Resmi Laporan UKL-UPL RSUD Al-Mulk"
+                    className="w-full h-full object-fill block"
+                  />
+                  <div
+                    className="absolute left-[7%] top-[7.2%] select-text"
+                    style={{ pointerEvents: 'auto' }}
+                  >
+                    <span className="font-black text-[18px] sm:text-[21px] md:text-[23px] text-black tracking-wider uppercase drop-shadow-xs">
+                      LAPORAN UKL/UPL
+                    </span>
+                  </div>
+                  <div
+                    className="absolute left-[7%] top-[16.0%] select-text"
+                    style={{ pointerEvents: 'auto' }}
+                  >
+                    <span className="font-black text-[18px] sm:text-[21px] md:text-[23px] text-white tracking-wider uppercase drop-shadow-xs">
+                      TAHUN {selectedYear}
+                    </span>
+                  </div>
+                  <div
+                    className="absolute left-0 right-0 top-[66.8%] bottom-[13.2%] flex flex-col items-center justify-center px-4 sm:px-8 text-center select-text"
+                    style={{ pointerEvents: 'auto' }}
+                  >
+                    <div className="text-black font-black text-[14px] sm:text-[17px] md:text-[19px] tracking-wide leading-tight uppercase whitespace-normal max-w-[94%]">
+                      HASIL PELAKSANAAN UPAYA PENGELOLAAN LINGKUNGAN DAN
+                      <br />
+                      UPAYA PEMANTAUAN LINGKUNGAN (UKL – UPL)
+                      <br />
+                      {compiled.semesterRoman === 'SEMESTER II'
+                        ? 'SEMESTER II PERIODE JULI - DESEMBER'
+                        : 'SEMESTER I PERIODE JANUARI - JUNI'}
+                      <br />
+                      TAHUN {selectedYear}
+                    </div>
+                  </div>
+                </div>
+              )}
             </section>
           )}
 
@@ -403,39 +542,46 @@ export function LaporanUplUklView() {
           {shouldRender('COVER_KATA_PENGANTAR') && (
             <section
               id="ukl-page-2"
-              className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
+              className={`f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full ${
+                isLandscape
+                  ? 'max-w-[330.2mm] min-h-[215.9mm] px-[22mm] py-[16mm]'
+                  : 'max-w-[215.9mm] min-h-[330.2mm] p-[25mm]'
+              } flex flex-col justify-between print:shadow-none print:border-none box-border`}
             >
-              <div className="space-y-5 text-[11pt] leading-[1.65] text-justify text-slate-900">
-                <h2 className="text-center font-bold text-[13pt] uppercase tracking-normal mb-6">
-                  KATA PENGANTAR
-                </h2>
+              <div className={`text-slate-900 text-justify ${
+                isLandscape ? 'grid grid-cols-2 gap-8 text-[9.5pt] leading-[1.55]' : 'space-y-5 text-[11pt] leading-[1.65]'
+              }`}>
+                <div className="space-y-3">
+                  <h2 className="text-center md:text-left font-bold text-[13pt] uppercase tracking-normal mb-3">
+                    KATA PENGANTAR
+                  </h2>
+                  <p className="indent-8">
+                    Dalam upaya memenuhi amanat undang-undang Nomor : 32 Tahun 2009 tentang Perlindungan dan Pengelolaan Lingkungan Hidup, Peraturan Menteri Negara Lingkungan Hidup Nomor : 13 Tahun 2010 tentang Upaya Pengelolaan Lingkungan Hidup dan Upaya Pemantauan Lingkungan Hidup, dan Peraturan Menteri Negara Lingkungan Hidup Nomor : 16 Tahun 2012 tentang Pedoman Penyusunan Dokumen Lingkungan Hidup serta Surat Pernyataan Kesanggupan Pengelolaan dan Pemantauan Lingkungan Hidup, Sesuai dengan Peraturan Pemerintah Nomor 22 Tahun 2021 tentang Penyelenggaraan Perlindungan dan Pengelolaan Lingkungan Hidup, maka setiap institusi baik pemerintah maupun swasta diwajibkan untuk menyusun dokumen Upaya Pengelolaan Lingkungan Hidup (UKL) dan Upaya Pemantauan Lingkungan Hidup (UPL) yang merupakan laporan pengelolaan lingkungan pada isntitusi tersebut.
+                  </p>
+                  <p className="indent-8">
+                    UOBK RSUD Al-Mulk Kota Sukabumi sebagai salah satu institusi pemerintah yang bergerak dalam bidang pelayanan Kesehatan berupaya untuk memenuhi amanat undang-undang tersebut dengan Menyusun dokumen UPL-UKL UOBK RSUD Al-Mulk Kota Sukabumi yang disusun setiap semester.
+                  </p>
+                </div>
 
-                <p className="indent-10">
-                  Dalam upaya memenuhi amanat undang-undang Nomor : 32 Tahun 2009 tentang Perlindungan dan Pengelolaan Lingkungan Hidup, Peraturan Menteri Negara Lingkungan Hidup Nomor : 13 Tahun 2010 tentang Upaya Pengelolaan Lingkungan Hidup dan Upaya Pemantauan Lingkungan Hidup, dan Peraturan Menteri Negara Lingkungan Hidup Nomor : 16 Tahun 2012 tentang Pedoman Penyusunan Dokumen Lingkungan Hidup serta Surat Pernyataan Kesanggupan Pengelolaan dan Pemantauan Lingkungan Hidup, Sesuai dengan Peraturan Pemerintah Nomor 22 Tahun 2021 tentang Penyelenggaraan Perlindungan dan Pengelolaan Lingkungan Hidup, maka setiap institusi baik pemerintah maupun swasta diwajibkan untuk menyusun dokumen Upaya Pengelolaan Lingkungan Hidup (UKL) dan Upaya Pemantauan Lingkungan Hidup (UPL) yang merupakan laporan pengelolaan lingkungan pada isntitusi tersebut.
-                </p>
-
-                <p className="indent-10">
-                  UOBK RSUD Al-Mulk Kota Sukabumi sebagai salah satu institusi pemerintah yang bergerak dalam bidang pelayanan Kesehatan berupaya untuk memenuhi amanat undang-undang tersebut dengan Menyusun dokumen UPL-UKL UOBK RSUD Al-Mulk Kota Sukabumi yang disusun setiap semester.
-                </p>
-
-                <p className="indent-10">
-                  Kami menyampaikan terima kasih kepada semua pihak khususnya tim penilai dokumen UKL-UPL UOBK RSUD AL-MULK Kota Sukabumi memberikan masukan dan saran. Semoga dokumen ini dapat memberikan manfaat bagi semua pihak yang berkepentingan.
-                </p>
-
-                <div className="pt-10 flex justify-end pr-2">
-                  <div className="text-center space-y-1 text-[11pt]">
-                    <p>Sukabumi, 10 Juli {selectedYear}</p>
-                    <p className="font-bold">Direktur UOBK RSUD AL-MULK</p>
-                    <p className="font-bold">Kota Sukabumi</p>
-                    <div className="h-20 flex items-center justify-center">
-                      <span className="text-slate-400 italic text-[9pt]">[Tanda Tangan & Cap Resmi]</span>
+                <div className="space-y-4 flex flex-col justify-between">
+                  <p className="indent-8 pt-0 md:pt-8">
+                    Kami menyampaikan terima kasih kepada semua pihak khususnya tim penilai dokumen UKL-UPL UOBK RSUD AL-MULK Kota Sukabumi memberikan masukan dan saran. Semoga dokumen ini dapat memberikan manfaat bagi semua pihak yang berkepentingan.
+                  </p>
+                  <div className="pt-2 flex justify-end pr-2">
+                    <div className="text-center space-y-1 text-[10pt]">
+                      <p>Sukabumi, 10 Juli {selectedYear}</p>
+                      <p className="font-bold">Direktur UOBK RSUD AL-MULK</p>
+                      <p className="font-bold">Kota Sukabumi</p>
+                      <div className="h-16 flex items-center justify-center">
+                        <span className="text-slate-400 italic text-[8.5pt]">[Tanda Tangan & Cap Resmi]</span>
+                      </div>
+                      <p className="font-bold underline text-slate-900">
+                        Dr. Deni Purnama, S.Kep, MKM
+                      </p>
+                      <p className="text-[9pt] text-slate-700">
+                        NIP. 198201109 200312 1 002
+                      </p>
                     </div>
-                    <p className="font-bold underline text-slate-900">
-                      Dr. Deni Purnama, S.Kep, MKM
-                    </p>
-                    <p className="text-[10pt] text-slate-700">
-                      NIP. 198201109 200312 1 002
-                    </p>
                   </div>
                 </div>
               </div>
@@ -450,29 +596,36 @@ export function LaporanUplUklView() {
           {shouldRender('BAB_1') && (
             <section
               id="ukl-page-3"
-              className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
+              className={`f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full ${
+                isLandscape
+                  ? 'max-w-[330.2mm] min-h-[215.9mm] px-[22mm] py-[16mm]'
+                  : 'max-w-[215.9mm] min-h-[330.2mm] p-[25mm]'
+              } flex flex-col justify-between print:shadow-none print:border-none box-border`}
             >
-              <div className="space-y-4 text-[11pt] leading-[1.65] text-justify text-slate-900">
-                <div className="text-center mb-6">
-                  <h2 className="font-bold text-[13pt] uppercase">BAB I</h2>
-                  <h3 className="font-bold text-[13pt] uppercase">PENDAHULUAN</h3>
+              <div className={`text-slate-900 text-justify ${
+                isLandscape ? 'grid grid-cols-2 gap-8 text-[9.5pt] leading-[1.5]' : 'space-y-4 text-[11pt] leading-[1.65]'
+              }`}>
+                <div className="space-y-3">
+                  <div className="text-center md:text-left mb-4">
+                    <h2 className="font-bold text-[12pt] uppercase">BAB I</h2>
+                    <h3 className="font-bold text-[12pt] uppercase">PENDAHULUAN</h3>
+                  </div>
+                  <p className="indent-8">
+                    Dalam kehidupan manusia kita mengenal adanya bangunan sebagai sarana untuk melakukan berbagai kegiatan. Gedung berfungsi sebagai tempat bekerja dan tempat hunian. Di dalam bangunan gedung kita dapat melakukan berbagai kegiatan seperti kegiatan usaha, kegiatan sosial dan budaya, keagamaan, jasa kesehatan atau kegiatan khusus lainnya. Sebagai tolak ukur dalam menampilkan percepatan pembangunan di Kota Sukabumi, harus dapat menyediakan berbagai fasilitas pendukung utilitas kota seperti bangunan komersial rumah sakit yang dapat memaksimalkan fungsi pelayanan kesehatan, pendidikan, bisnis, pariwisata, dan sektor ekonomi lainnya.
+                  </p>
+                  <p className="indent-8">
+                    UOBK RSUD Al-Mulk Kota Sukabumi, merupakan Rumah Sakit Pemerintah tipe D, merupakan salah satu fasilitas pelayanan Kesehatan yang dapat di akses oleh masyarakat Kota Sukabumi berupaya memaksimalkan fungsi pelayanan kesehatan.
+                  </p>
                 </div>
 
-                <p className="indent-10">
-                  Dalam kehidupan manusia kita mengenal adanya bangunan sebagai sarana untuk melakukan berbagai kegiatan. Gedung berfungsi sebagai tempat bekerja dan tempat hunian. Di dalam bangunan gedung kita dapat melakukan berbagai kegiatan seperti kegiatan usaha, kegiatan sosial dan budaya, keagamaan, jasa kesehatan atau kegiatan khusus lainnya. Sebagai tolak ukur dalam menampilkan percepatan pembangunan di Kota Sukabumi, harus dapat menyediakan berbagai fasilitas pendukung utilitas kota seperti bangunan komersial rumah sakit yang dapat memaksimalkan fungsi pelayanan kesehatan, pendidikan, bisnis, pariwisata, dan sektor ekonomi lainnya.
-                </p>
-
-                <p className="indent-10">
-                  UOBK RSUD Al-Mulk Kota Sukabumi, merupakan Rumah Sakit Pemerintah tipe D, merupakan salah satu fasilitas pelayanan Kesehatan yang dapat di akses oleh masyarakat Kota Sukabumi berupaya memaksimalkan fungsi pelayanan kesehatan.
-                </p>
-
-                <p className="indent-10">
-                  Sejalan dengan trend dan tuntutan pembangunan berkelanjutan dan berwawasan lingkungan, pembangunan UOBK RSUD Al-Mulk Kota Sukabumi dilaksanakan dengan memperhatikan aspek lingkungan secara menyeluruh yang didahului dengan pengkajian lingkungan yang dilaksanakan lewat penyusunan dokumen Upaya Pengelolaan Lingkungan Hidup (UKL) dan Upaya Pemantauan Lingkungan Hidup (UPL) sebagaimana dinyatakan dalam Peraturan Pemerintah Republik Indonesia Nomor 27 tahun 1999 tentang Analisa Mengenai Dampak Lingkungan Hidup pada pasal 3 ayat (4) bahwa bagi rencana usaha dan/atau kegiatan di luar usaha dan / atau kegiatan sebagaimana dimaksud dalam ayat 2 wajib melakukan Upaya Pengelolaan Lingkungan Hidup dan Upaya Pemantauan Lingkungan Hidup yang pembinaanya berada pada instansi yang membidangi usaha dan / atau kegiatan. Serta keputusan Menteri Lingkungan Hidup Republik Indonesia Nomor 86 tahun 2002 Tentang Pedoman Pelaksanaan Upaya Pengelolaan Lingkungan Hidup dan Upaya Pemantauan Lingkungan Hidup.
-                </p>
-
-                <p className="indent-10">
-                  Mengacu pada Keputusan Menteri Negara Lingkungan Hidup No. 13 Tahun 2010 tentang UKL – UPL dan PP. 27 tahun 1999 tentang AMDAL pasal 32, UOBK RSUD Al-Mulk Kota Sukabumi menyampaikan LAPORAN Semester UKL – UPL dengan uraian sebagai berikut:
-                </p>
+                <div className="space-y-3 pt-0 md:pt-10">
+                  <p className="indent-8">
+                    Sejalan dengan trend dan tuntutan pembangunan berkelanjutan dan berwawasan lingkungan, pembangunan UOBK RSUD Al-Mulk Kota Sukabumi dilaksanakan dengan memperhatikan aspek lingkungan secara menyeluruh yang didahului dengan pengkajian lingkungan yang dilaksanakan lewat penyusunan dokumen Upaya Pengelolaan Lingkungan Hidup (UKL) dan Upaya Pemantauan Lingkungan Hidup (UPL) sebagaimana dinyatakan dalam Peraturan Pemerintah Republik Indonesia Nomor 27 tahun 1999 tentang Analisa Mengenai Dampak Lingkungan Hidup pada pasal 3 ayat (4) bahwa bagi rencana usaha dan/atau kegiatan di luar usaha dan / atau kegiatan sebagaimana dimaksud dalam ayat 2 wajib melakukan Upaya Pengelolaan Lingkungan Hidup dan Upaya Pemantauan Lingkungan Hidup yang pembinaanya berada pada instansi yang membidangi usaha dan / atau kegiatan. Serta keputusan Menteri Lingkungan Hidup Republik Indonesia Nomor 86 tahun 2002 Tentang Pedoman Pelaksanaan Upaya Pengelolaan Lingkungan Hidup dan Upaya Pemantauan Lingkungan Hidup.
+                  </p>
+                  <p className="indent-8">
+                    Mengacu pada Keputusan Menteri Negara Lingkungan Hidup No. 13 Tahun 2010 tentang UKL – UPL dan PP. 27 tahun 1999 tentang AMDAL pasal 32, UOBK RSUD Al-Mulk Kota Sukabumi menyampaikan LAPORAN Semester UKL – UPL dengan uraian sebagai berikut:
+                  </p>
+                </div>
               </div>
 
               <RunningFooter semesterRoman={compiled.semesterRoman} year={selectedYear} pageNumber={3} />
@@ -485,116 +638,108 @@ export function LaporanUplUklView() {
           {shouldRender('BAB_1') && (
             <section
               id="ukl-page-4"
-              className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
+              className={`f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full ${
+                isLandscape
+                  ? 'max-w-[330.2mm] min-h-[215.9mm] px-[20mm] py-[15mm]'
+                  : 'max-w-[215.9mm] min-h-[330.2mm] p-[20mm]'
+              } flex flex-col justify-between print:shadow-none print:border-none box-border`}
             >
-              <div className="space-y-3.5 text-[10.5pt] leading-[1.55] text-slate-900">
-                <p className="text-justify indent-8">
-                  Sesuai dengan Peraturan Pemerintah Nomor 22 Tahun 2021 tentang Penyelenggaraan Perlindungan dan Pengelolaan Lingkungan Hidup, serta Rekomendasi/Persetujuan atas Dokumen Lingkungan Hidup (UKL-UPL atau DPLH), saya yang bertanda tangan di bawah ini menyampaikan <strong>Laporan {compiled.semesterRoman} Tahun {selectedYear}</strong> pelaksanaan UKL-UPL atau DPLH dengan uraian sebagai berikut:
-                </p>
+              <div className={`text-slate-900 ${
+                isLandscape
+                  ? 'grid grid-cols-2 gap-8 text-[9pt] leading-[1.45]'
+                  : 'space-y-3.5 text-[10.5pt] leading-[1.55]'
+              }`}>
+                <div className="space-y-2">
+                  <p className="text-justify indent-6">
+                    Sesuai dengan PP No. 22 Tahun 2021 tentang Penyelenggaraan Perlindungan dan Pengelolaan Lingkungan Hidup, disampaikan <strong>Laporan {compiled.semesterRoman} Tahun {selectedYear}</strong>:
+                  </p>
 
-                <h3 className="font-bold text-[11pt] text-slate-900 pt-1">
-                  1.1 IDENTITAS PEMRAKARSA
-                </h3>
+                  <h3 className="font-bold text-[10.5pt] text-slate-900 pt-1 border-b border-black/30 pb-0.5">
+                    1.1 IDENTITAS PEMRAKARSA
+                  </h3>
 
-                <div className="space-y-1 pl-2">
-                  <div className="grid grid-cols-12 gap-1">
-                    <span className="col-span-4">1. Nama Pemrakarsa</span>
-                    <span className="col-span-8">: Dinas Kesehatan Kota Sukabumi</span>
-                  </div>
-                  <div className="grid grid-cols-12 gap-1">
-                    <span className="col-span-4">2. Alamat Kantor Pusat</span>
-                    <span className="col-span-8">: Jl. Suryakencana 41, Sukabumi, Jawa Barat, Indonesia</span>
-                  </div>
-                  <div className="grid grid-cols-12 gap-1">
-                    <span className="col-span-4">3. No telpon</span>
-                    <span className="col-span-8">: (0266)-6243088</span>
-                  </div>
-                  <div className="grid grid-cols-12 gap-1">
-                    <span className="col-span-4">4. E-mail</span>
-                    <span className="col-span-8">: rsudalmulk@gmail.com</span>
-                  </div>
-                  <div className="grid grid-cols-12 gap-1">
-                    <span className="col-span-4">5. Kepala Dinas</span>
-                    <span className="col-span-8">: Ida Halimah, S.K.M., M.Si</span>
-                  </div>
-                  <div className="grid grid-cols-12 gap-1">
-                    <span className="col-span-4">6. Penanggung Jawab UKL UPL</span>
-                    <span className="col-span-8"></span>
-                  </div>
-                  <div className="grid grid-cols-12 gap-1 pl-4">
-                    <span className="col-span-4">Nama</span>
-                    <span className="col-span-8 font-bold">: Dr. Deni Purnama, S.Kep, MKM</span>
-                  </div>
-                  <div className="grid grid-cols-12 gap-1 pl-4">
-                    <span className="col-span-4">Jabatan</span>
-                    <span className="col-span-8">: Direktur UOBK RSUD Al-Mulk Kota Sukabumi</span>
-                  </div>
-                  <div className="grid grid-cols-12 gap-1">
-                    <span className="col-span-4">7. Jenis Kegiatan</span>
-                    <span className="col-span-8">: Rumah Sakit Tipe D</span>
-                  </div>
-                  <div className="grid grid-cols-12 gap-1">
-                    <span className="col-span-4">8. Struktur Organisasi</span>
-                    <span className="col-span-8">: Terlampir</span>
+                  <div className="space-y-1 pl-1">
+                    <div className="grid grid-cols-12 gap-1">
+                      <span className="col-span-5">1. Nama Pemrakarsa</span>
+                      <span className="col-span-7 font-semibold">: Dinas Kesehatan Kota Sukabumi</span>
+                    </div>
+                    <div className="grid grid-cols-12 gap-1">
+                      <span className="col-span-5">2. Alamat Kantor Pusat</span>
+                      <span className="col-span-7">: Jl. Suryakencana 41, Sukabumi</span>
+                    </div>
+                    <div className="grid grid-cols-12 gap-1">
+                      <span className="col-span-5">3. No telpon</span>
+                      <span className="col-span-7">: (0266)-6243088</span>
+                    </div>
+                    <div className="grid grid-cols-12 gap-1">
+                      <span className="col-span-5">4. E-mail</span>
+                      <span className="col-span-7">: rsudalmulk@gmail.com</span>
+                    </div>
+                    <div className="grid grid-cols-12 gap-1">
+                      <span className="col-span-5">5. Kepala Dinas</span>
+                      <span className="col-span-7 font-semibold">: Ida Halimah, S.K.M., M.Si</span>
+                    </div>
+                    <div className="grid grid-cols-12 gap-1">
+                      <span className="col-span-5">6. Penanggung Jawab</span>
+                      <span className="col-span-7 font-bold">: Dr. Deni Purnama, S.Kep, MKM</span>
+                    </div>
+                    <div className="grid grid-cols-12 gap-1 pl-3">
+                      <span className="col-span-5">Jabatan</span>
+                      <span className="col-span-7">: Direktur UOBK RSUD Al-Mulk</span>
+                    </div>
+                    <div className="grid grid-cols-12 gap-1">
+                      <span className="col-span-5">7. Jenis Kegiatan</span>
+                      <span className="col-span-7">: Rumah Sakit Tipe D</span>
+                    </div>
+                    <div className="grid grid-cols-12 gap-1">
+                      <span className="col-span-5">8. Struktur Organisasi</span>
+                      <span className="col-span-7">: Terlampir</span>
+                    </div>
                   </div>
                 </div>
 
-                <h3 className="font-bold text-[11pt] text-slate-900 pt-2">
-                  A. RINGKASAN USAHA DAN/ATAU KEGIATAN
-                </h3>
+                <div className="space-y-2">
+                  <h3 className="font-bold text-[10.5pt] text-slate-900 pt-1 border-b border-black/30 pb-0.5">
+                    A. RINGKASAN USAHA DAN/ATAU KEGIATAN
+                  </h3>
 
-                <div className="space-y-1 pl-2">
-                  <div className="grid grid-cols-12 gap-1">
-                    <span className="col-span-5">a. Nama Usaha/Kegiatan</span>
-                    <span className="col-span-7 font-bold">: UOBK RSUD Al Mulk</span>
-                  </div>
-                  <div className="grid grid-cols-12 gap-1">
-                    <span className="col-span-5">b. Nomor Induk Berusaha</span>
-                    <span className="col-span-7 font-mono font-bold">: 1101220030984</span>
-                  </div>
-                  <div className="grid grid-cols-12 gap-1">
-                    <span className="col-span-5">c. Jenis Usaha/Kegiatan</span>
-                    <span className="col-span-7">: Rumah Sakit Tipe D</span>
-                  </div>
-                  <div className="grid grid-cols-12 gap-1">
-                    <span className="col-span-5">d. Lokasi Usaha/Kegiatan</span>
-                    <span className="col-span-7"></span>
-                  </div>
-                  <div className="grid grid-cols-12 gap-1 pl-4">
-                    <span className="col-span-5">a. Nama Jalan</span>
-                    <span className="col-span-7">: Pelabuhan II KM 6 RT 02 RW 07</span>
-                  </div>
-                  <div className="grid grid-cols-12 gap-1 pl-4">
-                    <span className="col-span-5">b. Kelurahan</span>
-                    <span className="col-span-7">: Lembursitu</span>
-                  </div>
-                  <div className="grid grid-cols-12 gap-1 pl-4">
-                    <span className="col-span-5">c. Kecamatan</span>
-                    <span className="col-span-7">: Lembursitu</span>
-                  </div>
-                  <div className="grid grid-cols-12 gap-1 pl-4">
-                    <span className="col-span-5">d. Titik Koordinat</span>
-                    <span className="col-span-7 font-mono">: -6.95868, 106.89784</span>
-                  </div>
-                  <div className="grid grid-cols-12 gap-1">
-                    <span className="col-span-5">e. Skala Usaha/Kegiatan (Modal)</span>
-                    <span className="col-span-7">: Jasa Pelayanan Kesehatan</span>
-                  </div>
-                  <div className="grid grid-cols-12 gap-1">
-                    <span className="col-span-5">f. Jumlah Pegawai</span>
-                    <span className="col-span-7">: 179 orang</span>
-                  </div>
-                  <div className="grid grid-cols-12 gap-1 pl-4">
-                    <span className="col-span-5">Waktu operasi/shift</span>
-                    <span className="col-span-7">: 24 Jam ; 3 shift</span>
-                  </div>
-                  <div className="grid grid-cols-12 gap-1">
-                    <span className="col-span-5">g. Skala Usaha/Kegiatan (eksisting)</span>
-                    <span className="col-span-7"></span>
-                  </div>
-                  <div className="grid grid-cols-12 gap-1 pl-4">
-                    <span className="col-span-5">a. Kapasitas usaha</span>
-                    <span className="col-span-7 font-bold">: 53 Tempat Tidur</span>
+                  <div className="space-y-1 pl-1">
+                    <div className="grid grid-cols-12 gap-1">
+                      <span className="col-span-5">a. Nama Usaha/Kegiatan</span>
+                      <span className="col-span-7 font-bold">: UOBK RSUD Al Mulk</span>
+                    </div>
+                    <div className="grid grid-cols-12 gap-1">
+                      <span className="col-span-5">b. Nomor Induk Berusaha</span>
+                      <span className="col-span-7 font-mono font-bold">: 1101220030984</span>
+                    </div>
+                    <div className="grid grid-cols-12 gap-1">
+                      <span className="col-span-5">c. Jenis Usaha/Kegiatan</span>
+                      <span className="col-span-7">: Rumah Sakit Tipe D</span>
+                    </div>
+                    <div className="grid grid-cols-12 gap-1">
+                      <span className="col-span-5">d. Lokasi Usaha</span>
+                      <span className="col-span-7">: Jl. Pelabuhan II KM 6 RT 02 RW 07</span>
+                    </div>
+                    <div className="grid grid-cols-12 gap-1 pl-3">
+                      <span className="col-span-5">Kel. / Kec.</span>
+                      <span className="col-span-7">: Lembursitu, Kota Sukabumi</span>
+                    </div>
+                    <div className="grid grid-cols-12 gap-1 pl-3">
+                      <span className="col-span-5">Titik Koordinat</span>
+                      <span className="col-span-7 font-mono font-semibold">: -6.95868, 106.89784</span>
+                    </div>
+                    <div className="grid grid-cols-12 gap-1">
+                      <span className="col-span-5">e. Skala Usaha (Modal)</span>
+                      <span className="col-span-7">: Jasa Pelayanan Kesehatan</span>
+                    </div>
+                    <div className="grid grid-cols-12 gap-1">
+                      <span className="col-span-5">f. Jumlah Pegawai</span>
+                      <span className="col-span-7">: 179 orang (24 Jam ; 3 shift)</span>
+                    </div>
+                    <div className="grid grid-cols-12 gap-1">
+                      <span className="col-span-5">g. Kapasitas Usaha</span>
+                      <span className="col-span-7 font-bold text-emerald-800">: 53 Tempat Tidur</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -609,77 +754,78 @@ export function LaporanUplUklView() {
           {shouldRender('BAB_1') && (
             <section
               id="ukl-page-5"
-              className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
+              className={`f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full ${
+                isLandscape
+                  ? 'max-w-[330.2mm] min-h-[215.9mm] px-[20mm] py-[15mm]'
+                  : 'max-w-[215.9mm] min-h-[330.2mm] p-[20mm]'
+              } flex flex-col justify-between print:shadow-none print:border-none box-border`}
             >
-              <div className="space-y-2 text-[10.5pt] leading-[1.5] text-slate-900 pl-2">
-                <div className="grid grid-cols-12 gap-1">
-                  <span className="col-span-5">b. Total luas lahan</span>
-                  <span className="col-span-7 font-bold">: 4.667 m²</span>
+              <div className={`text-slate-900 ${
+                isLandscape ? 'grid grid-cols-2 gap-8 text-[9pt] leading-[1.4]' : 'space-y-2 text-[10.5pt] leading-[1.5] pl-2'
+              }`}>
+                {/* Kolom 1: Lahan, Bangunan, Listrik, Air */}
+                <div className="space-y-1.5">
+                  <div className="grid grid-cols-12 gap-1">
+                    <span className="col-span-5 font-semibold">b. Total luas lahan</span>
+                    <span className="col-span-7 font-bold">: 4.667 m²</span>
+                  </div>
+                  <div className="grid grid-cols-12 gap-1">
+                    <span className="col-span-5 font-semibold">c. Total luas bangunan</span>
+                    <span className="col-span-7 font-bold">: 7.183 m²</span>
+                  </div>
+                  <div className="grid grid-cols-12 gap-1">
+                    <span className="col-span-5 font-semibold">d. Pemanfaatan listrik/energi</span>
+                    <span className="col-span-7">: 10.150 kWh/kVA</span>
+                  </div>
+                  <div className="grid grid-cols-12 gap-1">
+                    <span className="col-span-5 font-semibold">e. Pemanfaatan oli/pelumas</span>
+                    <span className="col-span-7">: 29 liter/Tahun (jika ada)</span>
+                  </div>
+                  <div className="grid grid-cols-12 gap-1">
+                    <span className="col-span-5 font-semibold">f. Pemanfaatan Gas Buang</span>
+                    <span className="col-span-7">: 80 ppm</span>
+                  </div>
+                  <div className="grid grid-cols-12 gap-1 pt-1">
+                    <span className="col-span-5 font-bold">g. Pemanfaatan air bersih</span>
+                    <span className="col-span-7 font-bold">: 10 m³/Hari</span>
+                  </div>
+                  <div className="space-y-0.5 pl-4 text-[8.5pt] text-slate-700">
+                    <p>• Jenis Sumber : sumur gali/sumur Artesis dan Air RO *)</p>
+                    <p>• Kedalaman sumur : 98 m³ | Ground tank : 4 m³ (2 sumber)</p>
+                    <p>• Kamar Mandi/WC : 10 m³/hari | Penyiraman/Cuci : 1 m³/hari</p>
+                    <p>• Produksi : 9 m³/hari | Minum & Lain-lain : 300 m³/hari</p>
+                  </div>
                 </div>
-                <div className="grid grid-cols-12 gap-1">
-                  <span className="col-span-5">c. Total luas bangunan</span>
-                  <span className="col-span-7 font-bold">: 7.183 m²</span>
-                </div>
-                <div className="grid grid-cols-12 gap-1">
-                  <span className="col-span-5">d. Pemanfaatan listrik/energi</span>
-                  <span className="col-span-7">: 10.150 kWh/kVA</span>
-                </div>
-                <div className="grid grid-cols-12 gap-1">
-                  <span className="col-span-5">e. Pemanfaatan oli/pelumas</span>
-                  <span className="col-span-7">: 29 liter/Tahun (jika ada)</span>
-                </div>
-                <div className="grid grid-cols-12 gap-1">
-                  <span className="col-span-5">f. Pemanfaatan Gas Buang</span>
-                  <span className="col-span-7">: 80 ppm</span>
-                </div>
-                <div className="grid grid-cols-12 gap-1">
-                  <span className="col-span-5">g. Pemanfaatan air bersih</span>
-                  <span className="col-span-7">: 10 m³/Hari</span>
-                </div>
-                <div className="space-y-0.5 pl-6 text-[10pt]">
-                  <p>• Jenis Sumber : sumur gali/sumur Artesis dan Air RO *)</p>
-                  <p>• Kedalaman sumur : 98 m³</p>
-                  <p>• Ground tank : 4 m³ (2 sumber)</p>
-                  <p>• Kamar Mandi/WC : 10 m³/hari</p>
-                  <p>• Penyiraman/Cuci : 1 m³/hari</p>
-                  <p>• Produksi : 9 m³/hari</p>
-                  <p>• Minum & Lain-lain : 300 m³/hari</p>
-                </div>
-                <div className="grid grid-cols-12 gap-1 pt-1">
-                  <span className="col-span-5 font-bold">h. Limbah Padat Produksi/Usaha</span>
-                  <span className="col-span-7">: 100 kg/hari</span>
-                </div>
-                <div className="pl-6 text-[10pt]">
-                  <p>• TPS : <strong>Ada</strong> / <del className="text-slate-400">Tidak Ada*</del></p>
-                </div>
-                <div className="grid grid-cols-12 gap-1 pt-1">
-                  <span className="col-span-5 font-bold">i. Air Limbah</span>
-                  <span className="col-span-7">: 7 m³/hari</span>
-                </div>
-                <div className="space-y-0.5 pl-6 text-[10pt]">
-                  <p>• IPAL : <strong>Ada</strong> / <del className="text-slate-400">Tidak Ada*</del></p>
-                  <p>• Hasil uji lab : <strong>Ada</strong> / <del className="text-slate-400">Tidak Ada*</del> (jika ada, lampirkan)</p>
-                  <p>• Izin/Pertek Air Limbah : <strong>Ada</strong> / <del className="text-slate-400">Tidak Ada*</del> (jika ada, lampirkan)</p>
-                </div>
-                <div className="grid grid-cols-12 gap-1 pt-1">
-                  <span className="col-span-5 font-bold">j. Limbah B3</span>
-                  <span className="col-span-7">: 100 kg/hari</span>
-                </div>
-                <div className="space-y-0.5 pl-6 text-[10pt]">
-                  <p>• TPS / col storage Limbah B3 : <strong>Ada</strong> / <del className="text-slate-400">Tidak Ada*</del> (jika ada, lampirkan)</p>
-                  <p>• Manifest / Festronik : <strong>Ada</strong> / <del className="text-slate-400">Tidak Ada*</del> (jika ada, lampirkan)</p>
-                  <p>• MoU dengan pihak ke-3 : <strong>Ada</strong> / <del className="text-slate-400">Tidak Ada*</del> (jika ada, lampirkan)</p>
-                  <p>• Logbook dan Neraca LB3 : <strong>Ada</strong> / <del className="text-slate-400">Tidak Ada*</del> (jika ada, lampirkan)</p>
-                  <p>• Izin/Rincian LB3 : <strong>Ada</strong> / <del className="text-slate-400">Tidak Ada*</del> (jika ada, lampirkan)</p>
-                </div>
-                <div className="grid grid-cols-12 gap-1 pt-1">
-                  <span className="col-span-5 font-bold">k. Proteksi Kebakaran</span>
-                  <span className="col-span-7"></span>
-                </div>
-                <div className="space-y-0.5 pl-6 text-[10pt]">
-                  <p>• APAR : <strong>23 Apar</strong></p>
-                  <p>• Hidran : <strong>3 pilar</strong></p>
-                  <p>• Sistem alarm kebakaran : <strong>1</strong></p>
+
+                {/* Kolom 2: Limbah Padat, Cair, B3 & Proteksi Kebakaran */}
+                <div className="space-y-1.5">
+                  <div className="grid grid-cols-12 gap-1">
+                    <span className="col-span-5 font-bold">h. Limbah Padat Produksi</span>
+                    <span className="col-span-7">: 100 kg/hari (TPS: <strong>Ada</strong>)</span>
+                  </div>
+                  <div className="grid grid-cols-12 gap-1 pt-0.5">
+                    <span className="col-span-5 font-bold">i. Air Limbah</span>
+                    <span className="col-span-7">: 7 m³/hari (IPAL: <strong>Ada</strong>)</span>
+                  </div>
+                  <div className="space-y-0.5 pl-4 text-[8.5pt] text-slate-700">
+                    <p>• Hasil uji lab : <strong>Ada</strong> | Izin/Pertek Air Limbah : <strong>Ada</strong></p>
+                  </div>
+                  <div className="grid grid-cols-12 gap-1 pt-0.5">
+                    <span className="col-span-5 font-bold">j. Limbah B3</span>
+                    <span className="col-span-7">: 100 kg/hari</span>
+                  </div>
+                  <div className="space-y-0.5 pl-4 text-[8.5pt] text-slate-700">
+                    <p>• TPS / Cold Storage LB3 : <strong>Ada</strong> | Logbook & Neraca : <strong>Ada</strong></p>
+                    <p>• Manifest/Festronik : <strong>Ada</strong> | MoU Pihak ke-3 : <strong>Ada</strong></p>
+                  </div>
+                  <div className="grid grid-cols-12 gap-1 pt-1">
+                    <span className="col-span-5 font-bold">k. Proteksi Kebakaran</span>
+                    <span className="col-span-7"></span>
+                  </div>
+                  <div className="space-y-0.5 pl-4 text-[8.5pt] text-slate-700">
+                    <p>• APAR : <strong>23 Apar</strong> | Hidran : <strong>3 pilar</strong></p>
+                    <p>• Sistem alarm kebakaran : <strong>1 sistem terintegrasi</strong></p>
+                  </div>
                 </div>
               </div>
 
@@ -693,59 +839,67 @@ export function LaporanUplUklView() {
           {shouldRender('BAB_1') && (
             <section
               id="ukl-page-6"
-              className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
+              className={`f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full ${
+                isLandscape
+                  ? 'max-w-[330.2mm] min-h-[215.9mm] px-[20mm] py-[15mm]'
+                  : 'max-w-[215.9mm] min-h-[330.2mm] p-[20mm]'
+              } flex flex-col justify-between print:shadow-none print:border-none box-border`}
             >
-              <div className="space-y-3 text-[10.5pt] leading-[1.55] text-slate-900 pl-2">
-                <div className="space-y-0.5 pl-6 text-[10pt]">
-                  <p>• Jalur evakuasi : <strong>12</strong></p>
-                  <p>• titik kumpul : <strong>1</strong></p>
-                  <p>• Sprinkler : <strong>20</strong></p>
+              <div className={`text-slate-900 ${
+                isLandscape ? 'grid grid-cols-2 gap-8 text-[9pt] leading-[1.4]' : 'space-y-3 text-[10.5pt] leading-[1.55] pl-2'
+              }`}>
+                <div className="space-y-2">
+                  <div className="space-y-0.5 bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-[9pt]">
+                    <p>• Jalur evakuasi : <strong>12 Titik</strong></p>
+                    <p>• Titik kumpul : <strong>1 Lokasi (Halaman Utama)</strong></p>
+                    <p>• Sprinkler : <strong>20 Titik</strong></p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <h4 className="font-bold text-[#002147]">l. Sistem Ventilasi dan Tata Udara</h4>
+                    <ul className="list-disc pl-5 space-y-0.5 text-[8.5pt]">
+                      <li>Ventilasi alami dan mekanis.</li>
+                      <li>Air Conditioner (AC) pada ruang pelayanan tertentu.</li>
+                      <li>Exhaust fan pada toilet, ruang isolasi, dan ruang utilitas.</li>
+                      <li>Pemeliharaan rutin menjaga kualitas udara dalam ruangan.</li>
+                    </ul>
+                  </div>
+
+                  <div className="space-y-1">
+                    <h4 className="font-bold text-[#002147]">m. Sistem Drainase</h4>
+                    <ul className="list-disc pl-5 space-y-0.5 text-[8.5pt]">
+                      <li>Saluran drainase mengelilingi kawasan rumah sakit.</li>
+                      <li>Air hujan dialirkan menuju saluran kota.</li>
+                      <li>Pembersihan rutin untuk mencegah genangan.</li>
+                    </ul>
+                  </div>
                 </div>
 
-                <div className="space-y-1 pt-2">
-                  <h4 className="font-bold">l. Sistem Ventilasi dan Tata Udara</h4>
-                  <ul className="list-disc pl-6 space-y-0.5 text-[10pt]">
-                    <li>Ventilasi alami dan mekanis.</li>
-                    <li>Air Conditioner (AC) pada ruang pelayanan tertentu.</li>
-                    <li>Exhaust fan pada toilet, ruang isolasi, dan ruang utilitas.</li>
-                    <li>Pemeliharaan dilakukan secara berkala untuk menjaga kualitas udara dalam ruangan.</li>
-                  </ul>
-                </div>
+                <div className="space-y-2">
+                  <div className="space-y-1">
+                    <h4 className="font-bold text-[#002147]">n. Sistem Komunikasi & Teknologi Informasi</h4>
+                    <ul className="list-disc pl-5 space-y-0.5 text-[8.5pt]">
+                      <li>Jaringan LAN dan Wi-Fi internal terintegrasi.</li>
+                      <li>Sistem Informasi Manajemen Rumah Sakit (SIMRS).</li>
+                      <li>Telepon internal & CCTV pada area pelayanan.</li>
+                    </ul>
+                  </div>
 
-                <div className="space-y-1 pt-2">
-                  <h4 className="font-bold">m. Sistem Drainase</h4>
-                  <ul className="list-disc pl-6 space-y-0.5 text-[10pt]">
-                    <li>Saluran drainase mengelilingi kawasan rumah sakit.</li>
-                    <li>Air hujan dialirkan menuju saluran kota.</li>
-                    <li>Pembersihan saluran dilakukan secara rutin untuk mencegah genangan.</li>
-                  </ul>
-                </div>
-
-                <div className="space-y-1 pt-2">
-                  <h4 className="font-bold">n. Sistem Komunikasi dan Teknologi Informasi</h4>
-                  <ul className="list-disc pl-6 space-y-0.5 text-[10pt]">
-                    <li>Jaringan LAN dan Wi-Fi internal.</li>
-                    <li>Sistem Informasi Manajemen Rumah Sakit (SIMRS).</li>
-                    <li>Telepon internal.</li>
-                    <li>CCTV pada area pelayanan dan keamanan.</li>
-                    <li>Internet sebagai penunjang pelayanan dan administrasi.</li>
-                  </ul>
-                </div>
-
-                <div className="space-y-1 pt-2">
-                  <h4 className="font-bold">o. Sarana Penunjang Lainnya</h4>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 pl-6 text-[10pt]">
-                    <p>• Ruang IPSRS</p>
-                    <p>• Ruang IT</p>
-                    <p>• Ruang pantry</p>
-                    <p>• CSSD</p>
-                    <p>• Ruang Graund tank</p>
-                    <p>• Ruang Genset</p>
-                    <p>• Ruang Panel Listrik</p>
-                    <p>• Gudang Logistik</p>
-                    <p>• Parkir kendaraan</p>
-                    <p>• Mushola</p>
-                    <p className="col-span-2">• Ruang tunggu pasien dan pengunjung</p>
+                  <div className="space-y-1">
+                    <h4 className="font-bold text-[#002147]">o. Sarana Penunjang Lainnya</h4>
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-[8.5pt]">
+                      <p>• Ruang IPSRS</p>
+                      <p>• Ruang IT</p>
+                      <p>• Ruang pantry</p>
+                      <p>• CSSD</p>
+                      <p>• Ruang Ground Tank</p>
+                      <p>• Ruang Genset</p>
+                      <p>• Ruang Panel Listrik</p>
+                      <p>• Gudang Logistik</p>
+                      <p>• Parkir kendaraan</p>
+                      <p>• Mushola</p>
+                      <p className="col-span-2">• Ruang tunggu pasien & pengunjung</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -760,7 +914,11 @@ export function LaporanUplUklView() {
           {shouldRender('BAB_2') && (
             <section
               id="ukl-page-7"
-              className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[20mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
+              className={`f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full ${
+                isLandscape
+                  ? 'max-w-[330.2mm] min-h-[215.9mm] px-[20mm] py-[15mm]'
+                  : 'max-w-[215.9mm] min-h-[330.2mm] p-[20mm]'
+              } flex flex-col justify-between print:shadow-none print:border-none box-border`}
             >
               <div className="space-y-3">
                 <div className="text-center">
@@ -824,7 +982,11 @@ export function LaporanUplUklView() {
           {shouldRender('BAB_2') && (
             <section
               id="ukl-page-8"
-              className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[20mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
+              className={`f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full ${
+                isLandscape
+                  ? 'max-w-[330.2mm] min-h-[215.9mm] px-[20mm] py-[15mm]'
+                  : 'max-w-[215.9mm] min-h-[330.2mm] p-[20mm]'
+              } flex flex-col justify-between print:shadow-none print:border-none box-border`}
             >
               <div className="space-y-3">
                 <table className="w-full border-collapse border border-black text-[9pt] leading-tight">
@@ -898,7 +1060,11 @@ export function LaporanUplUklView() {
           {shouldRender('BAB_2') && (
             <section
               id="ukl-page-9"
-              className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[20mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
+              className={`f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full ${
+                isLandscape
+                  ? 'max-w-[330.2mm] min-h-[215.9mm] px-[20mm] py-[15mm]'
+                  : 'max-w-[215.9mm] min-h-[330.2mm] p-[20mm]'
+              } flex flex-col justify-between print:shadow-none print:border-none box-border`}
             >
               <div className="space-y-3">
                 <table className="w-full border-collapse border border-black text-[9pt] leading-tight">
@@ -978,7 +1144,11 @@ export function LaporanUplUklView() {
           {shouldRender('BAB_2') && (
             <section
               id="ukl-page-10"
-              className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[20mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
+              className={`f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full ${
+                isLandscape
+                  ? 'max-w-[330.2mm] min-h-[215.9mm] px-[20mm] py-[15mm]'
+                  : 'max-w-[215.9mm] min-h-[330.2mm] p-[20mm]'
+              } flex flex-col justify-between print:shadow-none print:border-none box-border`}
             >
               <div className="space-y-3">
                 <table className="w-full border-collapse border border-black text-[9pt] leading-tight">
@@ -1055,7 +1225,11 @@ export function LaporanUplUklView() {
           {shouldRender('BAB_2') && (
             <section
               id="ukl-page-11"
-              className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[20mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
+              className={`f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full ${
+                isLandscape
+                  ? 'max-w-[330.2mm] min-h-[215.9mm] px-[20mm] py-[15mm]'
+                  : 'max-w-[215.9mm] min-h-[330.2mm] p-[20mm]'
+              } flex flex-col justify-between print:shadow-none print:border-none box-border`}
             >
               <div className="space-y-3">
                 <table className="w-full border-collapse border border-black text-[9pt] leading-tight">
@@ -1230,7 +1404,11 @@ export function LaporanUplUklView() {
           {shouldRender('BAB_4') && (
             <section
               id="ukl-page-42"
-              className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
+              className={`f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full ${
+                isLandscape
+                  ? 'max-w-[330.2mm] min-h-[215.9mm] px-[20mm] py-[15mm]'
+                  : 'max-w-[215.9mm] min-h-[330.2mm] p-[20mm]'
+              } flex flex-col justify-between print:shadow-none print:border-none box-border`}
             >
               <div className="space-y-4 text-[10.5pt] leading-[1.65] text-justify text-slate-900">
                 <div className="text-center mb-6">
@@ -1300,7 +1478,11 @@ export function LaporanUplUklView() {
           {shouldRender('PERIZINAN') && (
             <section
               id="ukl-page-43"
-              className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[25mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
+              className={`f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full ${
+                isLandscape
+                  ? 'max-w-[330.2mm] min-h-[215.9mm] px-[20mm] py-[15mm]'
+                  : 'max-w-[215.9mm] min-h-[330.2mm] p-[20mm]'
+              } flex flex-col justify-between print:shadow-none print:border-none box-border`}
             >
               <div className="space-y-4 text-[10pt] leading-[1.55] text-slate-900">
                 <div className="text-center border-b-2 border-black pb-3">
@@ -1481,7 +1663,11 @@ export function LaporanUplUklView() {
           {shouldRender('LAMPIRAN_3') && (
             <section
               id="ukl-page-64"
-              className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[20mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
+              className={`f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full ${
+                isLandscape
+                  ? 'max-w-[330.2mm] min-h-[215.9mm] px-[20mm] py-[15mm]'
+                  : 'max-w-[215.9mm] min-h-[330.2mm] p-[20mm]'
+              } flex flex-col justify-between print:shadow-none print:border-none box-border`}
             >
               <div className="space-y-3 text-[9pt] leading-tight">
                 <div className="text-center mb-2">
@@ -1663,7 +1849,11 @@ export function LaporanUplUklView() {
           {shouldRender('LAMPIRAN_LOGBOOK') && (
             <section
               id="ukl-page-66"
-              className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[20mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
+              className={`f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full ${
+                isLandscape
+                  ? 'max-w-[330.2mm] min-h-[215.9mm] px-[20mm] py-[15mm]'
+                  : 'max-w-[215.9mm] min-h-[330.2mm] p-[20mm]'
+              } flex flex-col justify-between print:shadow-none print:border-none box-border`}
             >
               <div className="space-y-3">
                 <div className="text-center mb-1">
@@ -1863,7 +2053,11 @@ export function LaporanUplUklView() {
           {shouldRender('LAMPIRAN_5') && (
             <section
               id="ukl-page-106"
-              className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[20mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
+              className={`f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full ${
+                isLandscape
+                  ? 'max-w-[330.2mm] min-h-[215.9mm] px-[20mm] py-[15mm]'
+                  : 'max-w-[215.9mm] min-h-[330.2mm] p-[20mm]'
+              } flex flex-col justify-between print:shadow-none print:border-none box-border`}
             >
               <div className="space-y-4">
                 <div className="text-center mb-2">
@@ -1896,14 +2090,22 @@ export function LaporanUplUklView() {
           {shouldRender('TITIK_KOORDINAT') && (
             <section
               id="ukl-page-130"
-              className="f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[330.2mm] p-[20mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
+              className={`f4-page-section scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full ${
+                isLandscape
+                  ? 'max-w-[330.2mm] min-h-[215.9mm] px-[20mm] py-[15mm]'
+                  : 'max-w-[215.9mm] min-h-[330.2mm] p-[20mm]'
+              } flex flex-col justify-between print:shadow-none print:border-none box-border`}
             >
               <div className="space-y-4 text-center">
                 <h2 className="font-bold text-[14pt] uppercase tracking-wider mb-4">
                   TITIK KOORDINAT
                 </h2>
 
-                <div className="max-w-md mx-auto space-y-3 text-left">
+                <div className={`text-left ${
+                  isLandscape
+                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'
+                    : 'max-w-md mx-auto space-y-3'
+                }`}>
                   {/* Card 1: TPS B3 */}
                   <div className="border border-slate-400 rounded-xl p-3 bg-white shadow-xs">
                     <div className="flex items-center gap-2 mb-1.5">
