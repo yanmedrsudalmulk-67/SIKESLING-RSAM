@@ -771,15 +771,23 @@ export function LaporanUplUklView() {
                   </p>
                 </div>
 
-                <table className="w-full border-collapse border border-black text-[9pt] leading-tight">
+                <table className="w-full table-fixed border-collapse border border-black text-[9pt] leading-tight">
+                  <colgroup>
+                    <col className="w-[4%]" style={{ width: '4%' }} />
+                    <col className="w-[16%]" style={{ width: '16%' }} />
+                    <col className="w-[14%]" style={{ width: '14%' }} />
+                    <col className="w-[14%]" style={{ width: '14%' }} />
+                    <col className="w-[26%]" style={{ width: '26%' }} />
+                    <col className="w-[26%]" style={{ width: '26%' }} />
+                  </colgroup>
                   <thead>
                     <tr className="bg-slate-100 text-center font-bold">
-                      <th className="border border-black p-1.5 w-8">No</th>
-                      <th className="border border-black p-1.5 w-32">Variabel Standar dan persyaratan Kesling</th>
-                      <th className="border border-black p-1.5 w-36">Kegiatan</th>
-                      <th className="border border-black p-1.5 w-20">Tanggal/ Bulan</th>
-                      <th className="border border-black p-1.5">Hasil</th>
-                      <th className="border border-black p-1.5">Evaluasi</th>
+                      <th className="border border-black p-1.5 w-[4%] text-center" style={{ width: '4%' }}>No</th>
+                      <th className="border border-black p-1.5 w-[16%] text-center" style={{ width: '16%' }}>Variabel Standar dan persyaratan Kesling</th>
+                      <th className="border border-black p-1.5 w-[14%] text-center" style={{ width: '14%' }}>Kegiatan</th>
+                      <th className="border border-black p-1.5 w-[14%] text-center" style={{ width: '14%' }}>Tanggal/ Bulan</th>
+                      <th className="border border-black p-1.5 w-[26%] text-center" style={{ width: '26%' }}>Hasil</th>
+                      <th className="border border-black p-1.5 w-[26%] text-center" style={{ width: '26%' }}>Evaluasi</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -827,13 +835,21 @@ export function LaporanUplUklView() {
               className="f4-page-section f4-landscape scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[215.9mm] p-[16mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
             >
               <div className="space-y-3">
-                <table className="w-full border-collapse border border-black text-[9pt] leading-tight">
+                <table className="w-full table-fixed border-collapse border border-black text-[9pt] leading-tight">
+                  <colgroup>
+                    <col className="w-[4%]" style={{ width: '4%' }} />
+                    <col className="w-[16%]" style={{ width: '16%' }} />
+                    <col className="w-[14%]" style={{ width: '14%' }} />
+                    <col className="w-[14%]" style={{ width: '14%' }} />
+                    <col className="w-[26%]" style={{ width: '26%' }} />
+                    <col className="w-[26%]" style={{ width: '26%' }} />
+                  </colgroup>
                   <tbody>
                     <tr>
-                      <td className="border border-black p-2 w-8 text-center align-top"></td>
-                      <td className="border border-black p-2 w-32 align-top"></td>
-                      <td className="border border-black p-2 w-36 align-top"></td>
-                      <td className="border border-black p-2 w-20 text-center align-top"></td>
+                      <td className="border border-black p-2 text-center align-top"></td>
+                      <td className="border border-black p-2 align-top"></td>
+                      <td className="border border-black p-2 align-top"></td>
+                      <td className="border border-black p-2 text-center align-top"></td>
                       <td className="border border-black p-2 align-top"></td>
                       <td className="border border-black p-2 align-top space-y-1.5 text-justify">
                         <p className="pl-2">• Pastikan lokasi sumur jauh dari septic tank, kandang hewan, atau sumber limbah lainnya.</p>
@@ -901,15 +917,23 @@ export function LaporanUplUklView() {
               className="f4-page-section f4-landscape scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[215.9mm] p-[16mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
             >
               <div className="space-y-3">
-                <table className="w-full border-collapse border border-black text-[9pt] leading-tight">
+                <table className="w-full table-fixed border-collapse border border-black text-[9pt] leading-tight">
+                  <colgroup>
+                    <col className="w-[4%]" style={{ width: '4%' }} />
+                    <col className="w-[16%]" style={{ width: '16%' }} />
+                    <col className="w-[14%]" style={{ width: '14%' }} />
+                    <col className="w-[14%]" style={{ width: '14%' }} />
+                    <col className="w-[26%]" style={{ width: '26%' }} />
+                    <col className="w-[26%]" style={{ width: '26%' }} />
+                  </colgroup>
                   <tbody>
                     <tr>
-                      <td className="border border-black p-2 w-8 text-center align-top"></td>
-                      <td className="border border-black p-2 w-32 align-top"></td>
-                      <td className="border border-black p-2 w-36 align-top">
+                      <td className="border border-black p-2 text-center align-top"></td>
+                      <td className="border border-black p-2 align-top"></td>
+                      <td className="border border-black p-2 align-top">
                         kelembaban (Indoor) dan Kebisingan
                       </td>
-                      <td className="border border-black p-2 w-20 text-center align-top"></td>
+                      <td className="border border-black p-2 text-center align-top"></td>
                       <td className="border border-black p-2 align-top space-y-1.5 text-justify">
                         <p>masih ada yang masih berproses untuk memenuhi syarat sesuai dengan permenkes no 7 tahun 2019 dan pemenuhan Syarat Kriteria KRIS</p>
                         <p>- Parameter Kebisingan tidak memenuhi syarat berdasarkan Kep 48/MENLH/11/1996 tentang Baku Tingkat Kebisingan</p>
@@ -981,15 +1005,23 @@ export function LaporanUplUklView() {
               className="f4-page-section f4-landscape scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[215.9mm] p-[16mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
             >
               <div className="space-y-3">
-                <table className="w-full border-collapse border border-black text-[9pt] leading-tight">
+                <table className="w-full table-fixed border-collapse border border-black text-[9pt] leading-tight">
+                  <colgroup>
+                    <col className="w-[4%]" style={{ width: '4%' }} />
+                    <col className="w-[16%]" style={{ width: '16%' }} />
+                    <col className="w-[14%]" style={{ width: '14%' }} />
+                    <col className="w-[14%]" style={{ width: '14%' }} />
+                    <col className="w-[26%]" style={{ width: '26%' }} />
+                    <col className="w-[26%]" style={{ width: '26%' }} />
+                  </colgroup>
                   <tbody>
                     <tr>
-                      <td className="border border-black p-1.5 w-8 text-center align-top font-bold">5</td>
-                      <td className="border border-black p-1.5 w-32 align-top font-bold">Vektor dan Binatang Pengganggu</td>
-                      <td className="border border-black p-1.5 w-36 align-top">
+                      <td className="border border-black p-1.5 text-center align-top font-bold">5</td>
+                      <td className="border border-black p-1.5 align-top font-bold">Vektor dan Binatang Pengganggu</td>
+                      <td className="border border-black p-1.5 align-top">
                         Pemeriksaan Vektor dan Binatang Pengganggu Form Pemeriksaan Permenkes No 7 Tahun 2019
                       </td>
-                      <td className="border border-black p-1.5 w-20 text-center align-top">
+                      <td className="border border-black p-1.5 text-center align-top">
                         Januari - Juni
                       </td>
                       <td className="border border-black p-1.5 align-top space-y-1 text-justify">
@@ -1058,15 +1090,23 @@ export function LaporanUplUklView() {
               className="f4-page-section f4-landscape scroll-mt-24 bg-white text-slate-900 shadow-2xl border border-slate-300 mx-auto w-full min-h-[215.9mm] p-[16mm] flex flex-col justify-between print:shadow-none print:border-none box-border"
             >
               <div className="space-y-3">
-                <table className="w-full border-collapse border border-black text-[9pt] leading-tight">
+                <table className="w-full table-fixed border-collapse border border-black text-[9pt] leading-tight">
+                  <colgroup>
+                    <col className="w-[4%]" style={{ width: '4%' }} />
+                    <col className="w-[16%]" style={{ width: '16%' }} />
+                    <col className="w-[14%]" style={{ width: '14%' }} />
+                    <col className="w-[14%]" style={{ width: '14%' }} />
+                    <col className="w-[26%]" style={{ width: '26%' }} />
+                    <col className="w-[26%]" style={{ width: '26%' }} />
+                  </colgroup>
                   <tbody>
                     <tr>
-                      <td className="border border-black p-2 w-8 text-center align-top font-bold">8</td>
-                      <td className="border border-black p-2 w-32 align-top font-bold">Pengamanan Radiasi</td>
-                      <td className="border border-black p-2 w-36 align-top">
+                      <td className="border border-black p-2 text-center align-top font-bold">8</td>
+                      <td className="border border-black p-2 align-top font-bold">Pengamanan Radiasi</td>
+                      <td className="border border-black p-2 align-top">
                         Pemeriksaan Pengamanan Radiasi Form Pemeriksaan Permenkes No 7 Tahun 2019
                       </td>
-                      <td className="border border-black p-2 w-20 text-center align-top">
+                      <td className="border border-black p-2 text-center align-top">
                         Januari - Juni
                       </td>
                       <td className="border border-black p-2 align-top text-justify">
