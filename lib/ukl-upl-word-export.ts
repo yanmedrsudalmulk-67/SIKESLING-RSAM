@@ -8,10 +8,8 @@ export function generateUklUplWordDocumentHtml(params: {
   title: string;
   bodyHtml: string;
   year: number;
-  orientation?: 'landscape' | 'portrait';
 }): string {
-  const { title, bodyHtml, year, orientation = 'landscape' } = params;
-  const isLandscape = orientation === 'landscape';
+  const { title, bodyHtml, year } = params;
 
   return `
 <!DOCTYPE html>
@@ -32,17 +30,18 @@ export function generateUklUplWordDocumentHtml(params: {
   <![endif]-->
   <style>
     @page {
-      size: ${isLandscape ? '33.02cm 21.59cm' : '21.59cm 33.02cm'}; /* F4 FOLIO RESMI */
-      margin: ${isLandscape ? '2.0cm 2.0cm 2.0cm 2.0cm' : '2.5cm 2.5cm 2.5cm 2.5cm'};
-      mso-page-orientation: ${isLandscape ? 'landscape' : 'portrait'};
+      size: 21.59cm 33.02cm; /* F4 / FOLIO STANDAR RESMI PORTRAIT */
+      margin: 2.5cm 2.5cm 2.5cm 2.5cm;
+      mso-page-orientation: portrait;
     }
     @page Section_Landscape {
-      size: 33.02cm 21.59cm; /* F4 LANDSCAPE */
+      size: 33.02cm 21.59cm; /* F4 LANDSCAPE (HALAMAN 7-23) */
       margin: 2.0cm 2.0cm 2.0cm 2.0cm;
       mso-page-orientation: landscape;
     }
-    div.Section_Landscape {
+    div.Section_Landscape, section.f4-landscape, div.f4-landscape {
       page: Section_Landscape;
+      mso-page-orientation: landscape;
     }
     body {
       font-family: Arial, Helvetica, sans-serif;
